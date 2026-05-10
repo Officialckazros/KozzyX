@@ -3,89 +3,85 @@ import { safeRespond } from "../../utils/helpers.js";
 import { buildCoolEmbed } from "../../utils/embeds.js";
 
 const MODELS = [
-    { name: "Flux (default)", value: "flux" },
-    { name: "Flux Realism", value: "flux-realism" },
-    { name: "Flux Anime", value: "flux-anime" },
-    { name: "Flux 3D", value: "flux-3d" },
-    { name: "Flux CablyAI", value: "flux-cablyai" },
-    { name: "Turbo", value: "turbo" },
+    { name: "Nano Banana 2 (default)", value: "nano-banana-2" },
 ];
+
+/**
+ * Generates an image using Nano Banana 2 API
+ */
+async function generateImageWithNanoBanana(prompt, width, height) {
+    if (!process.env.NANO_BANANA_API_KEY) {
+        throw new Error("Missing NANO_BANANA_API_KEY in .env");
+    }
+
+    const payload = {
+        model_name: "nano-banana-2",
+        prompt: prompt,
+        width: width,
+        height: height,
+        steps: 50,
+    };
+
+    const response = await fetch("https://api.banana.dev/v1/start/inference", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${process.env.NANO_BANANA_API_KEY}`,
+        },
+        body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+        const error = await response.text();
+        throw new Error(`Nano Banana API error ${response.status}: ${error}`);
+    }
+
+    const data = await response.json();
+    if (!data.image_url) {
+        throw new Error("No image URL returned from Nano Banana API");
+    }
+
+    const imageRes = await fetch(data.image_url);
+    if (!imageRes.ok) {
+        throw new Error(`Failed to fetch generated image: ${imageRes.status}`);
+    }
+
+    return {
+        buffer: Buffer.from(await imageRes.arrayBuffer()),
+    };
+}
 
 export default {
     data: {
         name: "imagine",
-        description: "Generate an image using Pollinations.ai",
+        description: "Generate an image using Nano Banana 2 AI",
         integration_types: [0, 1],
         contexts: [0, 1, 2],
         options: [
             { name: "prompt", description: "Image description", type: 3, required: true },
-            {
-                name: "model",
-                description: "AI model to use",
-                type: 3,
-                required: false,
-                choices: MODELS,
-            },
-            { name: "width", description: "Image width (default 1024)", type: 4, required: false, min_value: 256, max_value: 2048 },
-            { name: "height", description: "Image height (default 1024)", type: 4, required: false, min_value: 256, max_value: 2048 },
-            { name: "seed", description: "Seed for reproducibility", type: 4, required: false },
-            { name: "enhance", description: "Enhance prompt with AI", type: 5, required: false },
-            { name: "negative", description: "What to avoid in the image", type: 3, required: false },
+            { name: "width", description: "Width (default 1024)", type: 4, required: false, min_value: 256, max_value: 2048 },
+            { name: "height", description: "Height (default 1024)", type: 4, required: false, min_value: 256, max_value: 2048 },
         ],
     },
 
     async execute(i) {
         const prompt = i.options.getString("prompt");
-        const model = i.options.getString("model") ?? "flux";
         const width = i.options.getInteger("width") ?? 1024;
         const height = i.options.getInteger("height") ?? 1024;
-        const seed = i.options.getInteger("seed");
-        const enhance = i.options.getBoolean("enhance") ?? false;
-        const negative = i.options.getString("negative");
 
         await i.deferReply();
 
-        const params = new URLSearchParams({
-            width: String(width),
-            height: String(height),
-            model,
-            nologo: "true",
-            enhance: String(enhance),
-        });
-        if (seed != null) params.set("seed", String(seed));
-        if (negative) params.set("negative", negative);
-
-        const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?${params}`;
-
-        const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-
-        const fetchWithRetry = async (retries = 3, delay = 4000) => {
-            for (let attempt = 1; attempt <= retries; attempt++) {
-                const res = await fetch(url);
-                if (res.ok) return res;
-                if (res.status === 429 && attempt < retries) {
-                    await sleep(delay * attempt);
-                    continue;
-                }
-                throw new Error(`Pollinations returned ${res.status}`);
-            }
-        };
-
         try {
-            const res = await fetchWithRetry();
-            const buffer = Buffer.from(await res.arrayBuffer());
+            const { buffer } = await generateImageWithNanoBanana(prompt, width, height);
             const attachment = new AttachmentBuilder(buffer, { name: "imagine.png" });
 
-            const details = [`**Model:** ${model}`, `**Size:** ${width}x${height}`];
-            if (seed != null) details.push(`**Seed:** ${seed}`);
-            if (enhance) details.push(`**Enhanced:** Yes`);
-            if (negative) details.push(`**Negative:** ${negative}`);
+            const details = [`**Model:** Nano Banana 2`, `**Size:** ${width}x${height}`];
 
             const embed = buildCoolEmbed({
                 guildId: i.guild?.id,
                 type: "info",
-                title: "🎨 Image Generation",
-                description: `**Prompt:** ${prompt}\n${details.join(" • ")}`,
+                title: "🎨 Nano Banana 2 Generation",
+                description: `**Prompt:** ${prompt}\n\n${details.join(" • ")}`,
                 footerUser: i.user,
                 client: i.client,
             }).setImage("attachment://imagine.png");
@@ -96,8 +92,8 @@ export default {
             const embed = buildCoolEmbed({
                 guildId: i.guild?.id,
                 type: "error",
-                title: "Image Generation Failed",
-                description: `Could not generate image. Please try again later.\n\`${err.message}\``,
+                title: "Nano Banana 2 Failed",
+                description: `Could not generate image.\n\`${err.message}\``,
                 footerUser: i.user,
                 client: i.client,
             });
