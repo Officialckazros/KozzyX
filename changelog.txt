@@ -1,0 +1,86 @@
+[2026-04-27] feat: split prefixes — , for mod, ! for config; modhelp config tab
+- messageCreate.js now routes , prefix to mod commands and ! prefix to config commands
+- All 13 config command files tagged with config:true for routing
+- /modhelp rebuilt with 4 mod pages + 4 config pages (anti-raid, tickets, autoresponders, colors)
+- Mod pages have ⚙️ Config button; config pages have 🔧 Mod Help button to toggle back
+- interactionCreate.js handles cfghelp_prev/next and modhelp_switch button IDs
+
+[2026-04-27] feat: full config prefix commands + modhelp overhaul
+- New ,antiraid (alias ,ar): configure threshold, window, action, minage, mention, mentiontime, alertchannel. Show with ,antiraid show
+- New ,color (alias ,embedcolor ,colour): list/set/reset per-type embed colors (10 types)
+- New ,badwords (alias ,bw ,filter): add/remove/list/clear bad words filter (up to 200 words)
+- /modhelp expanded from 5 to 7 pages covering every command including new config commands
+
+[2026-04-27] feat: add /antiraid test simulation command
+- New /antiraid slash command (ManageGuild only) with a `test` subcommand
+- Simulates a join spike of N fake accounts (defaults to configured threshold)
+- Triggers the full raid pipeline: alert embed, lockdown/kick/ban action, case log, owner DM
+- No real accounts are affected; fake IDs silently fail on kick/ban
+- Added primeSimulation() and makeFakeMember() helpers to raidProtection.js
+
+[2026-04-27] feat: polish all remaining general slash commands (Phase 4)
+- /decide: deduplicates options, caps at 25, shows numbered list with winner highlighted, proper error embeds
+- /define: deferred reply, shows up to 4 meanings with 2 defs each + examples, phonetic display, audio link
+- /generate_rules: no functional change, already refactored in previous session
+- /invites: no functional change, already refactored in previous session
+- /nuke: no functional change, already refactored in previous session
+- /pong: added pingHealth() colour indicators for WebSocket and API latency
+- /remind: added 1-year cap, 1000-char content limit, richer embed with ID + timestamp fields
+- /stats: added member/channel totals, command counts, RSS memory, discord.js version, ping health, uptime shows seconds
+- /todo add: validates length (500 chars) and list cap (50 items), shows task ID on success
+- /todo list: shows creation timestamps, usage count in footer
+- /todo remove: fetches and shows the removed task text, proper error embed
+- /todo clear: reports how many tasks were removed
+
+[2026-04-27] security: harden Claude AI safety filter against jailbreaks and prompt injection
+- Added locked SAFETY_SYSTEM_PROMPT injected into every user-facing Claude call (ask, translate, summarize, conversation history)
+- Added detectJailbreak() with 20+ regex patterns catching: DAN, developer mode, god mode, "ignore instructions", "no restrictions", prompt injection via [SYSTEM], and more
+- Moderation prompt made significantly stricter with explicit instruction to flag when in doubt
+- All AI commands (/ask, /translate, /summarize) now return BLOCKED with an ephemeral error instead of continuing on jailbreak detection
+- Safety rules are enforced at both the input (pattern matching) and model (system prompt) layers
+
+[2026-04-26] docs: add commands.txt with every command listed
+- Full reference file covering all 63 commands (29 slash + 34 prefix)
+- Organized by category with usage, aliases, and permission requirements
+
+[2026-04-26] feat: update /features and /modhelp pages to match all commands
+- /features now shows 12 features (4 pages): added Dynamic Voice Channels, Reminders, Invite Tracking, Appeals System, AI Tools, Plugins System
+- /modhelp expanded from 4 to 5 pages: added ,softban, ,unraid, ,appeals_channel, ,audit
+- New modhelp page 5 covers /plugins, /server_setup, /redo_server_setup, /nuke, /serverinfo, /userinfo, /invites
+
+[2026-04-23] fix: repair help/modhelp/features pagination buttons and restore 7 pages
+- Fixed "Interaction Failed" on prev/next buttons — interactionCreate was not handling help pagination
+- Added button handlers for help_prev/next, modhelp_prev/next, features_prev/next
+- Expanded generalHelpCommands from 11 to 21 entries (7 pages at 3 per page)
+- Added coinflip and random to funHelpCommands
+
+[2026-04-21] refactor: consolidate all bots into single root bot
+- Removed bots/ folder structure (mod-bot, utility-bot, ticket-bot, ai-bot)
+- Merged ALL commands into one bot at the project root
+- Added slash commands: coinflip, hug, roast, topic, random (fun), afk, appeal, ask, avatar, banner, clear_memory, decide, define, features, generate_rules, help, imagine, invites, nuke, plugins, redo_server_setup, remind, server_setup, serverinfo, summarize, todo, translate, userinfo, vc, wipe_server (general)
+- Added prefix commands: autoresponder, ticket config commands, afk, boosterrole (features), coinflip, random (fun)
+- Added voiceStateUpdate event handler
+- Added utils: ai, inviteTracker, reminders, ticketUtils
+- index.js and package.json now live at project root
+
+[2026-04-19] feat: add /stats command
+- Shows server count, ping, uptime, memory usage, Node.js version, discord.js version
+
+[2026-04-19] feat: add /pong command
+- Added /pong slash command that replies with "/ping"
+
+[2026-04-19] feat: add /test command
+- Added /test slash command that replies with "good"
+
+[2026-04-19] feat: add softban command
+- Added ,softban @user [reason] prefix command to mod-bot
+- Bans the user with 7 days of message deletion, then immediately unbans so they can rejoin
+- DMs the user explaining they were softbanned
+- Logs a case to the mod case channel
+- Requires Ban Members permission
+
+[2026-04-19] feat: add random command
+- Added /random slash command with subcommands: number, user, coinflip, dice, 8ball
+- Added ,random prefix command (aliases: ,rng)
+- Added standalone /coinflip slash command and ,coinflip prefix command
+- Integrated into the utility-bot fun category
