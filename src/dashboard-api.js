@@ -4,6 +4,11 @@ import path from 'path';
 import { URL, fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const databaseModuleUrl = new URL('./utils/database.js', import.meta.url).href;
+async function importDatabase() {
+    return import(databaseModuleUrl);
+}
+
 const PORT = 3456;
 const AUTH_KEY = 'KozzyX_Internal_API_' + Math.random().toString(36).substring(2, 15);
 const REDIRECT_URI = 'https://kozzyx.bazsi9849.workers.dev/dashboard';
@@ -679,14 +684,14 @@ export function initAPI(client) {
 
             // --- Triggers (Fixed to use database) ---
             if (pathname === '/api/triggers' && method === 'GET') {
-                const { guildAutoresponders } = await import('./utils/database.js');
+                const { guildAutoresponders } = await importDatabase();
                 const list = guildAutoresponders.get(guild.id) || [];
                 return json(res, 200, list);
             }
 
             if (pathname === '/api/triggers' && method === 'POST') {
                 const { trigger, response } = await readBody(req);
-                const { guildAutoresponders, saveAutoresponders } = await import('./utils/database.js');
+                const { guildAutoresponders, saveAutoresponders } = await importDatabase();
                 const list = guildAutoresponders.get(guild.id) || [];
                 list.push({ trigger: trigger.toLowerCase(), response });
                 guildAutoresponders.set(guild.id, list);
@@ -697,7 +702,7 @@ export function initAPI(client) {
 
             if (pathname.startsWith('/api/triggers/') && method === 'DELETE') {
                 const triggerVal = pathname.split('/').pop();
-                const { guildAutoresponders, saveAutoresponders } = await import('./utils/database.js');
+                const { guildAutoresponders, saveAutoresponders } = await importDatabase();
                 let list = guildAutoresponders.get(guild.id) || [];
                 list = list.filter(t => t.trigger !== decodeURIComponent(triggerVal).toLowerCase());
                 guildAutoresponders.set(guild.id, list);
@@ -708,14 +713,14 @@ export function initAPI(client) {
 
             // --- FULL SETTINGS (New) ---
             if (pathname === '/api/settings' && method === 'GET') {
-                const { getGuildSettings } = await import('./utils/database.js');
+                const { getGuildSettings } = await importDatabase();
                 const settings = getGuildSettings(guild.id);
                 return json(res, 200, settings);
             }
 
             if (pathname === '/api/settings' && method === 'POST') {
                 const body = await readBody(req);
-                const { getGuildSettings, saveSettings } = await import('./utils/database.js');
+                const { getGuildSettings, saveSettings } = await importDatabase();
                 const settings = getGuildSettings(guild.id);
 
                 // Deep merge or specific updates
@@ -727,14 +732,14 @@ export function initAPI(client) {
 
             // --- PLUGINS (New) ---
             if (pathname === '/api/plugins' && method === 'GET') {
-                const { getGuildSettings } = await import('./utils/database.js');
+                const { getGuildSettings } = await importDatabase();
                 const settings = getGuildSettings(guild.id);
                 return json(res, 200, settings.plugins || {});
             }
 
             if (pathname === '/api/plugins' && method === 'POST') {
                 const { plugin, enabled } = await readBody(req);
-                const { getGuildSettings, saveSettings } = await import('./utils/database.js');
+                const { getGuildSettings, saveSettings } = await importDatabase();
                 const settings = getGuildSettings(guild.id);
                 if (!settings.plugins) settings.plugins = {};
                 settings.plugins[plugin] = enabled;
@@ -745,13 +750,13 @@ export function initAPI(client) {
 
             // --- Ticketing Panel Edit ---
             if (pathname === '/api/tickets' && method === 'GET') {
-                const { getGuildSettings } = await import('./utils/database.js');
+                const { getGuildSettings } = await importDatabase();
                 const settings = getGuildSettings(guild.id);
                 return json(res, 200, { ticket: settings.ticket, ticketPanelChannelId: settings.ticketPanelChannelId });
             }
             if (pathname === '/api/tickets' && method === 'POST') {
                 const { ticketPanelChannelId, ticket } = await readBody(req);
-                const { getGuildSettings, saveSettings } = await import('./utils/database.js');
+                const { getGuildSettings, saveSettings } = await importDatabase();
                 const settings = getGuildSettings(guild.id);
                 if (ticketPanelChannelId !== undefined) settings.ticketPanelChannelId = ticketPanelChannelId;
                 if (ticket !== undefined) settings.ticket = ticket;
@@ -948,7 +953,7 @@ export function initAPI(client) {
     client.on('messageCreate', async (message) => {
         if (message.author.bot || !message.guild) return;
 
-        const { guildAutoresponders } = await import('./utils/database.js');
+        const { guildAutoresponders } = await importDatabase();
         const guildTriggers = guildAutoresponders.get(message.guild.id) || [];
 
         for (const t of guildTriggers) {

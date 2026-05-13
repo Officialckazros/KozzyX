@@ -127,7 +127,7 @@ export default {
             }));
         }
 
-        await interaction.deferReply({ ephemeral: false });
+        await interaction.deferReply();
 
         let deletedChannels = 0;
         let deletedRoles = 0;

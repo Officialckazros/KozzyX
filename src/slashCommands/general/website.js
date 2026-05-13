@@ -13,7 +13,7 @@ export default {
             .addComponents(
                 new ButtonBuilder()
                     .setLabel("Visit Website")
-                    .setURL("https://kozzyx.bazsi9849.workers.dev/")
+                    .setURL("https://kozzyx.org")
                     .setStyle(ButtonStyle.Link)
             );
 
@@ -21,7 +21,7 @@ export default {
             guildId: interaction.guildId,
             type: "info",
             title: "🌐 Official Website",
-            description: "Stay up to date with our latest news and features by visiting our official website!\n\n**Link:** [kozzyx.bazsi9849.workers.dev](https://kozzyx.bazsi9849.workers.dev/)",
+            description: "Stay up to date with our latest news and features by visiting our official website!\n\n**Link:** [kozzyx.org](https://kozzyx.org)",
             footerUser: interaction.user,
             client: interaction.client,
             components: [row]

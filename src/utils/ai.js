@@ -1,15 +1,27 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-let client;
+let anthropicClient;
+let googleAI;
 
-function getClient() {
-    if (!client) {
+function getAnthropicClient() {
+    if (!anthropicClient) {
         if (!process.env.ANTHROPIC_API_KEY) {
             throw new Error("Missing ANTHROPIC_API_KEY in .env");
         }
-        client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+        anthropicClient = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
     }
-    return client;
+    return anthropicClient;
+}
+
+function getGoogleAI() {
+    if (!googleAI) {
+        if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+            throw new Error("Missing GOOGLE_GENERATIVE_AI_API_KEY in .env");
+        }
+        googleAI = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_API_KEY);
+    }
+    return googleAI;
 }
 
 // Locked safety system prompt — injected into every user-facing Claude call.
@@ -70,7 +82,7 @@ function detectJailbreak(text) {
 // Generic wrapper — accepts a messages array and optional system prompt
 async function callClaude(messages, { model = "claude-haiku-4-5-20251001", maxTokens = 1024, system = null } = {}) {
     try {
-        const anthropic = getClient();
+        const anthropic = getAnthropicClient();
         const params = { model, max_tokens: maxTokens, messages };
         if (system) params.system = system;
         const response = await anthropic.messages.create(params);
@@ -81,6 +93,50 @@ async function callClaude(messages, { model = "claude-haiku-4-5-20251001", maxTo
         if (error instanceof Anthropic.InternalServerError && error.status === 529) return "QUOTA_EXCEEDED";
         return "ERROR";
     }
+}
+
+// ── Gemini Integration ───────────────────────────────────────────────────────
+async function callGemini(prompt, history = [], systemInstruction = SAFETY_SYSTEM_PROMPT) {
+    try {
+        const genAI = getGoogleAI();
+        const model = genAI.getGenerativeModel({
+            model: "gemini-2.5-flash",
+            systemInstruction: systemInstruction,
+        });
+
+        if (history.length > 0) {
+            const chat = model.startChat({
+                history: history.map(m => ({
+                    role: m.role === "assistant" ? "model" : "user",
+                    parts: [{ text: m.content }],
+                })),
+            });
+            const result = await chat.sendMessage(prompt);
+            return result.response.text();
+        } else {
+            const result = await model.generateContent(prompt);
+            return result.response.text();
+        }
+    } catch (error) {
+        console.error("Gemini API Error:", error);
+        if (error.message?.includes("429") || error.message?.includes("quota")) return "QUOTA_EXCEEDED";
+        return "ERROR";
+    }
+}
+
+export async function askGemini(prompt) {
+    if (detectJailbreak(prompt)) return "BLOCKED";
+    return callGemini(prompt);
+}
+
+export async function askGeminiWithHistory(messages) {
+    const lastUserMsg = [...messages].reverse().find(m => m.role === "user");
+    if (lastUserMsg && detectJailbreak(lastUserMsg.content)) return "BLOCKED";
+
+    const history = messages.slice(0, -1);
+    const currentPrompt = messages[messages.length - 1].content;
+
+    return callGemini(currentPrompt, history);
 }
 
 // ── /ask: stateless single-turn ──────────────────────────────────────────────

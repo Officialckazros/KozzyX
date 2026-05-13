@@ -136,7 +136,7 @@ export default {
             }));
         }
 
-        await interaction.deferReply({ ephemeral: false });
+        await interaction.deferReply();
 
         const log = [];
         let deletedChannels = 0;

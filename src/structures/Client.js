@@ -35,6 +35,7 @@ export class ExtendedClient extends Client {
         try {
             if (guildId) {
                 await rest.put(Routes.applicationGuildCommands(this.user.id, guildId), { body: this.slashData });
+                console.log(`✅ Deployed ${this.slashData.length} guild commands to ${guildId}.`);
             } else {
                 await rest.put(Routes.applicationCommands(this.user.id), { body: this.slashData });
                 console.log(`✅ Deployed ${this.slashData.length} global commands.`);

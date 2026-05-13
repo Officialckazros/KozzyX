@@ -6,6 +6,18 @@ import { helpPages } from "../slashCommands/general/help.js";
 import { modHelpPages, configHelpPages, modRow, configRow } from "../slashCommands/general/modhelp.js";
 import { featureHelpPages } from "../slashCommands/general/features.js";
 
+// Swallow expected interaction races so they don't crash the process.
+// 10062 = Unknown interaction (token expired, often >3s after click)
+// 40060 = Interaction has already been acknowledged
+async function tryUpdate(interaction, payload) {
+    try {
+        return await interaction.update(payload);
+    } catch (e) {
+        if (e?.code === 10062 || e?.code === 40060) return;
+        throw e;
+    }
+}
+
 export default {
     name: Events.InteractionCreate,
     async execute(interaction, client) {
@@ -43,30 +55,30 @@ export default {
                     new ButtonBuilder().setCustomId(`help_prev:${category}:${page}`).setLabel("⬅ Previous").setStyle(ButtonStyle.Secondary).setDisabled(page === 0),
                     new ButtonBuilder().setCustomId(`help_next:${category}:${page}`).setLabel("Next ➡").setStyle(ButtonStyle.Primary).setDisabled(page === pages.length - 1)
                 );
-                return interaction.update({ embeds: [pages[page]], components: [row] });
+                return tryUpdate(interaction, { embeds: [pages[page]], components: [row] });
             }
 
             if (id.startsWith("modhelp_prev:") || id.startsWith("modhelp_next:")) {
                 const [action, pageStr] = id.split(":");
                 let page = parseInt(pageStr);
                 page = action === "modhelp_next" ? page + 1 : page - 1;
-                return interaction.update({ embeds: [modHelpPages[page]], components: [modRow(page)] });
+                return tryUpdate(interaction, { embeds: [modHelpPages[page]], components: [modRow(page)] });
             }
 
             if (id.startsWith("cfghelp_prev:") || id.startsWith("cfghelp_next:")) {
                 const [action, pageStr] = id.split(":");
                 let page = parseInt(pageStr);
                 page = action === "cfghelp_next" ? page + 1 : page - 1;
-                return interaction.update({ embeds: [configHelpPages[page]], components: [configRow(page)] });
+                return tryUpdate(interaction, { embeds: [configHelpPages[page]], components: [configRow(page)] });
             }
 
             if (id.startsWith("modhelp_switch:")) {
                 const [, mode, pageStr] = id.split(":");
                 const page = parseInt(pageStr);
                 if (mode === "config") {
-                    return interaction.update({ embeds: [configHelpPages[page]], components: [configRow(page)] });
+                    return tryUpdate(interaction, { embeds: [configHelpPages[page]], components: [configRow(page)] });
                 } else {
-                    return interaction.update({ embeds: [modHelpPages[page]], components: [modRow(page)] });
+                    return tryUpdate(interaction, { embeds: [modHelpPages[page]], components: [modRow(page)] });
                 }
             }
 
@@ -78,7 +90,7 @@ export default {
                     new ButtonBuilder().setCustomId(`features_prev:${page}`).setLabel("⬅ Previous").setStyle(ButtonStyle.Secondary).setDisabled(page === 0),
                     new ButtonBuilder().setCustomId(`features_next:${page}`).setLabel("Next ➡").setStyle(ButtonStyle.Primary).setDisabled(page === featureHelpPages.length - 1)
                 );
-                return interaction.update({ embeds: [featureHelpPages[page]], components: [row] });
+                return tryUpdate(interaction, { embeds: [featureHelpPages[page]], components: [row] });
             }
 
             // ── APPEAL BUTTONS ─────────────────────────────────────────────

@@ -1,4 +1,4 @@
-import { PermissionsBitField } from "discord.js";
+import { PermissionsBitField, MessageFlags } from "discord.js";
 import { safeRespond } from "../../utils/helpers.js";
 import { asEmbedPayload } from "../../utils/embeds.js";
 import { getGuildSettings } from "../../utils/database.js";
@@ -49,7 +49,7 @@ export default {
             const count = interaction.options.getInteger("count") ?? threshold;
             const action = cfg.action ?? "lockdown";
 
-            await interaction.deferReply({ ephemeral: true });
+            await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
             // Pre-fill the join window with (count - 1) fake entries, then fire
             // one real checkRaid call to push it over threshold.

@@ -1,6 +1,6 @@
 import { safeRespond } from "../../utils/helpers.js";
 import { asEmbedPayload } from "../../utils/embeds.js";
-import { askClaude, askClaudeWithHistory } from "../../utils/ai.js";
+import { askGemini, askGeminiWithHistory } from "../../utils/ai.js";
 import { getGuildSettings } from "../../utils/database.js";
 import { getDB } from "../../utils/db.js";
 
@@ -38,7 +38,7 @@ async function saveHistory(userId, guildId, messages) {
 export default {
     data: {
         name: "ask",
-        description: "Ask Claude AI a question",
+        description: "Ask Gemini AI a question",
         integration_types: [0, 1],
         contexts: [0, 1, 2],
         options: [
@@ -72,7 +72,7 @@ export default {
         if (useHistory) {
             const history = await loadHistory(i.user.id, guildId);
             history.push({ role: "user", content: prompt });
-            answer = await askClaudeWithHistory(history);
+            answer = await askGeminiWithHistory(history);
 
             if (answer && answer !== "ERROR" && answer !== "QUOTA_EXCEEDED") {
                 history.push({ role: "assistant", content: answer });
@@ -81,7 +81,7 @@ export default {
                 await saveHistory(i.user.id, guildId, trimmed);
             }
         } else {
-            answer = await askClaude(prompt);
+            answer = await askGemini(prompt);
         }
 
         if (answer === "BLOCKED") {
@@ -99,7 +99,7 @@ export default {
                 guildId: i.guild?.id,
                 type: "error",
                 title: "❌ AI Error",
-                description: "Failed to get a response from Claude. Please try again later.",
+                description: "Failed to get a response from Gemini. Please try again later.",
                 ephemeral: true,
             }));
         }
@@ -117,12 +117,12 @@ export default {
         cooldowns.set(i.user.id, now + (COOLDOWN_SECONDS * 1000));
 
         const trimmed = answer.length > 4000 ? answer.slice(0, 3997) + "..." : answer;
-        const footer = useHistory ? "💬 Conversation memory is ON — Claude remembers this chat." : null;
+        const footer = useHistory ? "💬 Conversation memory is ON — Gemini remembers this chat." : null;
 
         return safeRespond(i, asEmbedPayload({
             guildId: i.guild?.id,
             type: "info",
-            title: "🤖 Claude Answer",
+            title: "🤖 Gemini Answer",
             description: `**Q:** ${prompt}\n\n${trimmed}`,
             footerUser: footer ? null : i.user,
             client: i.client,

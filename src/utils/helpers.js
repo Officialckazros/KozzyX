@@ -1,30 +1,57 @@
 // ---------------- UTIL: SAFE INTERACTION REPLY ----------------
+// MessageFlags.Ephemeral = 1 << 6 = 64. Use literal to avoid adding an import.
+const EPHEMERAL_FLAG = 64;
+
+// Convert deprecated { ephemeral: true } -> { flags: 64 } and strip editReply-incompatible keys when needed.
+function normalizePayload(payload, { stripEphemeral = false } = {}) {
+    if (!payload || typeof payload !== "object") return payload;
+    const out = { ...payload };
+    if (out.ephemeral) {
+        if (!stripEphemeral) {
+            out.flags = (out.flags || 0) | EPHEMERAL_FLAG;
+        }
+        delete out.ephemeral;
+    } else if (out.ephemeral === false) {
+        delete out.ephemeral;
+    }
+    return out;
+}
+
 export async function safeRespond(interaction, payload) {
     // Force ephemeral if error for User Apps (usually safer)
-    if (payload.type === "error" && payload.ephemeral === undefined) {
+    if (payload?.type === "error" && payload.ephemeral === undefined) {
         payload.ephemeral = true;
     }
 
     try {
         if (interaction.replied || interaction.deferred) {
-            return await interaction.editReply(payload);
-        } else {
-            return await interaction.reply(payload);
+            // editReply does NOT accept ephemeral/flags — strip them.
+            return await interaction.editReply(normalizePayload(payload, { stripEphemeral: true }));
         }
+        return await interaction.reply(normalizePayload(payload));
     } catch (e) {
-        console.error("[safeRespond] Primary method failed:", e);
+        // Only attempt a followUp if the interaction was actually acknowledged.
+        // Otherwise followUp will throw InteractionNotReplied and spam logs.
+        if (!(interaction.replied || interaction.deferred)) {
+            console.error("[safeRespond] Reply failed (not acknowledged):", e?.message || e);
+            return;
+        }
         try {
-            return await interaction.followUp(payload);
+            return await interaction.followUp(normalizePayload(payload));
         } catch (e2) {
-            console.error("[safeRespond] FollowUp failed:", e2);
+            console.error("[safeRespond] FollowUp failed:", e2?.message || e2);
         }
     }
 }
 export async function safeUpdate(interaction, payload) {
     try {
-        if (interaction.isButton()) return interaction.update(payload);
-    } catch {
-        try { return safeRespond(interaction, payload); } catch { }
+        if (interaction.isButton && interaction.isButton()) {
+            return await interaction.update(normalizePayload(payload, { stripEphemeral: true }));
+        }
+    } catch (e) {
+        // 10062 = Unknown interaction (expired), 40060 = already acknowledged — both unrecoverable for .update()
+        if (e?.code === 10062 || e?.code === 40060) return;
+        try { return await safeRespond(interaction, payload); } catch { }
     }
 }
 
