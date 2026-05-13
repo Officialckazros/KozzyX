@@ -1,4 +1,4 @@
-import { PermissionsBitField, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
+import { PermissionsBitField, ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags } from "discord.js";
 import { safeRespond } from "../../utils/helpers.js";
 import { asEmbedPayload, buildCoolEmbed } from "../../utils/embeds.js";
 
@@ -66,7 +66,7 @@ export default {
             );
 
             const reply = await interaction.reply({
-                ephemeral: true,
+                flags: MessageFlags.Ephemeral,
                 embeds: [buildCoolEmbed({
                     guildId: interaction.guildId,
                     type: "warning",
@@ -141,7 +141,7 @@ export default {
         }
 
         // ── Small delete: no confirmation
-        await interaction.deferReply({ ephemeral: true });
+        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
         const deleted = await nukeChannel(channel, target);
 
         return safeRespond(interaction, asEmbedPayload({

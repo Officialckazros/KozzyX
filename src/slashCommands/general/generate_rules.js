@@ -1,4 +1,4 @@
-import { PermissionsBitField, EmbedBuilder } from "discord.js";
+import { PermissionsBitField, EmbedBuilder, MessageFlags } from "discord.js";
 import { safeRespond } from "../../utils/helpers.js";
 import { asEmbedPayload, buildCoolEmbed } from "../../utils/embeds.js";
 import { generateServerRules } from "../../utils/ai.js";
@@ -22,7 +22,7 @@ export default {
     async execute(interaction) {
         if (!interaction.guildId) return;
 
-        await interaction.deferReply({ ephemeral: true });
+        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
         const guild = interaction.guild;
         const target = interaction.options.getChannel("post_to") ?? interaction.channel;

@@ -280,7 +280,7 @@ export default {
 
         // Long-running op — defer ASAP.
         try {
-            await interaction.deferReply({ ephemeral: false });
+            await interaction.deferReply();
         } catch { /* already replied somehow */ }
 
         // ------------------------------------------------------------
