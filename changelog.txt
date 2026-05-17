@@ -1,3 +1,9 @@
+[2026-05-18] chore: reorganize root folder
+- Moved afk.json, autoresponders.json, boosterroles.json, cosmetics.json, settings.json → data/
+- Moved sync_commands.js → scripts/
+- Merged root index.html (newer) into website/index.html
+- Updated legacy file paths in src/utils/database.js
+
 [2026-04-27] feat: split prefixes — , for mod, ! for config; modhelp config tab
 - messageCreate.js now routes , prefix to mod commands and ! prefix to config commands
 - All 13 config command files tagged with config:true for routing

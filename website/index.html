@@ -5,6 +5,19 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>kozzyx — a reasonable moderation bot</title>
+    <meta name="description"
+        content="kozzyx is an all-in-one Discord bot: moderation, AI (Claude-powered /ask & /imagine), tickets, and one-command server setup. 50+ commands, slash + prefix, none paywalled." />
+    <meta property="og:title" content="kozzyx — a reasonable moderation bot" />
+    <meta property="og:description"
+        content="Moderation, AI, tickets, and server setup. 50+ commands. Add to your Discord server in 30 seconds." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://kozzyx.app/og.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="kozzyx — a reasonable moderation bot" />
+    <meta name="twitter:description"
+        content="Moderation, AI, tickets, and server setup. 50+ commands. Add to your Discord server in 30 seconds." />
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><rect x='6' y='8' width='28' height='26' rx='8' fill='%238b5cf6'/><rect x='11' y='13' width='18' height='13' rx='4' fill='%230b0b0d'/><circle cx='16' cy='19.5' r='1.6' fill='white'/><circle cx='24' cy='19.5' r='1.6' fill='white'/><line x1='20' y1='8' x2='20' y2='4' stroke='%238b5cf6' stroke-width='1.5' stroke-linecap='round'/><circle cx='20' cy='3' r='1.5' fill='%238b5cf6'/></svg>" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -165,7 +178,7 @@
             left: -50vw;
             width: 200vw;
             height: 100vh;
-            background-image: 
+            background-image:
                 linear-gradient(to right, var(--line-soft) 1px, transparent 1px),
                 linear-gradient(to bottom, var(--line-soft) 1px, transparent 1px);
             background-size: 60px 60px;
@@ -174,13 +187,18 @@
             opacity: 0.2;
             z-index: 0;
             pointer-events: none;
-            -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1) 10%, rgba(0,0,0,0) 80%);
-            mask-image: linear-gradient(to top, rgba(0,0,0,1) 10%, rgba(0,0,0,0) 80%);
+            -webkit-mask-image: linear-gradient(to top, rgba(0, 0, 0, 1) 10%, rgba(0, 0, 0, 0) 80%);
+            mask-image: linear-gradient(to top, rgba(0, 0, 0, 1) 10%, rgba(0, 0, 0, 0) 80%);
         }
 
         @keyframes gridMove {
-            0% { transform: perspective(600px) rotateX(75deg) translateY(0); }
-            100% { transform: perspective(600px) rotateX(75deg) translateY(60px); }
+            0% {
+                transform: perspective(600px) rotateX(75deg) translateY(0);
+            }
+
+            100% {
+                transform: perspective(600px) rotateX(75deg) translateY(60px);
+            }
         }
 
         /* ============ BOOT LOADER ============ */
@@ -460,6 +478,143 @@
                 transform: translateY(0);
                 opacity: 1;
             }
+
+            /* ============ INTERACTIVE TWEAKS ============ */
+            .marquee-divider {
+                width: 100vw;
+                background: var(--accent-soft);
+                border-top: 1px solid var(--accent);
+                border-bottom: 1px solid var(--accent);
+                padding: 12px 0;
+                position: relative;
+                z-index: 10;
+                margin: 60px 0;
+                overflow: hidden;
+                display: flex;
+                box-shadow: 0 0 40px var(--accent-soft);
+                margin-left: calc(-50vw + 50%);
+            }
+
+            .marquee-inner {
+                display: flex;
+                white-space: nowrap;
+                animation: marquee 14s linear infinite;
+            }
+
+            .marquee-item {
+                font-family: 'Geist Mono', ui-monospace, monospace;
+                font-size: 14px;
+                font-weight: 600;
+                color: var(--accent);
+                margin: 0 40px;
+                letter-spacing: 2px;
+            }
+
+            .dynamic-island {
+                position: fixed;
+                bottom: 32px;
+                left: 50%;
+                transform: translateX(-50%) translateY(120px) scale(0.9);
+                z-index: 10000;
+                background: rgba(20, 20, 24, 0.7);
+                backdrop-filter: blur(20px) saturate(140%);
+                -webkit-backdrop-filter: blur(20px) saturate(140%);
+                border: 1px solid var(--line);
+                border-radius: 100px;
+                padding: 8px 12px;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+                transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+                opacity: 0;
+                pointer-events: none;
+            }
+
+            .dynamic-island.visible {
+                transform: translateX(-50%) translateY(0) scale(1);
+                opacity: 1;
+                pointer-events: all;
+            }
+
+            .island-link {
+                font-size: 13px;
+                font-weight: 500;
+                color: var(--fg-dim);
+                padding: 8px 16px;
+                border-radius: 100px;
+                transition: all 0.2s ease;
+            }
+
+            .island-link:hover {
+                color: var(--fg);
+                background: rgba(255, 255, 255, 0.08);
+            }
+
+            #cursor-blob {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 48px;
+                height: 48px;
+                border-radius: 50%;
+                background: var(--accent);
+                opacity: 0.25;
+                pointer-events: none;
+                z-index: 99999;
+                transform: translate(-50%, -50%);
+                transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), height 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), background 0.3s ease, border-radius 0.2s ease;
+                mix-blend-mode: screen;
+                will-change: left, top, width, height;
+            }
+
+            #cursor-blob.active {
+                width: 24px;
+                height: 24px;
+                background: #fff;
+                opacity: 0.6;
+            }
+
+            @keyframes glitch {
+                0% {
+                    transform: translate(0);
+                    filter: hue-rotate(0deg) drop-shadow(0 0 transparent);
+                }
+
+                20% {
+                    transform: translate(-2px, 1px);
+                    filter: hue-rotate(90deg) drop-shadow(4px 0 #0ff);
+                }
+
+                40% {
+                    transform: translate(-1px, -2px);
+                    filter: hue-rotate(180deg) drop-shadow(-4px 0 #f0f);
+                }
+
+                60% {
+                    transform: translate(2px, 1px);
+                    filter: hue-rotate(270deg) drop-shadow(4px 0 #0ff);
+                }
+
+                80% {
+                    transform: translate(1px, -1px);
+                    filter: hue-rotate(360deg) drop-shadow(-4px 0 #f0f);
+                }
+
+                100% {
+                    transform: translate(0);
+                    filter: hue-rotate(0deg) drop-shadow(0 0 transparent);
+                }
+            }
+
+            .btn-glitch {
+                position: relative;
+                transform-origin: center;
+            }
+
+            .btn-glitch:active {
+                animation: glitch 0.2s linear !important;
+            }
         }
 
         /* ============ RESPECT REDUCED MOTION ============ */
@@ -473,10 +628,299 @@
                 transition-duration: 0.01ms !important;
             }
         }
+
+        /* ============ MOBILE RESPONSIVE ============ */
+        @media (max-width: 900px) {
+            .hero-grid {
+                grid-template-columns: 1fr !important;
+                gap: 48px !important;
+            }
+
+            .hero-grid>div:last-child {
+                order: -1;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr !important;
+                gap: 40px !important;
+            }
+
+            .footer-grid {
+                grid-template-columns: 1fr 1fr !important;
+                gap: 32px !important;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
+
+            .stats-grid>div:nth-child(2) {
+                border-right: none !important;
+            }
+
+            .dashboard-body {
+                grid-template-columns: 1fr !important;
+            }
+
+            .dashboard-sidebar {
+                display: none !important;
+            }
+
+            nav>div:nth-child(2) {
+                display: none !important;
+            }
+
+            .how-grid {
+                grid-template-columns: 1fr !important;
+            }
+
+            .kpi-grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
+
+            .mobile-hamburger {
+                display: grid !important;
+            }
+
+            .nav-cta-btn {
+                display: none !important;
+            }
+        }
+
+        @media (max-width: 600px) {
+
+            section,
+            .section-pad {
+                padding-left: 20px !important;
+                padding-right: 20px !important;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr 1fr !important;
+            }
+
+            .footer-grid {
+                grid-template-columns: 1fr !important;
+            }
+
+            nav {
+                padding: 14px 20px !important;
+            }
+
+            .changelog-row {
+                grid-template-columns: 1fr !important;
+                gap: 16px !important;
+            }
+        }
+
+        /* ============ HOW IT WORKS SECTION ============ */
+        .how-step {
+            position: relative;
+            padding: 28px 24px;
+            background: var(--bg-elev);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            transition: border-color 0.25s, transform 0.25s;
+        }
+
+        .how-step:hover {
+            border-color: color-mix(in oklab, var(--accent) 50%, var(--line));
+            transform: translateY(-4px);
+        }
+
+        .how-step-number {
+            font-family: 'Geist Mono', monospace;
+            font-size: 11px;
+            color: var(--accent);
+            letter-spacing: 0.1em;
+            margin-bottom: 16px;
+            opacity: 0.8;
+        }
+
+        .how-step-connector {
+            position: absolute;
+            top: 50%;
+            right: -28px;
+            width: 28px;
+            height: 1px;
+            background: linear-gradient(90deg, var(--line), transparent);
+            pointer-events: none;
+        }
+
+        /* ============ STATUS BADGE ============ */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 100px;
+            background: color-mix(in oklab, var(--ok) 12%, transparent);
+            border: 1px solid color-mix(in oklab, var(--ok) 30%, transparent);
+            font-size: 11px;
+            color: var(--ok);
+            font-family: 'Geist Mono', monospace;
+        }
+
+        .status-dot-live {
+            width: 6px;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--ok);
+            animation: pulseLive 2s ease-in-out infinite;
+        }
+
+        @keyframes pulseLive {
+
+            0%,
+            100% {
+                opacity: 1;
+                box-shadow: 0 0 0 0 color-mix(in oklab, var(--ok) 60%, transparent);
+            }
+
+            50% {
+                opacity: 0.7;
+                box-shadow: 0 0 0 4px transparent;
+            }
+        }
+
+        /* ============ COMMAND CATEGORY COLORS ============ */
+        .cmd-cat-mod {
+            color: var(--danger) !important;
+        }
+
+        .cmd-cat-ai {
+            color: var(--ok) !important;
+        }
+
+        .cmd-cat-setup {
+            color: var(--warn) !important;
+        }
+
+        .cmd-cat-ticket {
+            color: oklch(0.78 0.14 240) !important;
+        }
+
+        /* ============ STAGGER REVEAL ============ */
+        [data-stagger]>* {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1), transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        [data-stagger].in>*:nth-child(1) {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.05s;
+        }
+
+        [data-stagger].in>*:nth-child(2) {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.12s;
+        }
+
+        [data-stagger].in>*:nth-child(3) {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.19s;
+        }
+
+        [data-stagger].in>*:nth-child(4) {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.26s;
+        }
+
+        [data-stagger].in>*:nth-child(5) {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.33s;
+        }
+
+        /* ============ ANIMATED UNDERLINE LINKS ============ */
+        .underline-link {
+            position: relative;
+        }
+
+        .underline-link::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -2px;
+            width: 0;
+            height: 1px;
+            background: var(--accent);
+            transition: width 0.25s ease;
+        }
+
+        .underline-link:hover::after {
+            width: 100%;
+        }
+
+        /* ============ COMMAND HOVER GLOW ============ */
+        .cmd-row:hover {
+            background: var(--bg-elev) !important;
+        }
+
+        .cmd-row:hover .cmd-name {
+            color: var(--accent) !important;
+        }
+
+        /* ============ SECTION FADE KEYFRAME ============ */
+        @keyframes sectionFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(24px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ============ TABS SHIMMER ON SWITCH ============ */
+        @keyframes tabShimmer {
+            0% {
+                opacity: 0;
+                transform: translateX(-8px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .tab-content-enter {
+            animation: tabShimmer 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+
+        /* ============ COUNTER PULSE ============ */
+        @keyframes counterPop {
+            0% {
+                transform: scale(1);
+            }
+
+            40% {
+                transform: scale(1.04);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .counter-pop {
+            animation: counterPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+        }
     </style>
 </head>
 
 <body>
+    <div id="scroll-progress"
+        style="position:fixed;top:0;left:0;height:2px;background:var(--accent);z-index:99998;width:0%;transition:width 0.1s linear;box-shadow:0 0 8px var(--accent);">
+    </div>
     <div class="aurora">
         <div class="cyber-grid"></div>
     </div>
@@ -519,260 +963,83 @@
 
         /*COMMANDS-DATA-BEGIN*/
         const COMMANDS = [
-            // Automatically Synced Commands
-            {
-                        "cmd": "/website",
-                        "args": "",
-                        "desc": "Get the link to our official website!",
-                        "cat": "utility",
-                        "popular": false
-            },
-            {
-                        "cmd": "/Full Community Server",
-                        "args": "",
-                        "desc": "Delete everything server_setup created and optionally redo it.",
-                        "cat": "utility",
-                        "popular": false
-            },
-            {
-                        "cmd": "/remind",
-                        "args": "",
-                        "desc": "Set a reminder \u2014 DM you (or post in channel) when time is up",
-                        "cat": "utility",
-                        "popular": false
-            },
-            {
-                        "cmd": "/appeal",
-                        "args": "",
-                        "desc": "Submit a ban appeal to a server.",
-                        "cat": "utility",
-                        "popular": false
-            },
-            {
-                        "cmd": "/vc",
-                        "args": "",
-                        "desc": "Manage your dynamic voice channel.",
-                        "cat": "utility",
-                        "popular": false
-            },
-            {
-                        "cmd": "/translate",
-                        "args": "",
-                        "desc": "Translate text using AI",
-                        "cat": "utility",
-                        "popular": false
-            },
-            {
-                        "cmd": "/decide",
-                        "args": "",
-                        "desc": "Pick between options for you",
-                        "cat": "utility",
-                        "popular": false
-            },
-            {
-                        "cmd": "/Nano Banana 2 (default)",
-                        "args": "",
-                        "desc": "Generate an image using Nano Banana 2 AI",
-                        "cat": "utility",
-                        "popular": false
-            },
-            {
-                        "cmd": "/modhelp",
-                        "args": "",
-                        "desc": "Show moderation & configuration help",
-                        "cat": "utility",
-                        "popular": false
-            },
-            {
-                        "cmd": "/serverinfo",
-                        "args": "",
-                        "desc": "Show detailed info about this server",
-                        "cat": "utility",
-                        "popular": false
-            },
-            {
-                        "cmd": "/clear_memory",
-                        "args": "",
-                        "desc": "Clear Claude's conversation history for you in this server.",
-                        "cat": "utility",
-                        "popular": false
-            },
-            {
-                        "cmd": "/todo",
-                        "args": "",
-                        "desc": "Manage your personal to-do list",
-                        "cat": "utility",
-                        "popular": false
-            },
-            {
-                        "cmd": "/stats",
-                        "args": "",
-                        "desc": "Show bot statistics & health",
-                        "cat": "utility",
-                        "popular": false
-            },
-            {
-                        "cmd": "/help",
-                        "args": "",
-                        "desc": "Show help pages",
-                        "cat": "utility",
-                        "popular": false
-            },
-            {
-                        "cmd": "/nuke",
-                        "args": "",
-                        "desc": "Bulk-delete messages from this channel",
-                        "cat": "utility",
-                        "popular": false
-            },
-            {
-                        "cmd": "/avatar",
-                        "args": "",
-                        "desc": "Show a user's avatar in high resolution",
-                        "cat": "utility",
-                        "popular": false
-            },
-            {
-                        "cmd": "/ask",
-                        "args": "",
-                        "desc": "Ask Claude AI a question",
-                        "cat": "utility",
-                        "popular": false
-            },
-            {
-                        "cmd": "/\ud83d\udc51 Owner",
-                        "args": "",
-                        "desc": "Everything: roles, info, community, voice, support, staff tools.",
-                        "cat": "utility",
-                        "popular": false
-            },
-            {
-                        "cmd": "/test",
-                        "args": "",
-                        "desc": "Test if the bot is working.",
-                        "cat": "utility",
-                        "popular": false
-            },
-            {
-                        "cmd": "/invites",
-                        "args": "",
-                        "desc": "Check invite stats for yourself or another user",
-                        "cat": "utility",
-                        "popular": false
-            },
-            {
-                        "cmd": "/banner",
-                        "args": "",
-                        "desc": "Show a user's banner in high resolution",
-                        "cat": "utility",
-                        "popular": false
-            },
-            {
-                        "cmd": "/pong",
-                        "args": "",
-                        "desc": "Check the bot's latency and connection health.",
-                        "cat": "utility",
-                        "popular": false
-            },
-            {
-                        "cmd": "/userinfo",
-                        "args": "",
-                        "desc": "Show detailed info about a user",
-                        "cat": "utility",
-                        "popular": false
-            },
-            {
-                        "cmd": "/afk",
-                        "args": "",
-                        "desc": "Set your AFK status",
-                        "cat": "utility",
-                        "popular": false
-            },
-            {
-                        "cmd": "/generate_rules",
-                        "args": "",
-                        "desc": "Use AI to generate a custom rules embed for this server",
-                        "cat": "utility",
-                        "popular": false
-            },
-            {
-                        "cmd": "/define",
-                        "args": "",
-                        "desc": "Look up the definition of an English word",
-                        "cat": "utility",
-                        "popular": false
-            },
-            {
-                        "cmd": "/antiraid",
-                        "args": "",
-                        "desc": "Anti-raid tools and simulation",
-                        "cat": "utility",
-                        "popular": false
-            },
-            {
-                        "cmd": "/summarize",
-                        "args": "",
-                        "desc": "Summarize the last few messages",
-                        "cat": "utility",
-                        "popular": false
-            },
-            {
-                        "cmd": "/features",
-                        "args": "",
-                        "desc": "Show bot features pages",
-                        "cat": "utility",
-                        "popular": false
-            },
-            {
-                        "cmd": "/plugins",
-                        "args": "",
-                        "desc": "Enable or disable optional bot features.",
-                        "cat": "utility",
-                        "popular": false
-            },
-            {
-                        "cmd": "/wipe_server",
-                        "args": "",
-                        "desc": "\u26a0\ufe0f DANGER: Delete ALL channels and roles. Server owner only.",
-                        "cat": "utility",
-                        "popular": false
-            },
-            {
-                        "cmd": "/hug",
-                        "args": "",
-                        "desc": "Hug someone",
-                        "cat": "fun",
-                        "popular": false
-            },
-            {
-                        "cmd": "/coinflip",
-                        "args": "",
-                        "desc": "Flip a coin",
-                        "cat": "fun",
-                        "popular": false
-            },
-            {
-                        "cmd": "/random",
-                        "args": "",
-                        "desc": "Generate something random",
-                        "cat": "fun",
-                        "popular": false
-            },
-            {
-                        "cmd": "/roast",
-                        "args": "",
-                        "desc": "Roast someone with AI",
-                        "cat": "fun",
-                        "popular": false
-            },
-            {
-                        "cmd": "/topic",
-                        "args": "",
-                        "desc": "Get a random conversation topic",
-                        "cat": "fun",
-                        "popular": false
-            }
-];
+            // ── utility ──────────────────────────────────────────────────────────
+            { "cmd": "/afk", "args": "", "desc": "Set your AFK status", "cat": "utility", "popular": false, "prefix": false },
+            { "cmd": "/avatar", "args": "[user]", "desc": "Show a user's avatar", "cat": "utility", "popular": false, "prefix": false },
+            { "cmd": "/banner", "args": "[user]", "desc": "Show a user's banner", "cat": "utility", "popular": false, "prefix": false },
+            { "cmd": "/decide", "args": "<options>", "desc": "Pick between options (separate with |)", "cat": "utility", "popular": false, "prefix": false },
+            { "cmd": "/define", "args": "<word>", "desc": "Define an English word", "cat": "utility", "popular": false, "prefix": false },
+            { "cmd": "/features", "args": "", "desc": "Show bot features pages", "cat": "utility", "popular": false, "prefix": false },
+            { "cmd": "/help", "args": "", "desc": "Show help pages", "cat": "utility", "popular": true, "prefix": false },
+            { "cmd": "/invites", "args": "[user]", "desc": "Check invite stats for yourself or another user", "cat": "utility", "popular": false, "prefix": false },
+            { "cmd": "/plugins", "args": "", "desc": "Enable or disable optional bot features", "cat": "utility", "popular": false, "prefix": false },
+            { "cmd": "/remind", "args": "<time> <message>", "desc": "Set a reminder", "cat": "utility", "popular": false, "prefix": false },
+            { "cmd": "/serverinfo", "args": "", "desc": "Show info about this server", "cat": "utility", "popular": false, "prefix": false },
+            { "cmd": "/todo", "args": "", "desc": "Manage your simple to-do list", "cat": "utility", "popular": false, "prefix": false },
+            { "cmd": "/userinfo", "args": "[user]", "desc": "Show info about a user", "cat": "utility", "popular": false, "prefix": false },
+            { "cmd": "/vc", "args": "", "desc": "Manage your dynamic voice channel", "cat": "utility", "popular": false, "prefix": false },
+            { "cmd": ",afk", "args": "", "desc": "Set your AFK status", "cat": "utility", "popular": false, "prefix": true },
+            { "cmd": ",boosterrole", "args": "", "desc": "Configure custom roles for server boosters", "cat": "utility", "popular": false, "prefix": true },
+            // ── moderation ───────────────────────────────────────────────────────
+            { "cmd": "/warn", "args": "<user> <reason>", "desc": "Warn a user — tracks warn history", "cat": "mod", "popular": true, "prefix": false },
+            { "cmd": "/clearwarns", "args": "<user>", "desc": "Clear all warnings for a user", "cat": "mod", "popular": false, "prefix": false },
+            { "cmd": "/kick", "args": "<user> [reason]", "desc": "Kick a user from the server", "cat": "mod", "popular": false, "prefix": false },
+            { "cmd": "/ban", "args": "<user> [reason]", "desc": "Ban a user from the server", "cat": "mod", "popular": true, "prefix": false },
+            { "cmd": "/unban", "args": "<user>", "desc": "Unban a previously banned user", "cat": "mod", "popular": false, "prefix": false },
+            { "cmd": "/mute", "args": "<user> <time> [reason]", "desc": "Timeout a user for a set duration", "cat": "mod", "popular": false, "prefix": false },
+            { "cmd": "/unmute", "args": "<user>", "desc": "Remove a timeout from a user", "cat": "mod", "popular": false, "prefix": false },
+            { "cmd": "/nuke", "args": "[amount]", "desc": "Bulk-delete messages from this channel", "cat": "mod", "popular": true, "prefix": false },
+            { "cmd": "/lock", "args": "[channel]", "desc": "Lock a channel so users can't send messages", "cat": "mod", "popular": false, "prefix": false },
+            { "cmd": "/unlock", "args": "[channel]", "desc": "Unlock a previously locked channel", "cat": "mod", "popular": false, "prefix": false },
+            { "cmd": "/nicklock", "args": "<user> <nick>", "desc": "Force a nickname and lock it", "cat": "mod", "popular": false, "prefix": false },
+            { "cmd": "/modhelp", "args": "", "desc": "Show moderation help pages", "cat": "mod", "popular": false, "prefix": false },
+            { "cmd": "/wipe_server", "args": "", "desc": "⚠️ DANGER: Delete ALL channels and roles. Server owner only", "cat": "mod", "popular": false, "prefix": false },
+            { "cmd": ",audit", "args": "", "desc": "View moderation audit logs", "cat": "mod", "popular": false, "prefix": true },
+            { "cmd": ",ban", "args": "<user> [reason]", "desc": "Ban a user from the server", "cat": "mod", "popular": false, "prefix": true },
+            { "cmd": ",clear", "args": "[amount]", "desc": "Bulk delete messages in a channel", "cat": "mod", "popular": false, "prefix": true },
+            { "cmd": ",clearwarns", "args": "<user>", "desc": "Clear all warnings for a user", "cat": "mod", "popular": false, "prefix": true },
+            { "cmd": ",damage", "args": "<user>", "desc": "Apply a custom moderation damage action to a user", "cat": "mod", "popular": false, "prefix": true },
+            { "cmd": ",heal", "args": "<user>", "desc": "Remove damage / reset state for a user", "cat": "mod", "popular": false, "prefix": true },
+            { "cmd": ",kick", "args": "<user> [reason]", "desc": "Kick a user from the server", "cat": "mod", "popular": false, "prefix": true },
+            { "cmd": ",lock", "args": "", "desc": "Lock the current channel", "cat": "mod", "popular": false, "prefix": true },
+            { "cmd": ",nick", "args": "<user> <nick>", "desc": "Change a user's nickname", "cat": "mod", "popular": false, "prefix": true },
+            { "cmd": ",nicklock", "args": "<user> <nick>", "desc": "Lock a user's nickname so they cannot change it", "cat": "mod", "popular": false, "prefix": true },
+            { "cmd": ",nickunlock", "args": "<user>", "desc": "Unlock a user's nickname", "cat": "mod", "popular": false, "prefix": true },
+            { "cmd": ",slowmode", "args": "<seconds>", "desc": "Set the slowmode for a channel", "cat": "mod", "popular": false, "prefix": true },
+            { "cmd": ",unlock", "args": "", "desc": "Unlock the current channel", "cat": "mod", "popular": false, "prefix": true },
+            { "cmd": ",unraid", "args": "", "desc": "Disable raid mode protections", "cat": "mod", "popular": false, "prefix": true },
+            { "cmd": ",warn", "args": "<user> <reason>", "desc": "Issue a formal warning to a user", "cat": "mod", "popular": false, "prefix": true },
+            { "cmd": ",warnings", "args": "<user>", "desc": "View a user's current warnings", "cat": "mod", "popular": false, "prefix": true },
+            { "cmd": ",warnthreshold", "args": "<number>", "desc": "Set the threshold for auto-actions on warnings", "cat": "mod", "popular": false, "prefix": true },
+            // ── AI ───────────────────────────────────────────────────────────────
+            { "cmd": "/ask", "args": "<prompt>", "desc": "Ask Claude AI a question — remembers conversation context", "cat": "ai", "popular": true, "prefix": false },
+            { "cmd": "/summarize", "args": "", "desc": "Summarize the last few messages using Claude", "cat": "ai", "popular": true, "prefix": false },
+            { "cmd": "/translate", "args": "<text>", "desc": "Translate text — auto-detects source language", "cat": "ai", "popular": false, "prefix": false },
+            { "cmd": "/generate_rules", "args": "", "desc": "Use AI to generate a custom rules embed for this server", "cat": "ai", "popular": false, "prefix": false },
+            { "cmd": "/imagine", "args": "<prompt>", "desc": "Generate an image using Pollinations.ai (Flux model)", "cat": "ai", "popular": true, "prefix": false },
+            { "cmd": "/clear_memory", "args": "", "desc": "Clear Claude's conversation history for you in this server", "cat": "ai", "popular": false, "prefix": false },
+            // ── setup & config ───────────────────────────────────────────────────
+            { "cmd": "/server_setup", "args": "[preset]", "desc": "Scaffold channels, roles, and config from a preset", "cat": "setup", "popular": true, "prefix": false },
+            { "cmd": "/reset_setup", "args": "", "desc": "Delete everything server_setup created and optionally redo it", "cat": "setup", "popular": false, "prefix": false },
+            { "cmd": ",alias", "args": "", "desc": "Manage custom command aliases (add/remove/list)", "cat": "setup", "popular": false, "prefix": true },
+            { "cmd": ",appealschannel", "args": "<channel>", "desc": "Set the channel for ban appeals", "cat": "setup", "popular": false, "prefix": true },
+            { "cmd": ",automod", "args": "", "desc": "Configure built-in AutoMod rules", "cat": "setup", "popular": false, "prefix": true },
+            { "cmd": ",automod_whitelist", "args": "", "desc": "Manage the AutoMod word whitelist", "cat": "setup", "popular": false, "prefix": true },
+            { "cmd": ",autoresponder", "args": "", "desc": "Configure custom auto-responses", "cat": "setup", "popular": false, "prefix": true },
+            { "cmd": ",autoresponder_filter_off", "args": "", "desc": "Turn off filters for auto-responders", "cat": "setup", "popular": false, "prefix": true },
+            { "cmd": ",autoresponder_filter_on", "args": "", "desc": "Turn on filters for auto-responders", "cat": "setup", "popular": false, "prefix": true },
+            { "cmd": ",case_channel", "args": "<channel>", "desc": "Set the channel for moderation case logs", "cat": "setup", "popular": false, "prefix": true },
+            { "cmd": ",disable", "args": "<command>", "desc": "Globally disable a prefix command in the server", "cat": "setup", "popular": false, "prefix": true },
+            { "cmd": ",enable", "args": "<command>", "desc": "Re-enable a previously disabled command", "cat": "setup", "popular": false, "prefix": true },
+            { "cmd": ",prefix_delete_respond_cooldown", "args": "<time>", "desc": "Set cooldown for auto-deletion of bot responses", "cat": "setup", "popular": false, "prefix": true },
+            // ── tickets ──────────────────────────────────────────────────────────
+            { "cmd": "/appeal", "args": "", "desc": "Submit a ban appeal to a server", "cat": "tickets", "popular": false, "prefix": false },
+            { "cmd": ",ticket", "args": "", "desc": "Main command for ticket system configuration", "cat": "tickets", "popular": false, "prefix": true },
+            { "cmd": ",ticket_channel", "args": "<channel>", "desc": "Set the parent category or channel for tickets", "cat": "tickets", "popular": false, "prefix": true },
+            { "cmd": ",ticket_close", "args": "", "desc": "Close an active ticket", "cat": "tickets", "popular": false, "prefix": true },
+            { "cmd": ",ticket_edit", "args": "", "desc": "Edit ticket system settings", "cat": "tickets", "popular": false, "prefix": true },
+            { "cmd": ",ticket_ping", "args": "<role>", "desc": "Set the role to be pinged when a ticket is opened", "cat": "tickets", "popular": false, "prefix": true },
+        ];
         /*COMMANDS-DATA-END*/
 
         const FEATURES = [
@@ -888,9 +1155,9 @@
             };
 
             return (
-                <svg ref={ref} onClick={handleClick} viewBox="0 0 200 200" width={size} height={size} style={{ 
-                    display: 'block', 
-                    overflow: 'visible', 
+                <svg ref={ref} onClick={handleClick} viewBox="0 0 200 200" width={size} height={size} style={{
+                    display: 'block',
+                    overflow: 'visible',
                     cursor: 'pointer',
                     transform: bouncing ? 'scale(1.08) translateY(-12px)' : 'scale(1) translateY(0)',
                     transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)'
@@ -969,13 +1236,10 @@
 
         // ==== src/nav.jsx ====
         function Nav({ theme, setTheme }) {
+            const [menuOpen, setMenuOpen] = React.useState(false);
             const navStyle = {
-                position: 'sticky',
-                top: 0,
-                zIndex: 50,
-                padding: '18px 40px',
-                display: 'flex',
-                alignItems: 'center',
+                position: 'sticky', top: 0, zIndex: 50,
+                padding: '18px 40px', display: 'flex', alignItems: 'center',
                 justifyContent: 'space-between',
                 backdropFilter: 'blur(14px) saturate(140%)',
                 WebkitBackdropFilter: 'blur(14px) saturate(140%)',
@@ -983,53 +1247,96 @@
                 borderBottom: '1px solid var(--line-soft)',
             };
             const linkStyle = {
-                color: 'var(--fg-dim)',
-                fontSize: 14,
-                fontWeight: 500,
-                padding: '8px 12px',
-                borderRadius: 8,
+                color: 'var(--fg-dim)', fontSize: 14, fontWeight: 500,
+                padding: '8px 12px', borderRadius: 8,
                 transition: 'color 0.2s, background 0.2s',
             };
+            const closeMenu = () => setMenuOpen(false);
             return (
-                <nav style={navStyle}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <MascotMini size={28} />
-                        <span style={{ fontSize: 17, fontWeight: 600, letterSpacing: '-0.01em' }}>kozzyx</span>
+                <>
+                    <nav style={navStyle}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                            <MascotMini size={28} />
+                            <span style={{ fontSize: 17, fontWeight: 600, letterSpacing: '-0.01em' }}>kozzyx</span>
+                            <span className="status-badge" style={{ marginLeft: 4 }}>
+                                <span className="status-dot-live" />
+                                online
+                            </span>
+                        </div>
+                        <div className="nav-links" style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                            <a href="#features" style={linkStyle} onMouseEnter={(e) => e.target.style.color = 'var(--fg)'} onMouseLeave={(e) => e.target.style.color = 'var(--fg-dim)'}>Features</a>
+                            <a href="#commands" style={linkStyle} onMouseEnter={(e) => e.target.style.color = 'var(--fg)'} onMouseLeave={(e) => e.target.style.color = 'var(--fg-dim)'}>Commands</a>
+                            <a href="./dashboard.html" style={linkStyle} onMouseEnter={(e) => e.target.style.color = 'var(--fg)'} onMouseLeave={(e) => e.target.style.color = 'var(--fg-dim)'}>Dashboard</a>
+                            <a href="#changelog" style={linkStyle} onMouseEnter={(e) => e.target.style.color = 'var(--fg)'} onMouseLeave={(e) => e.target.style.color = 'var(--fg-dim)'}>Changelog</a>
+                            <a href="#faq" style={linkStyle} onMouseEnter={(e) => e.target.style.color = 'var(--fg)'} onMouseLeave={(e) => e.target.style.color = 'var(--fg-dim)'}>FAQ</a>
+                            <a href="https://github.com/KozzyXofficial/my-discord-bot" style={linkStyle} target="_blank" rel="noopener" onMouseEnter={(e) => e.target.style.color = 'var(--fg)'} onMouseLeave={(e) => e.target.style.color = 'var(--fg-dim)'}>GitHub</a>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} title="Toggle theme"
+                                style={{ width: 34, height: 34, borderRadius: 8, display: 'grid', placeItems: 'center', color: 'var(--fg-dim)', border: '1px solid var(--line)' }}>
+                                {theme === 'dark'
+                                    ? <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" /></svg>
+                                    : <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" /></svg>
+                                }
+                            </button>
+                            <a href={window.KOZZ.INVITE_URL} target="_blank" rel="noopener" className="nav-cta-btn" style={{
+                                padding: '9px 16px', background: 'var(--accent)', color: 'var(--accent-fg)',
+                                borderRadius: 8, fontSize: 14, fontWeight: 600,
+                                transition: 'transform 0.1s, filter 0.2s', display: 'inline-block',
+                            }}
+                                onMouseEnter={(e) => e.currentTarget.style.filter = 'brightness(1.08)'}
+                                onMouseLeave={(e) => e.currentTarget.style.filter = 'brightness(1)'}
+                            >Add to Discord →</a>
+                            {/* Hamburger — mobile only */}
+                            <button onClick={() => setMenuOpen(o => !o)} aria-label="Menu" className="mobile-hamburger"
+                                style={{ width: 34, height: 34, borderRadius: 8, display: 'none', placeItems: 'center', color: 'var(--fg-dim)', border: '1px solid var(--line)' }}>
+                                {menuOpen
+                                    ? <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12" /></svg>
+                                    : <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
+                                }
+                            </button>
+                        </div>
+                    </nav>
+                    {/* Mobile drawer */}
+                    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 49, pointerEvents: menuOpen ? 'all' : 'none' }}>
+                        <div onClick={closeMenu} style={{
+                            position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.55)',
+                            opacity: menuOpen ? 1 : 0, transition: 'opacity 0.25s',
+                            backdropFilter: 'blur(4px)',
+                        }} />
+                        <div style={{
+                            position: 'absolute', top: 0, right: 0, width: 280, height: '100%',
+                            background: 'var(--bg-elev)', borderLeft: '1px solid var(--line)',
+                            transform: menuOpen ? 'translateX(0)' : 'translateX(100%)',
+                            transition: 'transform 0.3s cubic-bezier(0.22, 1, 0.36, 1)',
+                            padding: '80px 20px 32px', display: 'flex', flexDirection: 'column', gap: 4,
+                        }}>
+                            {[
+                                { href: '#features', label: 'Features' },
+                                { href: '#commands', label: 'Commands' },
+                                { href: './dashboard.html', label: 'Dashboard' },
+                                { href: '#changelog', label: 'Changelog' },
+                                { href: '#faq', label: 'FAQ' },
+                                { href: 'https://github.com/KozzyXofficial/my-discord-bot', label: 'GitHub', ext: true },
+                            ].map((l) => (
+                                <a key={l.href} href={l.href} target={l.ext ? '_blank' : undefined} rel={l.ext ? 'noopener' : undefined} onClick={closeMenu}
+                                    style={{ padding: '13px 14px', fontSize: 16, fontWeight: 500, color: 'var(--fg-dim)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'background 0.15s, color 0.15s' }}
+                                    onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-elev-2)'; e.currentTarget.style.color = 'var(--fg)'; }}
+                                    onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--fg-dim)'; }}
+                                >
+                                    {l.label}
+                                    {l.ext && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>}
+                                </a>
+                            ))}
+                            <div style={{ marginTop: 'auto', paddingTop: 24, borderTop: '1px solid var(--line-soft)' }}>
+                                <a href={window.KOZZ.INVITE_URL} target="_blank" rel="noopener" onClick={closeMenu}
+                                    style={{ display: 'block', textAlign: 'center', padding: '14px', background: 'var(--accent)', color: 'var(--accent-fg)', borderRadius: 10, fontSize: 15, fontWeight: 600 }}>
+                                    Add to Discord →
+                                </a>
+                            </div>
+                        </div>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <a href="#features" style={linkStyle} onMouseEnter={(e) => e.target.style.color = 'var(--fg)'} onMouseLeave={(e) => e.target.style.color = 'var(--fg-dim)'}>Features</a>
-                        <a href="#commands" style={linkStyle} onMouseEnter={(e) => e.target.style.color = 'var(--fg)'} onMouseLeave={(e) => e.target.style.color = 'var(--fg-dim)'}>Commands</a>
-                        <a href="https://github.com" style={linkStyle} target="_blank" rel="noopener" onMouseEnter={(e) => e.target.style.color = 'var(--fg)'} onMouseLeave={(e) => e.target.style.color = 'var(--fg-dim)'}>GitHub</a>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <button
-                            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                            title="Toggle theme"
-                            style={{ width: 34, height: 34, borderRadius: 8, display: 'grid', placeItems: 'center', color: 'var(--fg-dim)', border: '1px solid var(--line)' }}
-                        >
-                            {theme === 'dark' ? (
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" /></svg>
-                            ) : (
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" /></svg>
-                            )}
-                        </button>
-                        <a href={window.KOZZ.INVITE_URL} target="_blank" rel="noopener" style={{
-                            padding: '9px 16px',
-                            background: 'var(--accent)',
-                            color: 'var(--accent-fg)',
-                            borderRadius: 8,
-                            fontSize: 14,
-                            fontWeight: 600,
-                            transition: 'transform 0.1s, filter 0.2s',
-                            display: 'inline-block',
-                        }}
-                            onMouseEnter={(e) => e.currentTarget.style.filter = 'brightness(1.08)'}
-                            onMouseLeave={(e) => e.currentTarget.style.filter = 'brightness(1)'}
-                        >
-                            Add to Discord →
-                        </a>
-                    </div>
-                </nav>
+                </>
             );
         }
 
@@ -1040,7 +1347,7 @@
         function ScrambleText({ text, delay = 0 }) {
             const [out, setOut] = React.useState('');
             const chars = '!<>-_\\\\/[]{}—=+*^?#_';
-            
+
             React.useEffect(() => {
                 let start = null;
                 const duration = 1200;
@@ -1054,12 +1361,12 @@
                         return;
                     }
                     const progress = Math.max(0, Math.min(1, (elapsed - delay) / duration));
-                    
+
                     if (progress >= 1) {
                         setOut(text);
                         return;
                     }
-                    
+
                     const revealedCount = Math.floor(progress * text.length);
                     let scrambled = '';
                     for (let i = 0; i < text.length; i++) {
@@ -1113,7 +1420,7 @@
             }, [chatStep]);
 
             return (
-                <section style={{
+                <section className="hero-grid" style={{
                     padding: '80px 40px 100px',
                     maxWidth: 1320,
                     margin: '0 auto',
@@ -1379,9 +1686,9 @@
         function Stats() {
             // EDIT ME: Replace with your real numbers. Keep it honest — small real numbers beat fake big ones.
             const stats = [
-                { n: 1, label: 'servers', note: "growing" },
-                { n: 50, label: 'commands', note: 'slash + prefix combined' },
-                { n: 2, label: 'categories', note: 'mod + AI + utility + more' },
+                { n: 10, label: 'servers', note: "growing" },
+                { n: 70, label: 'commands', note: 'slash + prefix combined' },
+                { n: 5, label: 'categories', note: 'mod · AI · utility · setup · tickets' },
                 { n: 24, label: 'hours uptime / day', note: 'on a GCP VM' },
             ];
 
@@ -1403,7 +1710,7 @@
                         <span className="mono" style={{ fontSize: 11, color: 'var(--fg-faint)' }}>updated live · 30s cache</span>
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 0, borderTop: '1px solid var(--line)' }}>
+                    <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 0, borderTop: '1px solid var(--line)' }} data-stagger>
                         {stats.map((s, i) => (
                             <StatCell key={i} {...s} isLast={i === stats.length - 1} />
                         ))}
@@ -1441,6 +1748,7 @@
             return (
                 <div
                     ref={ref}
+                    data-statcell
                     onMouseEnter={() => setHovered(true)}
                     onMouseLeave={() => setHovered(false)}
                     style={{
@@ -1506,8 +1814,8 @@
                     </div>
 
                     {/* Content */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.15fr', gap: 80, alignItems: 'center' }}>
-                        <div key={feature.id} style={{ animation: 'fadeUp 0.4s ease' }}>
+                    <div className="features-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1.15fr', gap: 80, alignItems: 'center' }}>
+                        <div key={feature.id} className="tab-content-enter" style={{ animation: 'fadeUp 0.4s ease' }}>
                             <h3 style={{ fontSize: 36, margin: 0, fontWeight: 500, letterSpacing: '-0.02em', lineHeight: 1.1 }}>{feature.title}</h3>
                             <p style={{ fontSize: 17, color: 'var(--fg-dim)', lineHeight: 1.5, marginTop: 20 }}>{feature.blurb}</p>
                             <ul style={{ listStyle: 'none', padding: 0, marginTop: 28 }}>
@@ -1535,6 +1843,7 @@
         }
 
         function FeatureVisual({ kind }) {
+            const baseTiltProps = { 'data-tiltcard': '1' };
             const base = {
                 background: 'var(--bg-elev)',
                 border: '1px solid var(--line)',
@@ -1555,7 +1864,7 @@
                     { on: true, name: 'New-account flood', pat: 'age < 24h + 5 joins/min', hits: 9, color: 'var(--danger)' },
                 ];
                 return (
-                    <div style={base}>
+                    <div style={base} {...baseTiltProps}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                             <div className="mono" style={{ fontSize: 11, color: 'var(--fg-faint)', letterSpacing: '0.05em' }}>AUTOMOD RULES</div>
                             <div className="mono" style={{ fontSize: 11, color: 'var(--ok)' }}>● 4 active</div>
@@ -1589,7 +1898,7 @@
                                     <div className="mono" style={{ fontSize: 11, color: 'var(--fg-faint)', marginTop: 2 }}>{r.pat}</div>
                                 </div>
                                 <div className="mono" style={{ fontSize: 11, color: r.color, minWidth: 50, textAlign: 'right' }}>
-                                    {r.hits} hits · 7d
+                                    <AnimatedNumber value={r.hits} /> hits · 7d
                                 </div>
                             </div>
                         ))}
@@ -1615,7 +1924,7 @@
                     { id: 'C-0408', action: 'NOTE', user: 'alex', mod: 'mira', reason: 'repeat offender watch', time: '3h ago', color: 'var(--fg-dim)' },
                 ];
                 return (
-                    <div style={base}>
+                    <div style={base} {...baseTiltProps}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
                             <div className="mono" style={{ fontSize: 11, color: 'var(--fg-faint)', letterSpacing: '0.05em' }}>CASE TIMELINE</div>
                             <div style={{ display: 'flex', gap: 6 }}>
@@ -1655,7 +1964,7 @@
 
             if (kind === 'dashboard') {
                 return (
-                    <div style={base}>
+                    <div style={base} {...baseTiltProps}>
                         <div style={{ display: 'flex', gap: 12, marginBottom: 18 }}>
                             <span style={{ width: 10, height: 10, borderRadius: 5, background: '#ff5f57' }} />
                             <span style={{ width: 10, height: 10, borderRadius: 5, background: '#febc2e' }} />
@@ -1764,6 +2073,7 @@
         function Commands() {
             const [q, setQ] = React.useState('');
             const [cat, setCat] = React.useState('all');
+            const [cmdType, setCmdType] = React.useState('all'); // 'all' | 'slash' | 'prefix'
             const [copied, setCopied] = React.useState(null);
 
             const cats = [
@@ -1773,13 +2083,13 @@
                 { id: 'utility', label: 'Utility' },
                 { id: 'setup', label: 'Setup & Config' },
                 { id: 'tickets', label: 'Tickets' },
-                { id: 'fun', label: 'Fun' },
             ];
 
-            const filtered = window.KOZZ.COMMANDS.filter(c => {
-                const matchQ = !q || c.cmd.toLowerCase().includes(q.toLowerCase()) || c.desc.toLowerCase().includes(q.toLowerCase());
-                const matchCat = cat === 'all' || c.cat === cat;
-                return matchQ && matchCat;
+            const filtered = window.KOZZ.COMMANDS.filter(cmd => {
+                const matchQ = !q || cmd.cmd.toLowerCase().includes(q.toLowerCase()) || cmd.desc.toLowerCase().includes(q.toLowerCase());
+                const matchCat = cat === 'all' || cmd.cat === cat;
+                const matchType = cmdType === 'all' || (cmdType === 'prefix' ? cmd.prefix : !cmd.prefix);
+                return matchQ && matchCat && matchType;
             });
 
             const copy = (cmd) => {
@@ -1799,7 +2109,7 @@
                             <div className="mono" style={{ fontSize: 12, color: 'var(--fg-faint)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>§ 03 — commands</div>
                             <h2 style={{ fontSize: 'clamp(36px, 4vw, 56px)', margin: '12px 0 0', fontWeight: 500, letterSpacing: '-0.03em', lineHeight: 1 }}>
                                 {window.KOZZ.COMMANDS.length} commands.<br />
-                                <span className="serif" style={{ fontStyle: 'italic', color: 'var(--fg-dim)', fontWeight: 400 }}>none hidden behind a paywall.</span>
+                                <span className="serif" style={{ fontStyle: 'italic', color: 'var(--fg-dim)', fontWeight: 400 }}>slash + prefix, none paywalled.</span>
                             </h2>
                         </div>
 
@@ -1833,24 +2143,47 @@
                         </div>
                     </div>
 
-                    {/* Category pills */}
-                    <div style={{ display: 'flex', gap: 6, marginBottom: 24, flexWrap: 'wrap' }}>
-                        {cats.map((c) => (
-                            <button key={c.id}
-                                onClick={() => setCat(c.id)}
+                    {/* Type toggle + Category pills */}
+                    <div style={{ display: 'flex', gap: 10, marginBottom: 18, alignItems: 'center', flexWrap: 'wrap' }}>
+                        {/* Slash / Prefix toggle */}
+                        <div style={{ display: 'flex', background: 'var(--bg-elev)', border: '1px solid var(--line)', borderRadius: 8, padding: 3, gap: 2, flexShrink: 0 }}>
+                            {[
+                                { id: 'all', label: 'All' },
+                                { id: 'slash', label: '/ Slash' },
+                                { id: 'prefix', label: ', Prefix' },
+                            ].map((t) => (
+                                <button key={t.id} onClick={() => setCmdType(t.id)} className="mono" style={{
+                                    padding: '6px 12px', fontSize: 12, borderRadius: 5,
+                                    background: cmdType === t.id ? 'var(--bg-elev-2)' : 'transparent',
+                                    color: cmdType === t.id ? 'var(--fg)' : 'var(--fg-faint)',
+                                    fontWeight: cmdType === t.id ? 600 : 400,
+                                    border: '1px solid ' + (cmdType === t.id ? 'var(--line)' : 'transparent'),
+                                    transition: 'all 0.15s',
+                                }}>{t.label}</button>
+                            ))}
+                        </div>
+
+                        <div style={{ width: 1, height: 24, background: 'var(--line)', flexShrink: 0 }} />
+
+                        {/* Category pills */}
+                        {cats.map((cat_item) => (
+                            <button key={cat_item.id}
+                                onClick={() => setCat(cat_item.id)}
                                 style={{
                                     padding: '8px 14px',
                                     fontSize: 13,
                                     borderRadius: 100,
-                                    border: '1px solid ' + (cat === c.id ? 'var(--accent)' : 'var(--line)'),
-                                    background: cat === c.id ? 'var(--accent-soft)' : 'transparent',
-                                    color: cat === c.id ? 'var(--accent)' : 'var(--fg-dim)',
-                                    fontWeight: cat === c.id ? 600 : 400,
+                                    border: '1px solid ' + (cat === cat_item.id ? 'var(--accent)' : 'var(--line)'),
+                                    background: cat === cat_item.id ? 'var(--accent-soft)' : 'transparent',
+                                    color: cat === cat_item.id ? 'var(--accent)' : 'var(--fg-dim)',
+                                    fontWeight: cat === cat_item.id ? 600 : 400,
                                     transition: 'all 0.15s',
                                 }}>
-                                {c.label}
+                                {cat_item.label}
                                 <span className="mono" style={{ marginLeft: 6, fontSize: 11, opacity: 0.7 }}>
-                                    {c.id === 'all' ? window.KOZZ.COMMANDS.length : window.KOZZ.COMMANDS.filter(x => x.cat === c.id).length}
+                                    {cat_item.id === 'all'
+                                        ? window.KOZZ.COMMANDS.filter(x => cmdType === 'all' || (cmdType === 'prefix' ? x.prefix : !x.prefix)).length
+                                        : window.KOZZ.COMMANDS.filter(x => x.cat === cat_item.id && (cmdType === 'all' || (cmdType === 'prefix' ? x.prefix : !x.prefix))).length}
                                 </span>
                             </button>
                         ))}
@@ -1884,9 +2217,25 @@
                                     onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-elev)'}
                                     onMouseLeave={(e) => e.currentTarget.style.background = 'var(--bg)'}
                                 >
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                        <span className="mono" style={{ fontSize: 14, fontWeight: 600, color: 'var(--accent)' }}>{c.cmd}</span>
-                                        <span className="mono" style={{ fontSize: 12, color: 'var(--fg-faint)' }}>{c.args}</span>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                        <span className="mono" style={{ fontSize: 14, fontWeight: 600, color: c.prefix ? 'var(--warn)' : 'var(--accent)' }}>{c.cmd}</span>
+                                        <span className="mono" style={{ fontSize: 11, color: 'var(--fg-faint)' }}>{c.args}</span>
+                                        {c.prefix ? (
+                                            <span className="mono" style={{
+                                                fontSize: 9, padding: '2px 6px',
+                                                background: 'color-mix(in oklab, var(--warn) 12%, transparent)',
+                                                color: 'var(--warn)',
+                                                borderRadius: 3, letterSpacing: '0.05em', fontWeight: 600,
+                                                border: '1px solid color-mix(in oklab, var(--warn) 25%, transparent)',
+                                            }}>PREFIX</span>
+                                        ) : (
+                                            <span className="mono" style={{
+                                                fontSize: 9, padding: '2px 6px',
+                                                background: 'var(--accent-soft)',
+                                                color: 'var(--accent)',
+                                                borderRadius: 3, letterSpacing: '0.05em', fontWeight: 600,
+                                            }}>SLASH</span>
+                                        )}
                                         {c.popular && (
                                             <span className="mono" style={{
                                                 fontSize: 9,
@@ -1896,7 +2245,7 @@
                                                 borderRadius: 3,
                                                 letterSpacing: '0.05em',
                                                 fontWeight: 600,
-                                            }}>POPULAR</span>
+                                            }}>★</span>
                                         )}
                                         <span style={{
                                             marginLeft: 'auto',
@@ -1981,9 +2330,9 @@
                         </div>
 
                         {/* App body */}
-                        <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', minHeight: 520 }}>
+                        <div className="dashboard-body" style={{ display: 'grid', gridTemplateColumns: '220px 1fr', minHeight: 520 }}>
                             {/* Sidebar */}
-                            <div style={{ padding: 16, borderRight: '1px solid var(--line)', background: 'var(--bg-elev-2)' }}>
+                            <div className="dashboard-sidebar" style={{ padding: 16, borderRight: '1px solid var(--line)', background: 'var(--bg-elev-2)' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px 14px', borderBottom: '1px solid var(--line-soft)' }}>
                                     <div style={{ width: 24, height: 24, borderRadius: 6, background: 'var(--accent)', display: 'grid', placeItems: 'center', color: 'var(--accent-fg)', fontSize: 12, fontWeight: 700 }}>B</div>
                                     <div>
@@ -2032,7 +2381,7 @@
                                 </div>
 
                                 {/* KPI row */}
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 20 }}>
+                                <div className="kpi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 20 }}>
                                     {[
                                         { k: 'Actions today', v: '14', d: '-32% vs avg', ok: true },
                                         { k: 'Queue', v: '3', d: '1 appeal, 2 reports' },
@@ -2092,7 +2441,7 @@
                         opacity: 0.5,
                     }} />
 
-                    <div style={{
+                    <div className="footer-grid" style={{
                         maxWidth: 1320, margin: '0 auto',
                         display: 'grid', gridTemplateColumns: '1.4fr 1fr 1fr 1fr', gap: 56,
                     }}>
@@ -2135,6 +2484,12 @@
                                 <a href="#commands" style={{ fontSize: 13, color: 'var(--fg-dim)', transition: 'color 0.15s' }}
                                     onMouseEnter={(e) => e.currentTarget.style.color = 'var(--fg)'}
                                     onMouseLeave={(e) => e.currentTarget.style.color = 'var(--fg-dim)'}>Commands</a>
+                                <a href="#changelog" style={{ fontSize: 13, color: 'var(--fg-dim)', transition: 'color 0.15s' }}
+                                    onMouseEnter={(e) => e.currentTarget.style.color = 'var(--fg)'}
+                                    onMouseLeave={(e) => e.currentTarget.style.color = 'var(--fg-dim)'}>Changelog</a>
+                                <a href="#faq" style={{ fontSize: 13, color: 'var(--fg-dim)', transition: 'color 0.15s' }}
+                                    onMouseEnter={(e) => e.currentTarget.style.color = 'var(--fg)'}
+                                    onMouseLeave={(e) => e.currentTarget.style.color = 'var(--fg-dim)'}>FAQ</a>
                                 <a href={window.KOZZ.INVITE_URL} target="_blank" rel="noopener" style={{ fontSize: 13, color: 'var(--fg-dim)', transition: 'color 0.15s' }}
                                     onMouseEnter={(e) => e.currentTarget.style.color = 'var(--fg)'}
                                     onMouseLeave={(e) => e.currentTarget.style.color = 'var(--fg-dim)'}>Add to Discord</a>
@@ -2252,6 +2607,380 @@
         Object.assign(window, { TweakPanel });
 
 
+        // ==== src/marquee.jsx ====
+        function MarqueeDivider() {
+            return (
+                <div className="marquee-divider" style={{ transform: 'rotate(-2deg) scale(1.05)' }}>
+                    <div className="marquee-inner">
+                        <span className="marquee-item">/// 50+ COMMANDS</span>
+                        <span className="marquee-item">/// CLAUDE AI</span>
+                        <span className="marquee-item">/// IMPENETRABLE AUTOMOD</span>
+                        <span className="marquee-item">/// INSTANT TICKETS</span>
+                        <span className="marquee-item">/// DEEP ANALYTICS</span>
+                        <span className="marquee-item">/// 50+ COMMANDS</span>
+                        <span className="marquee-item">/// CLAUDE AI</span>
+                        <span className="marquee-item">/// IMPENETRABLE AUTOMOD</span>
+                        <span className="marquee-item">/// INSTANT TICKETS</span>
+                    </div>
+                </div>
+            );
+        }
+
+        // ==== src/dynamicisland.jsx ====
+        function DynamicIsland() {
+            const [visible, setVisible] = React.useState(false);
+            React.useEffect(() => {
+                const onScroll = () => setVisible(window.scrollY > 500);
+                window.addEventListener('scroll', onScroll, { passive: true });
+                return () => window.removeEventListener('scroll', onScroll);
+            }, []);
+            return (
+                <div className={`dynamic-island ${visible ? 'visible' : ''}`}>
+                    <a href="#features" className="island-link">⌘ Features</a>
+                    <a href="#commands" className="island-link">⌘ Commands</a>
+                    <a href={window.KOZZ.INVITE_URL} target="_blank" className="island-link btn-glitch" style={{ background: 'var(--accent)', color: 'var(--accent-fg)' }}>Invite</a>
+                </div>
+            );
+        }
+
+        // ==== src/cursorblob.jsx ====
+        function CursorBlob() {
+            const ref = React.useRef(null);
+            React.useEffect(() => {
+                const onMove = (e) => {
+                    if (ref.current) {
+                        ref.current.style.transform = `translate(calc(${e.clientX}px - 50%), calc(${e.clientY}px - 50%))`;
+                    }
+                };
+                const onDown = () => ref.current?.classList.add('active');
+                const onUp = () => ref.current?.classList.remove('active');
+                window.addEventListener('mousemove', onMove, { passive: true });
+                window.addEventListener('mousedown', onDown);
+                window.addEventListener('mouseup', onUp);
+                return () => {
+                    window.removeEventListener('mousemove', onMove);
+                    window.removeEventListener('mousedown', onDown);
+                    window.removeEventListener('mouseup', onUp);
+                }
+            }, []);
+            return <div id="cursor-blob" ref={ref}></div>;
+        }
+
+        // ==== src/animatednumber.jsx ====
+        function AnimatedNumber({ value }) {
+            const [display, setDisplay] = React.useState(0);
+            const ref = React.useRef(null);
+
+            React.useEffect(() => {
+                const observer = new IntersectionObserver(([entry]) => {
+                    if (entry.isIntersecting) {
+                        let current = 0;
+                        const duration = 1200;
+                        const startTime = performance.now();
+
+                        const animate = (now) => {
+                            const progress = Math.min((now - startTime) / duration, 1);
+                            // ease out expo
+                            const ease = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+                            setDisplay(Math.floor(ease * value));
+                            if (progress < 1) requestAnimationFrame(animate);
+                        };
+                        requestAnimationFrame(animate);
+                        observer.disconnect();
+                    }
+                }, { threshold: 0.1 });
+                if (ref.current) observer.observe(ref.current);
+                return () => observer.disconnect();
+            }, [value]);
+
+            return <span ref={ref}>{display}</span>;
+        }
+
+
+        // ==== src/howitworks.jsx ====
+        function HowItWorks() {
+            const steps = [
+                {
+                    num: '01',
+                    icon: (
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M19.54 0c1.356 0 2.46 1.104 2.46 2.472v21.528l-2.58-2.28-1.452-1.344-1.536-1.428.636 2.22H3.42C2.064 21.168.96 20.064.96 18.696V2.472C.96 1.104 2.064 0 3.42 0h16.12z" />
+                        </svg>
+                    ),
+                    title: 'Invite kozzyx',
+                    desc: 'Click "Add to Discord", pick your server, grant admin perms. Takes 30 seconds.',
+                    tag: 'one click',
+                },
+                {
+                    num: '02',
+                    icon: (
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                            <rect x="2" y="3" width="20" height="14" rx="2" /><path d="M8 21h8M12 17v4" />
+                        </svg>
+                    ),
+                    title: 'Run /server_setup',
+                    desc: 'One command scaffolds channels, roles, and config. Pick a preset or go bare.',
+                    tag: '~30 seconds',
+                },
+                {
+                    num: '03',
+                    icon: (
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                        </svg>
+                    ),
+                    title: 'Forget about it',
+                    desc: 'Automod runs. Raids get blocked. AI answers questions. You moderate when it matters.',
+                    tag: 'hands-free',
+                },
+            ];
+
+            return (
+                <section style={{ padding: '100px 40px', maxWidth: 1320, margin: '0 auto' }} data-reveal="up">
+                    <div style={{ maxWidth: 600, marginBottom: 56 }}>
+                        <div className="mono" style={{ fontSize: 12, color: 'var(--fg-faint)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>§ 01.5 — setup in 3 steps</div>
+                        <h2 style={{ fontSize: 'clamp(32px, 4vw, 52px)', margin: '12px 0 0', fontWeight: 500, letterSpacing: '-0.03em', lineHeight: 1.05 }}>
+                            Up and running<br />
+                            <span className="serif" style={{ fontStyle: 'italic', color: 'var(--accent)', fontWeight: 400 }}>in under a minute</span>.
+                        </h2>
+                    </div>
+
+                    <div className="how-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24 }} data-stagger>
+                        {steps.map((s, i) => (
+                            <div key={i} className="how-step" style={{ position: 'relative' }}>
+                                {i < steps.length - 1 && (
+                                    <div className="how-step-connector" />
+                                )}
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+                                    <div style={{
+                                        width: 52, height: 52, borderRadius: 14,
+                                        background: 'var(--accent-soft)',
+                                        border: '1px solid color-mix(in oklab, var(--accent) 30%, var(--line))',
+                                        display: 'grid', placeItems: 'center',
+                                        color: 'var(--accent)',
+                                    }}>
+                                        {s.icon}
+                                    </div>
+                                    <span className="mono" style={{ fontSize: 10, padding: '4px 10px', borderRadius: 100, background: 'var(--bg-elev-2)', color: 'var(--fg-faint)', border: '1px solid var(--line-soft)' }}>
+                                        {s.tag}
+                                    </span>
+                                </div>
+                                <div className="mono how-step-number">{s.num}</div>
+                                <div style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', marginBottom: 10 }}>{s.title}</div>
+                                <div style={{ fontSize: 14, color: 'var(--fg-dim)', lineHeight: 1.55 }}>{s.desc}</div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Separator line with centered label */}
+                    <div style={{ marginTop: 80, display: 'flex', alignItems: 'center', gap: 24 }}>
+                        <div style={{ flex: 1, height: 1, background: 'var(--line-soft)' }} />
+                        <span className="mono" style={{ fontSize: 11, color: 'var(--fg-faint)', letterSpacing: '0.08em', whiteSpace: 'nowrap' }}>
+                            THEN YOU JUST WATCH IT WORK
+                        </span>
+                        <div style={{ flex: 1, height: 1, background: 'var(--line-soft)' }} />
+                    </div>
+                </section>
+            );
+        }
+
+        Object.assign(window, { HowItWorks });
+
+        // ==== src/changelog.jsx ====
+        function Changelog() {
+            const entries = [
+                {
+                    version: 'v1.4.0',
+                    date: 'Apr 2025',
+                    tag: 'major',
+                    items: [
+                        { type: 'new', text: '/imagine command — generate images from any prompt using Pollinations.ai (Flux model)' },
+                        { type: 'new', text: '/summarize — Claude summarizes the last N messages in a channel' },
+                        { type: 'new', text: '/clear_memory — reset Claude conversation history per-user per-server' },
+                        { type: 'fix', text: 'Fixed /ask context leaking between servers' },
+                    ],
+                },
+                {
+                    version: 'v1.3.2',
+                    date: 'Mar 2025',
+                    tag: 'patch',
+                    items: [
+                        { type: 'new', text: ',damage and ,heal prefix commands for custom moderation flows' },
+                        { type: 'fix', text: 'Warn threshold auto-actions now correctly escalate through mute → kick → ban' },
+                        { type: 'fix', text: ',audit log now shows full reason fields instead of truncated strings' },
+                        { type: 'change', text: 'Switched /ask to claude-sonnet-4-6 model for better context handling' },
+                    ],
+                },
+                {
+                    version: 'v1.3.0',
+                    date: 'Feb 2025',
+                    tag: 'major',
+                    items: [
+                        { type: 'new', text: '/plugins system — enable or disable optional bot features per-server' },
+                        { type: 'new', text: '/generate_rules — AI-generated server rules embed from Claude' },
+                        { type: 'new', text: ',autoresponder and ,autoresponder_filter_on/off for custom auto-responses' },
+                        { type: 'change', text: '/server_setup now supports preset parameter (gaming, community, study)' },
+                    ],
+                },
+                {
+                    version: 'v1.2.0',
+                    date: 'Jan 2025',
+                    tag: 'major',
+                    items: [
+                        { type: 'new', text: 'Ticket system — ,ticket, ,ticket_channel, ,ticket_ping, ,ticket_close' },
+                        { type: 'new', text: '/appeal command for users to submit ban appeals' },
+                        { type: 'new', text: 'Dynamic voice channels via /vc' },
+                        { type: 'fix', text: '/nicklock now properly persists across bot restarts' },
+                    ],
+                },
+            ];
+
+            const tagColor = { major: 'var(--accent)', patch: 'var(--fg-faint)', beta: 'var(--warn)' };
+            const typeIcon = { new: { icon: '+', color: 'var(--ok)' }, fix: { icon: '↗', color: 'var(--warn)' }, change: { icon: '~', color: 'var(--accent)' } };
+
+            return (
+                <section id="changelog" style={{ padding: '120px 40px', maxWidth: 1320, margin: '0 auto' }} data-reveal="up">
+                    <div style={{ maxWidth: 720, marginBottom: 56 }}>
+                        <div className="mono" style={{ fontSize: 12, color: 'var(--fg-faint)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>§ 05 — changelog</div>
+                        <h2 style={{ fontSize: 'clamp(36px, 4vw, 56px)', margin: '12px 0 0', fontWeight: 500, letterSpacing: '-0.03em', lineHeight: 1 }}>
+                            What's changed.<br />
+                            <span className="serif" style={{ fontStyle: 'italic', color: 'var(--accent)', fontWeight: 400 }}>honestly documented</span>.
+                        </h2>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                        {entries.map((e, ei) => (
+                            <div key={ei} className="changelog-row" style={{ display: 'grid', gridTemplateColumns: '180px 1fr', gap: 40, borderTop: '1px solid var(--line-soft)', padding: '36px 0' }}>
+                                {/* Left: version + date */}
+                                <div style={{ paddingTop: 2 }}>
+                                    <div className="mono" style={{ fontSize: 18, fontWeight: 600, color: 'var(--fg)', letterSpacing: '-0.02em' }}>{e.version}</div>
+                                    <div className="mono" style={{ fontSize: 12, color: 'var(--fg-faint)', marginTop: 6 }}>{e.date}</div>
+                                    <span style={{
+                                        display: 'inline-block', marginTop: 10,
+                                        fontSize: 9, fontFamily: 'Geist Mono, monospace',
+                                        fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
+                                        padding: '3px 8px', borderRadius: 100,
+                                        background: `color-mix(in oklab, ${tagColor[e.tag]} 14%, transparent)`,
+                                        color: tagColor[e.tag],
+                                        border: `1px solid color-mix(in oklab, ${tagColor[e.tag]} 30%, transparent)`,
+                                    }}>{e.tag}</span>
+                                </div>
+                                {/* Right: items */}
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                    {e.items.map((item, ii) => (
+                                        <div key={ii} style={{
+                                            display: 'flex', gap: 12, alignItems: 'flex-start',
+                                            padding: '12px 16px', borderRadius: 10,
+                                            background: 'var(--bg-elev)', border: '1px solid var(--line-soft)',
+                                            fontSize: 14, lineHeight: 1.5,
+                                        }}>
+                                            <span className="mono" style={{
+                                                flexShrink: 0, width: 18, height: 18, borderRadius: 4,
+                                                background: `color-mix(in oklab, ${typeIcon[item.type].color} 14%, transparent)`,
+                                                color: typeIcon[item.type].color,
+                                                display: 'grid', placeItems: 'center',
+                                                fontSize: 11, fontWeight: 700, marginTop: 1,
+                                            }}>{typeIcon[item.type].icon}</span>
+                                            <span style={{ color: 'var(--fg-dim)' }}>{item.text}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+            );
+        }
+
+        // ==== src/faq.jsx ====
+        function FAQ() {
+            const [open, setOpen] = React.useState(null);
+
+            const items = [
+                {
+                    q: 'Is kozzyx free to use?',
+                    a: 'Yes, entirely. All 50+ commands are available with no paywalled tier, premium plan, or hidden feature gating. The bot is self-hosted on Google Cloud and I pay for it myself.',
+                },
+                {
+                    q: 'How does the AI work — is it sending my messages somewhere?',
+                    a: '/ask and /summarize send the relevant message content to the Claude API (Anthropic). /imagine sends your prompt to Pollinations.ai. Nothing is stored permanently — conversation context is kept in memory per-user per-server and can be wiped with /clear_memory.',
+                },
+                {
+                    q: 'What permissions does kozzyx need?',
+                    a: 'Administrator is recommended for /server_setup to work fully. For moderation-only use, you need: Kick Members, Ban Members, Manage Messages, Manage Channels, Manage Roles, and Manage Nicknames. The bot won\'t function correctly with fewer permissions than what the commands require.',
+                },
+                {
+                    q: 'What\'s the difference between slash commands and prefix commands?',
+                    a: 'Slash commands (/) are Discord\'s built-in system — they show up in the menu when you type /. Prefix commands (,) are typed directly and are faster for quick actions. Most moderation tools have both. New features are generally added as slash commands first.',
+                },
+                {
+                    q: 'The bot went offline. What\'s happening?',
+                    a: 'kozzyx runs on a Google Cloud VM (always-on). Downtime is rare but possible during updates or GCP hiccups. If it\'s been more than 10 minutes, join the support server and let me know — I\'ll restart it.',
+                },
+                {
+                    q: 'Can I self-host kozzyx?',
+                    a: 'The source isn\'t fully public yet, but it\'s on the roadmap. The bot is built with discord.js and Node.js. If you want early access, join the support server.',
+                },
+                {
+                    q: 'How do I report a bug or request a feature?',
+                    a: 'Open an issue on GitHub or message in the support Discord. I read everything. Features that make sense for a general-purpose bot and aren\'t insane to build will get added.',
+                },
+            ];
+
+            return (
+                <section id="faq" style={{ padding: '120px 40px', maxWidth: 1320, margin: '0 auto' }} data-reveal="up">
+                    <div style={{ maxWidth: 720, marginBottom: 56 }}>
+                        <div className="mono" style={{ fontSize: 12, color: 'var(--fg-faint)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>§ 06 — FAQ</div>
+                        <h2 style={{ fontSize: 'clamp(36px, 4vw, 56px)', margin: '12px 0 0', fontWeight: 500, letterSpacing: '-0.03em', lineHeight: 1 }}>
+                            Common questions.<br />
+                            <span className="serif" style={{ fontStyle: 'italic', color: 'var(--accent)', fontWeight: 400 }}>actual answers</span>.
+                        </h2>
+                    </div>
+
+                    <div style={{ maxWidth: 860, display: 'flex', flexDirection: 'column', gap: 0 }}>
+                        {items.map((item, i) => {
+                            const isOpen = open === i;
+                            return (
+                                <div key={i} style={{
+                                    borderTop: '1px solid var(--line-soft)',
+                                    ...(i === items.length - 1 ? { borderBottom: '1px solid var(--line-soft)' } : {}),
+                                }}>
+                                    <button
+                                        onClick={() => setOpen(isOpen ? null : i)}
+                                        style={{
+                                            width: '100%', textAlign: 'left', padding: '22px 0',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20,
+                                            fontSize: 16, fontWeight: 500, color: isOpen ? 'var(--fg)' : 'var(--fg-dim)',
+                                            transition: 'color 0.2s',
+                                        }}
+                                    >
+                                        {item.q}
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"
+                                            style={{ flexShrink: 0, transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.25s cubic-bezier(0.22,1,0.36,1)', color: 'var(--fg-faint)' }}>
+                                            <path d="m6 9 6 6 6-6" />
+                                        </svg>
+                                    </button>
+                                    <div style={{
+                                        overflow: 'hidden',
+                                        maxHeight: isOpen ? 300 : 0,
+                                        transition: 'max-height 0.35s cubic-bezier(0.22, 1, 0.36, 1)',
+                                    }}>
+                                        <p style={{
+                                            margin: 0, paddingBottom: 22,
+                                            fontSize: 15, color: 'var(--fg-dim)', lineHeight: 1.65,
+                                        }}>{item.a}</p>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </section>
+            );
+        }
+
+        Object.assign(window, { Changelog, FAQ });
+
+
         // ==== src/app.jsx ====
         function App() {
             const [theme, setTheme] = React.useState('dark');
@@ -2304,12 +3033,19 @@
 
             return (
                 <>
+                    <CursorBlob />
                     <Nav theme={theme} setTheme={setTheme} />
                     <Hero />
+                    <MarqueeDivider />
+                    <Stats />
+                    <HowItWorks />
                     <Features />
                     <Commands />
+                    <Changelog />
+                    <FAQ />
                     <ClosingCTA />
                     <Footer />
+                    <DynamicIsland />
                     <TweakPanel accent={accent} setAccent={handleSetAccent} visible={editMode} />
                 </>
             );
@@ -2384,9 +3120,9 @@
 
             // ---------- Magnetic buttons ----------
             document.querySelectorAll('a, button').forEach((el) => {
-                const isCta = (el.textContent || '').match(/Add to Discord|View commands|Read the docs/);
+                const isCta = (el.textContent || '').match(/Add to Discord|View commands|Read the docs|See commands/);
                 if (!isCta) return;
-                el.classList.add('magnetic', 'glow-ring');
+                el.classList.add('magnetic', 'glow-ring', 'btn-glitch');
                 el.addEventListener('mousemove', (e) => {
                     const r = el.getBoundingClientRect();
                     const x = (e.clientX - r.left - r.width / 2) * 0.25;
@@ -2408,7 +3144,11 @@
                 trail.push({ x: e.clientX, y: e.clientY, life: 1, size: 2 + Math.random() * 3 });
                 if (trail.length > 40) trail.shift();
             });
-            const getAccent = () => getComputedStyle(document.documentElement).getPropertyValue('--accent') || 'violet';
+            let cachedAccent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || 'violet';
+            const accentObserver = new MutationObserver(() => {
+                cachedAccent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || 'violet';
+            });
+            accentObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] });
             (function loop() {
                 if (!canvas) return;
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -2417,7 +3157,7 @@
                     p.life -= 0.035;
                     if (p.life <= 0) { trail.splice(i, 1); continue; }
                     ctx.beginPath();
-                    ctx.fillStyle = getAccent().trim();
+                    ctx.fillStyle = cachedAccent;
                     ctx.globalAlpha = p.life * 0.7;
                     ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
                     ctx.fill();
@@ -2455,18 +3195,17 @@
             }
 
             // ---------- Tilt and Spotlight on feature visuals + dashboard ----------
-            document.querySelectorAll('[style*="border-radius: 16"], [style*="boxShadow"]').forEach((card) => {
-                if (card.offsetWidth < 200) return;
-                
+            document.querySelectorAll('[data-tiltcard]').forEach((card) => {
+
                 card.classList.add('spotlight-card');
                 card.style.transition = 'transform 0.3s cubic-bezier(0.22, 1, 0.36, 1)';
-                
+
                 card.addEventListener('mousemove', (e) => {
                     const r = card.getBoundingClientRect();
-                    
+
                     card.style.setProperty('--mouse-x', `${e.clientX - r.left}px`);
                     card.style.setProperty('--mouse-y', `${e.clientY - r.top}px`);
-                    
+
                     const rx = ((e.clientY - r.top) / r.height - 0.5) * -6;
                     const ry = ((e.clientX - r.left) / r.width - 0.5) * 6;
                     card.style.transform = `perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg)`;
@@ -2488,6 +3227,57 @@
             // ---------- Apply text shine to hero italic ----------
             const heroItalic = document.querySelector('h1 .serif');
             if (heroItalic) heroItalic.classList.add('shine');
+
+            // ---------- Scroll progress bar ----------
+            const progressBar = document.getElementById('scroll-progress');
+            if (progressBar) {
+                addEventListener('scroll', () => {
+                    const total = document.body.scrollHeight - innerHeight;
+                    progressBar.style.width = (scrollY / total * 100) + '%';
+                }, { passive: true });
+            }
+
+            // ---------- Stagger reveal for .how-grid and stats grid ----------
+            const staggerObs = new IntersectionObserver((entries) => {
+                entries.forEach((e) => {
+                    if (e.isIntersecting) { e.target.classList.add('in'); staggerObs.unobserve(e.target); }
+                });
+            }, { threshold: 0.1 });
+            document.querySelectorAll('[data-stagger]').forEach((el) => staggerObs.observe(el));
+
+            // ---------- Counter pop on stat cells ----------
+            const statCells = document.querySelectorAll('[data-statcell]');
+            const popObs = new IntersectionObserver((entries) => {
+                entries.forEach((e) => {
+                    if (e.isIntersecting) {
+                        e.target.classList.add('counter-pop');
+                        popObs.unobserve(e.target);
+                    }
+                });
+            }, { threshold: 0.4 });
+            statCells.forEach(el => popObs.observe(el));
+
+            // ---------- Keyboard shortcut toast ----------
+            let kShown = false;
+            addEventListener('keydown', (e) => {
+                if ((e.metaKey || e.ctrlKey) && e.key === 'k' && !kShown) {
+                    kShown = true;
+                    const toast = document.createElement('div');
+                    toast.textContent = '⌘K — jumped to search';
+                    Object.assign(toast.style, {
+                        position: 'fixed', bottom: '96px', left: '50%',
+                        transform: 'translateX(-50%)',
+                        background: 'var(--bg-elev)', border: '1px solid var(--line)',
+                        borderRadius: '8px', padding: '8px 16px',
+                        fontSize: '13px', color: 'var(--fg-dim)',
+                        zIndex: '99999', fontFamily: 'Geist Mono, monospace',
+                        animation: 'fadeUp 0.3s ease',
+                        pointerEvents: 'none',
+                    });
+                    document.body.appendChild(toast);
+                    setTimeout(() => toast.remove(), 2000);
+                }
+            });
 
         }, 300));
 
