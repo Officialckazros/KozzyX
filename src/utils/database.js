@@ -3,11 +3,11 @@ import { Collection } from "discord.js";
 import { getDB } from "./db.js";
 
 // Legacy JSON files — read once for one-time migration, then unused
-const LEGACY_SETTINGS_FILE       = "./settings.json";
-const LEGACY_WARNINGS_FILE       = "./warnings.json";
-const LEGACY_AUTORESPONDERS_FILE = "./autoresponders.json";
-const LEGACY_BOOSTER_DB_FILE     = "./boosterroles.json";
-const LEGACY_COSMETICS_FILE      = "./cosmetics.json";
+const LEGACY_SETTINGS_FILE       = "./data/settings.json";
+const LEGACY_WARNINGS_FILE       = "./data/warnings.json";
+const LEGACY_AUTORESPONDERS_FILE = "./data/autoresponders.json";
+const LEGACY_BOOSTER_DB_FILE     = "./data/boosterroles.json";
+const LEGACY_COSMETICS_FILE      = "./data/cosmetics.json";
 
 // ---------------- IN-MEMORY STATE ----------------
 export const serverSettings        = new Map();  // guildId -> settings object
