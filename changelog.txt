@@ -90,3 +90,8 @@
 - Added ,random prefix command (aliases: ,rng)
 - Added standalone /coinflip slash command and ,coinflip prefix command
 - Integrated into the utility-bot fun category
+
+[2026-05-18] fix: add missing redirect pages for blank page issue
+- Created website/commands.html — redirects to /#commands (the commands section on the main page)
+- Created website/services.html — redirects to / (home page)
+- Fixes blank page when navigating to /commands.html or /services.html directly

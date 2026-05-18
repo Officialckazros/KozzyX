@@ -5,6 +5,8 @@ export default {
     data: {
         name: "random",
         description: "Generate something random",
+        integration_types: [0, 1],
+        contexts: [0, 1, 2],
         options: [
             {
                 name: "number",

@@ -46,7 +46,12 @@ async function sendPagedHelp(interaction, category, page = 0) {
 }
 
 export default {
-    data: { name: "help", description: "Show help pages" },
+    data: { 
+        name: "help", 
+        description: "Show help pages",
+        integration_types: [0, 1],
+        contexts: [0, 1, 2]
+    },
     async execute(i) {
         return sendPagedHelp(i, "general", 0);
     },

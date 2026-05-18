@@ -7,22 +7,19 @@ REMOTE_DIR="~/my-discord-bot"
 
 echo "🚀 Starting sync to Google Cloud VM ($INSTANCE_NAME)..."
 
-# Use gcloud compute rsync to efficiently sync files
-# --exclude patterns to avoid bloating the transfer
-gcloud compute rsync . "$INSTANCE_NAME:$REMOTE_DIR" \
-    --zone="$ZONE" \
-    --recursive \
-    --delete-excluded \
-    --exclude="node_modules/*" \
-    --exclude=".git/*" \
-    --exclude=".DS_Store" \
-    --exclude="*.log" \
-    --exclude="database.sqlite" # Exclude DB if you want to keep VM data separate
+# Ensure the remote directory exists
+gcloud compute ssh "$INSTANCE_NAME" --zone="$ZONE" --command="mkdir -p $REMOTE_DIR"
+
+# Copy exactly the files we need (avoids node_modules and sqlite db)
+gcloud compute scp --recurse \
+    package.json index.js ecosystem.config.cjs sync_commands.js src website \
+    "$INSTANCE_NAME:$REMOTE_DIR/" \
+    --zone="$ZONE"
 
 if [ $? -eq 0 ]; then
     echo "✅ Sync complete!"
-    echo "💡 To start your bot on the VM, SSH in and run:"
-    echo "   gcloud compute ssh $INSTANCE_NAME --zone=$ZONE --command=\"cd $REMOTE_DIR && npm install && npm start\""
+    echo "💡 To start/restart your bot on the VM, run:"
+    echo "   gcloud compute ssh $INSTANCE_NAME --zone=$ZONE --command=\"cd $REMOTE_DIR && npm install && npm run deploy && pm2 start ecosystem.config.cjs\""
 else
     echo "❌ Sync failed. Please check your gcloud authentication and VM status."
 fi

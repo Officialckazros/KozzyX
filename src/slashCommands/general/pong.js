@@ -12,6 +12,8 @@ export default {
     data: {
         name: "pong",
         description: "Check the bot's latency and connection health.",
+        integration_types: [0, 1],
+        contexts: [0, 1, 2],
     },
 
     async execute(interaction) {

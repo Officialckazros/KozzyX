@@ -586,7 +586,7 @@ async function provisionRole({ guild, bp, dryRun, skipExisting, log, createdRole
     try {
         const role = await guild.roles.create({
             name: bp.name,
-            color: bp.color,
+            colors: bp.color ? { primaryColor: bp.color } : undefined,
             hoist: !!bp.hoist,
             mentionable: !!bp.mentionable,
             permissions: new PermissionsBitField(bp.perms || []),

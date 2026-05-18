@@ -65,7 +65,7 @@ export default {
                 new ButtonBuilder().setCustomId(cancelId).setLabel("Cancel").setStyle(ButtonStyle.Secondary),
             );
 
-            const reply = await interaction.reply({
+            const response = await interaction.reply({
                 flags: MessageFlags.Ephemeral,
                 embeds: [buildCoolEmbed({
                     guildId: interaction.guildId,
@@ -83,8 +83,9 @@ export default {
                     footerText: "This cannot be undone. Confirm within 30 seconds.",
                 })],
                 components: [row],
-                fetchReply: true,
+                withResponse: true,
             });
+            const reply = response.resource?.message ?? response;
 
             try {
                 const btn = await reply.awaitMessageComponent({

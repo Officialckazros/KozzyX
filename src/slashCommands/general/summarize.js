@@ -17,8 +17,8 @@ export default {
         ]
     },
     async execute(i) {
-        if (!i.channel) {
-            return safeRespond(i, { content: "Cannot fetch messages in this context.", ephemeral: true });
+        if (!i.channel || !i.channel.messages) {
+            return safeRespond(i, { content: "I cannot read messages in this context. The bot must be in the server and have permission to read message history.", ephemeral: true });
         }
 
         // Check cooldown
@@ -94,7 +94,10 @@ export default {
 
         } catch (e) {
             console.error("Summarize error:", e);
-            return safeRespond(i, { content: "Error fetching messages or summarizing.", ephemeral: true });
+            if (e.code === 50001) {
+                return safeRespond(i, { content: "I don't have permission to read message history in this channel.", ephemeral: true });
+            }
+            return safeRespond(i, { content: "Error fetching messages or summarizing: " + (e.message || "Unknown error"), ephemeral: true });
         }
     }
 };

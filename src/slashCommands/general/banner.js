@@ -5,6 +5,8 @@ export default {
     data: {
         name: "banner",
         description: "Show a user's banner in high resolution",
+        integration_types: [0, 1],
+        contexts: [0, 1, 2],
         options: [
             { name: "user", description: "Pick a user", type: 6, required: false }
         ]

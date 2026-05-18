@@ -12,6 +12,7 @@ import guildCreate from "./src/events/guildCreate.js";
 import voiceStateUpdate from "./src/events/voiceStateUpdate.js";
 import loadCommands from "./src/handlers/commandHandler.js";
 import { initAPI } from "./src/dashboard-api.js";
+import { sendBotOfflineAlert } from "./src/utils/email.js";
 
 const client = new ExtendedClient();
 
@@ -33,11 +34,40 @@ async function init() {
     client.on(voiceStateUpdate.name,         (...args) => voiceStateUpdate.execute(...args, client));
     client.once(ready.name,                  (...args) => ready.execute(...args, client));
 
+    // Email alerts for disconnects / errors
+    client.on('shardDisconnect', (event, shardId) => {
+        console.error('[bot] shardDisconnect', shardId, event);
+        sendBotOfflineAlert('shardDisconnect', `Shard ${shardId} disconnected: ${JSON.stringify(event)}`).catch(console.error);
+    });
+    client.on('shardError', (error, shardId) => {
+        console.error('[bot] shardError', shardId, error);
+        sendBotOfflineAlert('shardError', String(error)).catch(console.error);
+    });
+    client.on('error', (err) => {
+        console.error('[bot] client error', err);
+        sendBotOfflineAlert('clientError', String(err)).catch(console.error);
+    });
+
     console.log("[bot] Logging in...");
     client.login(process.env.TOKEN);
 }
 
 init();
 
-process.on("unhandledRejection", (err) => console.error("Unhandled Rejection:", err));
-process.on("uncaughtException",  (err) => console.error("Uncaught Exception:",  err));
+process.on("unhandledRejection", (err) => {
+    console.error("Unhandled Rejection:", err);
+    sendBotOfflineAlert('unhandledRejection', String(err)).catch(console.error);
+});
+process.on("uncaughtException",  (err) => {
+    console.error("Uncaught Exception:",  err);
+    sendBotOfflineAlert('uncaughtException', String(err)).catch(console.error);
+});
+
+process.on('SIGINT', () => {
+    console.log('[bot] SIGINT received, sending shutdown alert.');
+    sendBotOfflineAlert('SIGINT', 'Process interrupted (SIGINT)').finally(() => process.exit(0));
+});
+process.on('SIGTERM', () => {
+    console.log('[bot] SIGTERM received, sending shutdown alert.');
+    sendBotOfflineAlert('SIGTERM', 'Process terminated (SIGTERM)').finally(() => process.exit(0));
+});

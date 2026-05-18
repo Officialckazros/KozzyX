@@ -19,7 +19,7 @@ export default {
                 if (old) await old.delete().catch(() => { });
             }
 
-            const role = await message.guild.roles.create({ name, color: "#a64dff" });
+            const role = await message.guild.roles.create({ name, colors: { primaryColor: "#a64dff" } });
             await message.member.roles.add(role.id);
             boosterRolesDB.set(message.author.id, role.id);
             await saveBoosterRoles();

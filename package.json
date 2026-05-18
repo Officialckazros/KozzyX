@@ -8,13 +8,14 @@
     "start": "node index.js",
     "dev": "node --watch index.js",
     "deploy": "node src/deploy.js",
-    "sync": "node sync_commands.py"
+    "sync": "node sync_commands.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.95.2",
     "@google/generative-ai": "^0.24.1",
     "discord.js": "^14.17.3",
     "dotenv": "^16.4.7",
+    "nodemailer": "^6.9.3",
     "pm2": "^7.0.1",
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7"

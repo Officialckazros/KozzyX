@@ -2,6 +2,7 @@ import http from 'http';
 import fs from 'fs';
 import path from 'path';
 import { URL, fileURLToPath } from 'url';
+import crypto from 'crypto';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const databaseModuleUrl = new URL('./utils/database.js', import.meta.url).href;
@@ -10,7 +11,7 @@ async function importDatabase() {
 }
 
 const PORT = 3456;
-const AUTH_KEY = 'KozzyX_Internal_API_' + Math.random().toString(36).substring(2, 15);
+const AUTH_KEY = 'KozzyX_Internal_API_' + crypto.randomBytes(32).toString('hex');
 const REDIRECT_URI = 'https://kozzyx.bazsi9849.workers.dev/dashboard';
 
 const DATA_DIR = path.join(__dirname, '../data');
@@ -145,7 +146,7 @@ export function initAPI(client) {
                 const userGuilds = await guildsRes.json();
 
                 const isOwner = userData.id === process.env.OWNER_ID;
-                const sessionToken = Math.random().toString(36).substring(2) + Date.now().toString(36);
+                const sessionToken = crypto.randomBytes(32).toString('hex');
 
                 // Store user data AND their guilds in the session
                 sessions.set(sessionToken, { ...userData, guilds: Array.isArray(userGuilds) ? userGuilds : [], isOwner });
@@ -185,6 +186,17 @@ export function initAPI(client) {
             if (!hasAccess) {
                 return json(res, 403, { error: 'You do not have permission to manage this server.' });
             }
+        }
+
+        const executorId = sessionUser?.id || process.env.OWNER_ID;
+        const executorMember = guild ? await guild.members.fetch(executorId).catch(() => null) : null;
+        
+        function canActOn(targetMember, reqPerm) {
+            if (sessionUser.isOwner) return true;
+            if (!executorMember) return false;
+            if (reqPerm && !executorMember.permissions.has(reqPerm)) return false;
+            if (targetMember && executorMember.id !== guild.ownerId && executorMember.roles.highest.position <= targetMember.roles.highest.position) return false;
+            return true;
         }
 
         try {
@@ -244,6 +256,7 @@ export function initAPI(client) {
 
             // --- Broadcast to all text channels ---
             if (pathname === '/api/broadcast' && method === 'POST') {
+                if (!canActOn(null, 'ManageChannels') && !canActOn(null, 'Administrator')) return json(res, 403, { error: 'Missing Manage Channels permission' });
                 const { content, isEmbed } = await readBody(req);
                 if (!guild) return json(res, 404, { error: 'Guild not found' });
                 const channels = guild.channels.cache.filter(c => c.type === 0 && c.permissionsFor(guild.members.me)?.has('SendMessages'));
@@ -381,22 +394,29 @@ export function initAPI(client) {
                 const act = (action || '').toUpperCase();
                 const moderator = sessionUser?.username || 'Dashboard';
                 try {
+                    const targetMember = await guild.members.fetch(userId).catch(() => null);
+
                     if (act === 'KICK') {
+                        if (!canActOn(targetMember, 'KickMembers')) return json(res, 403, { error: 'Missing permission or role hierarchy prevents kicking' });
                         const m = await guild.members.fetch(userId);
                         await m.kick(reason || 'Dashboard action');
                         addModLog('KICK', m.user.tag, moderator, reason);
                     } else if (act === 'BAN') {
+                        if (!canActOn(targetMember, 'BanMembers')) return json(res, 403, { error: 'Missing permission or role hierarchy prevents banning' });
                         await guild.members.ban(userId, { reason: reason || 'Dashboard action' });
                         addModLog('BAN', userId, moderator, reason);
                     } else if (act === 'UNBAN') {
+                        if (!canActOn(null, 'BanMembers')) return json(res, 403, { error: 'Missing permission' });
                         await guild.members.unban(userId, reason || 'Dashboard action');
                         addModLog('UNBAN', userId, moderator, reason);
                     } else if (act === 'TIMEOUT' || act === 'MUTE') {
+                        if (!canActOn(targetMember, 'ModerateMembers')) return json(res, 403, { error: 'Missing permission or role hierarchy prevents timeout' });
                         const m = await guild.members.fetch(userId);
                         const ms = (Number(duration) || 600) * 1000;
                         await m.timeout(ms, reason || 'Dashboard action');
                         addModLog('TIMEOUT', m.user.tag, moderator, reason);
                     } else if (act === 'UNMUTE' || act === 'UNTIMEOUT') {
+                        if (!canActOn(targetMember, 'ModerateMembers')) return json(res, 403, { error: 'Missing permission or role hierarchy prevents untimeout' });
                         const m = await guild.members.fetch(userId);
                         await m.timeout(null, reason || 'Dashboard action');
                         addModLog('UNTIMEOUT', m.user.tag, moderator, reason);
@@ -426,12 +446,13 @@ export function initAPI(client) {
             }
 
             if (pathname === '/api/roles' && method === 'POST') {
+                if (!canActOn(null, 'ManageRoles')) return json(res, 403, { error: 'Missing Manage Roles permission' });
                 const vals = await readBody(req);
                 if (!guild) return json(res, 404, { error: 'Guild not found' });
                 if (!vals.name) return json(res, 400, { error: 'Name required' });
                 const role = await guild.roles.create({
                     name: vals.name,
-                    color: vals.color || undefined,
+                    colors: vals.color ? { primaryColor: vals.color } : undefined,
                     hoist: !!vals.hoist,
                     mentionable: !!vals.mentionable,
                     reason: 'Dashboard create'
@@ -446,6 +467,7 @@ export function initAPI(client) {
                 if (!guild) return json(res, 404, { error: 'Guild not found' });
                 const role = guild.roles.cache.get(roleId);
                 if (!role) return json(res, 404, { error: 'Role not found' });
+                if (!canActOn({ roles: { highest: { position: role.position } } }, 'ManageRoles')) return json(res, 403, { error: 'Missing permission or role hierarchy prevents editing this role' });
                 const edits = {};
                 if (vals.name !== undefined) edits.name = vals.name;
                 if (vals.color !== undefined) edits.color = vals.color;
@@ -461,6 +483,7 @@ export function initAPI(client) {
                 if (!guild) return json(res, 404, { error: 'Guild not found' });
                 const role = guild.roles.cache.get(roleId);
                 if (!role) return json(res, 404, { error: 'Role not found' });
+                if (!canActOn({ roles: { highest: { position: role.position } } }, 'ManageRoles')) return json(res, 403, { error: 'Missing permission or role hierarchy prevents deleting this role' });
                 await role.delete('Dashboard action');
                 addLog('MOD', `Role deleted: ${role.name}`);
                 return json(res, 200, { success: true });
@@ -520,6 +543,7 @@ export function initAPI(client) {
             }
 
             if (pathname === '/api/channels' && method === 'POST') {
+                if (!canActOn(null, 'ManageChannels')) return json(res, 403, { error: 'Missing Manage Channels permission' });
                 const vals = await readBody(req);
                 if (!guild) return json(res, 404, { error: 'Guild not found' });
                 if (!vals.name) return json(res, 400, { error: 'Name required' });
@@ -536,6 +560,7 @@ export function initAPI(client) {
             }
 
             if (pathname.startsWith('/api/channels/') && (method === 'PATCH' || method === 'PUT')) {
+                if (!canActOn(null, 'ManageChannels')) return json(res, 403, { error: 'Missing Manage Channels permission' });
                 const channelId = pathname.split('/').pop();
                 const vals = await readBody(req);
                 const channel = await client.channels.fetch(channelId).catch(() => null);
@@ -552,6 +577,7 @@ export function initAPI(client) {
             }
 
             if (pathname.startsWith('/api/channels/') && method === 'DELETE') {
+                if (!canActOn(null, 'ManageChannels')) return json(res, 403, { error: 'Missing Manage Channels permission' });
                 const channelId = pathname.split('/').pop();
                 const channel = await client.channels.fetch(channelId).catch(() => null);
                 if (!channel) return json(res, 404, { error: 'Channel not found' });
@@ -915,7 +941,7 @@ export function initAPI(client) {
                         await guild.channels.create({ name: 'clips', type: 0, parent: gamesCat.id });
                         await guild.channels.create({ name: 'Squad 1', type: 2, parent: gamesCat.id });
                         await guild.channels.create({ name: 'Squad 2', type: 2, parent: gamesCat.id });
-                        await guild.roles.create({ name: 'Gamer', color: '#ff0000' });
+                        await guild.roles.create({ name: 'Gamer', colors: { primaryColor: '#ff0000' } });
                         actionsTaken.push('Created Gaming Zone category, LFG/Clips channels, Voice Squads, and Gamer role');
                     } else if (p.includes('clear') || p.includes('nuke')) {
                         actionsTaken.push('Refused to perform destructive action. Please delete channels manually.');
