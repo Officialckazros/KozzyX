@@ -26,7 +26,6 @@ export class ExtendedClient extends Client {
     }
 
     async loadHandlers() {
-        await import("../handlers/eventHandler.js").then((h) => h.default(this));
         await import("../handlers/commandHandler.js").then((h) => h.default(this));
     }
 

@@ -5,6 +5,8 @@ export default {
     data: {
         name: "define",
         description: "Look up the definition of an English word",
+        integration_types: [0, 1],
+        contexts: [0, 1, 2],
         options: [
             { name: "word", description: "The word to define", type: 3, required: true }
         ]

@@ -17,6 +17,10 @@ function normalizePayload(payload, { stripEphemeral = false } = {}) {
     return out;
 }
 
+// Discord API error codes we should silently swallow
+// 10008 = Unknown Message, 10062 = Unknown Interaction, 40060 = Already acknowledged
+const SILENT_ERRORS = new Set([10008, 10062, 40060]);
+
 export async function safeRespond(interaction, payload) {
     // Force ephemeral if error for User Apps (usually safer)
     if (payload?.type === "error" && payload.ephemeral === undefined) {
@@ -30,6 +34,9 @@ export async function safeRespond(interaction, payload) {
         }
         return await interaction.reply(normalizePayload(payload));
     } catch (e) {
+        // Silently ignore expected, non-actionable Discord errors
+        if (SILENT_ERRORS.has(e?.code)) return;
+
         // Only attempt a followUp if the interaction was actually acknowledged.
         // Otherwise followUp will throw InteractionNotReplied and spam logs.
         if (!(interaction.replied || interaction.deferred)) {
@@ -39,6 +46,7 @@ export async function safeRespond(interaction, payload) {
         try {
             return await interaction.followUp(normalizePayload(payload));
         } catch (e2) {
+            if (SILENT_ERRORS.has(e2?.code)) return;
             console.error("[safeRespond] FollowUp failed:", e2?.message || e2);
         }
     }

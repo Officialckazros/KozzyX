@@ -29,8 +29,8 @@ async function askGrok(prompt) {
 export default {
     data: {
         name: "roast",
-        description: "Roast someone with AI",
-        options: [
+        description: "Roast someone with AI",        integration_types: [0, 1],
+        contexts: [0, 1, 2],        options: [
             { name: "user", description: "Who to roast", type: 6, required: true }
         ]
     },

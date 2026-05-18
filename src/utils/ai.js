@@ -139,48 +139,36 @@ export async function askGeminiWithHistory(messages) {
     return callGemini(currentPrompt, history);
 }
 
-// ── /ask: stateless single-turn ──────────────────────────────────────────────
-export async function askClaude(prompt, modelName = "claude-haiku-4-5-20251001") {
-    if (detectJailbreak(prompt)) return "BLOCKED";
-    return callClaude(
-        [{ role: "user", content: prompt }],
-        { model: modelName, system: SAFETY_SYSTEM_PROMPT }
-    );
+// ── /ask: stateless single-turn (Claude — kept for backwards compatibility) ──
+export async function askClaude(prompt) {
+    return askGemini(prompt);
 }
 
-// ── /ask: multi-turn with conversation history ────────────────────────────────
-export async function askClaudeWithHistory(messages, modelName = "claude-haiku-4-5-20251001") {
-    const lastUserMsg = [...messages].reverse().find(m => m.role === "user");
-    if (lastUserMsg && detectJailbreak(lastUserMsg.content)) return "BLOCKED";
-    return callClaude(messages, {
-        model: modelName,
-        maxTokens: 1024,
-        system: SAFETY_SYSTEM_PROMPT,
-    });
+// ── /ask: multi-turn with conversation history (Claude alias) ────────────────
+export async function askClaudeWithHistory(messages) {
+    return askGeminiWithHistory(messages);
 }
 
 // ── AI Moderation ─────────────────────────────────────────────────────────────
 // Returns { flagged: bool, reason: string, severity: 'low'|'medium'|'high' }
 export async function moderateMessage(content) {
-    const result = await callClaude(
-        [{
-            role: "user",
-            content: `You are a content moderation system. Analyze the Discord message below for harmful content. Be strict — flag anything that could be considered hate speech, sexual content, threats, self-harm, illegal activity, harassment, slurs, or extreme vulgarity. When in doubt, flag it.
+    const prompt = `You are a content moderation system. Analyze the Discord message below for harmful content. Be strict — flag anything that could be considered hate speech, sexual content, threats, self-harm, illegal activity, harassment, slurs, or extreme vulgarity. When in doubt, flag it.
 
 Reply with ONLY valid JSON, no markdown, no explanation outside the JSON.
 
 Message to analyze: ${JSON.stringify(content)}
 
-Respond exactly: {"flagged": true/false, "reason": "brief reason or empty string", "severity": "low|medium|high"}`,
-        }],
-        {
-            model: "claude-haiku-4-5-20251001",
-            maxTokens: 128,
-            system: "You are a strict content moderation classifier. Your only job is to output a JSON object. Never be lenient. Flag anything that a reasonable Discord server admin would want removed.",
-        }
+Respond exactly: {"flagged": true/false, "reason": "brief reason or empty string", "severity": "low|medium|high"}`;
+
+    const result = await callGemini(
+        prompt,
+        [],
+        "You are a strict content moderation classifier. Your only job is to output a JSON object. Never be lenient. Flag anything that a reasonable Discord server admin would want removed."
     );
 
-    if (result === "ERROR" || result === "QUOTA_EXCEEDED") return { flagged: false, reason: "", severity: "low" };
+    if (result === "ERROR" || result === "QUOTA_EXCEEDED" || result === "BLOCKED") {
+        return { flagged: false, reason: "", severity: "low" };
+    }
 
     try {
         const cleaned = result.replace(/```json|```/g, "").trim();
@@ -203,23 +191,15 @@ export async function summarizeTicket(messages) {
         .map(m => `${m.author}: ${m.content}`)
         .join("\n");
 
-    return callClaude(
-        [{
-            role: "user",
-            content: `Summarize this Discord support ticket transcript in 3-5 bullet points. Be concise.\n\n${transcript}`,
-        }],
-        { model: "claude-haiku-4-5-20251001", maxTokens: 512 }
+    return callGemini(
+        `Summarize this Discord support ticket transcript in 3-5 bullet points. Be concise.\n\n${transcript}`
     );
 }
 
 // ── Server Rules Generator ────────────────────────────────────────────────────
 export async function generateServerRules(serverInfo) {
     const { name, channelNames, roleNames, memberCount } = serverInfo;
-    return callClaude(
-        [{
-            role: "user",
-            content: `Generate a complete, professional set of Discord server rules for a server named "${name}" with ~${memberCount} members.\n\nChannels: ${channelNames.join(", ")}\nRoles: ${roleNames.join(", ")}\n\nFormat as a numbered list. Be firm but friendly. Include rules about: respect, spam, NSFW, self-promo, and anything implied by the channel names. Return ONLY the rules text, no intro paragraph.`,
-        }],
-        { model: "claude-haiku-4-5-20251001", maxTokens: 1024 }
+    return callGemini(
+        `Generate a complete, professional set of Discord server rules for a server named "${name}" with ~${memberCount} members.\n\nChannels: ${channelNames.join(", ")}\nRoles: ${roleNames.join(", ")}\n\nFormat as a numbered list. Be firm but friendly. Include rules about: respect, spam, NSFW, self-promo, and anything implied by the channel names. Return ONLY the rules text, no intro paragraph.`
     );
 }

@@ -2,7 +2,12 @@ import { safeRespond } from "../../utils/helpers.js";
 import { asEmbedPayload } from "../../utils/embeds.js";
 
 export default {
-    data: { name: "topic", description: "Get a random conversation topic" },
+    data: { 
+        name: "topic", 
+        description: "Get a random conversation topic",
+        integration_types: [0, 1],
+        contexts: [0, 1, 2]
+    },
     async execute(i) {
         const topics = [
             "If you could instantly learn one skill, what would it be?",
