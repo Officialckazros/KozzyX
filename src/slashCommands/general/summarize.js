@@ -1,6 +1,6 @@
 import { safeRespond } from "../../utils/helpers.js";
 import { asEmbedPayload } from "../../utils/embeds.js";
-import { askClaude } from "../../utils/ai.js";
+import { askGemini } from "../../utils/ai.js";
 
 // Rate limiting: Store user IDs and their last command time
 const cooldowns = new Map();
@@ -48,7 +48,7 @@ export default {
             }
 
             const prompt = `Summarize the following Discord conversation concisely:\n\n${transcript}`;
-            const summary = await askClaude(prompt);
+            const summary = await askGemini(prompt);
 
             if (summary === "BLOCKED") {
                 return safeRespond(i, asEmbedPayload({

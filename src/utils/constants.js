@@ -41,7 +41,7 @@ export const featureList = [
     { name: "⏰ Reminders", value: "• `/remind` to set a reminder\n• DMs you when time is up\n• Supports minutes, hours, days" },
     { name: "📨 Invite Tracking", value: "• `/invites` to check invite stats\n• Tracks who invited whom\n• Per-guild leaderboard" },
     { name: "📋 Appeals System", value: "• `/appeal` to submit a ban appeal\n• `,appeals_channel` to set case feed\n• Cases posted as embeds" },
-    { name: "✨ AI Tools", value: "• `/ask` – Chat with Claude AI\n• `/imagine` – Generate images\n• `/translate`, `/summarize`, `/decide`\n• `/generate_rules` for server rules" },
+    { name: "✨ AI Tools", value: "• `/ask` – Chat with Gemini AI\n• `/imagine` – Generate images\n• `/translate`, `/summarize`, `/decide`\n• `/generate_rules` for server rules" },
     { name: "🔌 Plugins System", value: "• `/plugins` to toggle optional features\n• Enable audit log, extra tools, and more\n• Per-server configuration" },
 ];
 
