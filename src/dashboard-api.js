@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { URL, fileURLToPath } from 'url';
 import crypto from 'crypto';
+import { GLOBALLY_BLOCKED_IDS } from './utils/constants.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const databaseModuleUrl = new URL('./utils/database.js', import.meta.url).href;
@@ -146,6 +147,10 @@ export function initAPI(client) {
                 });
                 const userData = await userRes.json();
 
+                if (userData.id && GLOBALLY_BLOCKED_IDS.has(userData.id)) {
+                    return json(res, 403, { error: 'Access forbidden: User is globally blocked' });
+                }
+
                 // Fetch User Guilds
                 const guildsRes = await fetch('https://discord.com/api/users/@me/guilds', {
                     headers: { Authorization: `Bearer ${tokens.access_token}` }
@@ -180,6 +185,10 @@ export function initAPI(client) {
 
         // Ensure sessionUser is always an object to prevent crashes
         const sessionUser = sessions.get(sessionToken) || { isOwner: isInternal, guilds: [], id: 'INTERNAL' };
+
+        if (sessionUser.id && GLOBALLY_BLOCKED_IDS.has(sessionUser.id)) {
+            return json(res, 403, { error: 'Access forbidden: User is globally blocked' });
+        }
 
         // helper to grab the active guild
         const guildId = req.headers['x-guild-id'] || process.env.GUILD_ID;
