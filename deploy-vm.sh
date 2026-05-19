@@ -3,23 +3,30 @@
 # Configuration
 INSTANCE_NAME="discordbot"
 ZONE="us-west1-a"
-REMOTE_DIR="~/my-discord-bot"
+VM_USER="bazsi9849"
+REMOTE_DIR="/home/bazsi9849/my-discord-bot"
 
-echo "🚀 Starting sync to Google Cloud VM ($INSTANCE_NAME)..."
+echo "Deploying to $VM_USER@$INSTANCE_NAME..."
 
-# Ensure the remote directory exists
-gcloud compute ssh "$INSTANCE_NAME" --zone="$ZONE" --command="mkdir -p $REMOTE_DIR"
-
-# Copy exactly the files we need (avoids node_modules and sqlite db)
+# Copy source files (skip node_modules, sqlite db, .env, data)
 gcloud compute scp --recurse \
-    package.json index.js ecosystem.config.cjs sync_commands.js src website \
-    "$INSTANCE_NAME:$REMOTE_DIR/" \
+    package.json index.js ecosystem.config.cjs src website \
+    "$VM_USER@$INSTANCE_NAME:$REMOTE_DIR/" \
     --zone="$ZONE"
 
+if [ $? -ne 0 ]; then
+    echo "Sync failed. Check your gcloud authentication and VM status."
+    exit 1
+fi
+
+echo "Files synced. Restarting bot..."
+
+gcloud compute ssh "$VM_USER@$INSTANCE_NAME" --zone="$ZONE" \
+    --command="pm2 restart KozzyX"
+
 if [ $? -eq 0 ]; then
-    echo "✅ Sync complete!"
-    echo "💡 To start/restart your bot on the VM, run:"
-    echo "   gcloud compute ssh $INSTANCE_NAME --zone=$ZONE --command=\"cd $REMOTE_DIR && npm install && npm run deploy && pm2 start ecosystem.config.cjs\""
+    echo "Done. Bot is running."
 else
-    echo "❌ Sync failed. Please check your gcloud authentication and VM status."
+    echo "Restart failed. SSH in and check: pm2 logs KozzyX"
+    exit 1
 fi
