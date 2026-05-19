@@ -148,6 +148,9 @@ export async function initDB() {
             birthday_date TEXT NOT NULL,
             PRIMARY KEY (user_id, guild_id)
         );
+        CREATE TABLE IF NOT EXISTS blocked_lookups (
+            user_id TEXT PRIMARY KEY
+        );
     `);
     console.log("✅ Database initialized");
     return db;

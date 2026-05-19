@@ -43,6 +43,17 @@ export async function getLookupResponse(client, executorGuildId, targetUserId, e
 
     const db = await getDB();
 
+    const isBlockedDb = await db.get("SELECT 1 FROM blocked_lookups WHERE user_id = ?", targetUserId).catch(() => null);
+    if (isBlockedDb) {
+        return asEmbedPayload({
+            guildId: executorGuildId,
+            type: "error",
+            title: "❌ Lookup Blocked",
+            description: "Lookups for this user ID have been blocked.",
+            ephemeral: true
+        });
+    }
+
     // 1. Fetch User from Discord API
     let user = null;
     try {
@@ -573,6 +584,18 @@ export default {
         }
 
         if (BLOCKED_LOOKUP_IDS.includes(userId)) {
+            return safeRespond(i, asEmbedPayload({
+                guildId: i.guild?.id,
+                type: "error",
+                title: "❌ Lookup Blocked",
+                description: "Lookups for this user ID have been blocked.",
+                ephemeral: true
+            }));
+        }
+
+        const db = await getDB();
+        const isBlockedDb = await db.get("SELECT 1 FROM blocked_lookups WHERE user_id = ?", userId).catch(() => null);
+        if (isBlockedDb) {
             return safeRespond(i, asEmbedPayload({
                 guildId: i.guild?.id,
                 type: "error",
