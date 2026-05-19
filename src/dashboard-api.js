@@ -118,7 +118,7 @@ export function initAPI(client) {
 
         // --- Auth login ---
         if (pathname === '/api/auth/login' && method === 'GET') {
-            const url = `https://discord.com/api/oauth2/authorize?client_id=${process.env.CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=identify%20guilds%20email`;
+            const url = `https://discord.com/api/oauth2/authorize?client_id=${process.env.CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=identify%20guilds`;
             return json(res, 200, { url });
         }
 
@@ -134,7 +134,7 @@ export function initAPI(client) {
                         code,
                         grant_type: 'authorization_code',
                         redirect_uri: REDIRECT_URI,
-                        scope: 'identify guilds email',
+                        scope: 'identify guilds',
                     }),
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 });
