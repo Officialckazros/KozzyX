@@ -69,33 +69,60 @@ function detectJailbreak(text) {
 
 
 // ── Gemini Integration ───────────────────────────────────────────────────────
-async function callGemini(prompt, history = [], systemInstruction = SAFETY_SYSTEM_PROMPT) {
-    try {
-        const genAI = getGoogleAI();
-        const model = genAI.getGenerativeModel({
-            model: "gemini-2.5-flash",
-            systemInstruction: systemInstruction,
-        });
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-        if (history.length > 0) {
-            const chat = model.startChat({
-                history: history.map(m => ({
-                    role: m.role === "assistant" ? "model" : "user",
-                    parts: [{ text: m.content }],
-                })),
+async function callGemini(prompt, history = [], systemInstruction = SAFETY_SYSTEM_PROMPT) {
+    const maxAttempts = 3;
+    let delay = 1000;
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+            const genAI = getGoogleAI();
+            const model = genAI.getGenerativeModel({
+                model: "gemini-2.5-flash",
+                systemInstruction: systemInstruction,
             });
-            const result = await chat.sendMessage(prompt);
+
+            let result;
+            if (history.length > 0) {
+                const chat = model.startChat({
+                    history: history.map(m => ({
+                        role: m.role === "assistant" ? "model" : "user",
+                        parts: [{ text: m.content }],
+                    })),
+                });
+                result = await chat.sendMessage(prompt);
+            } else {
+                result = await model.generateContent(prompt);
+            }
             return result.response.text();
-        } else {
-            const result = await model.generateContent(prompt);
-            return result.response.text();
+        } catch (error) {
+            console.error(`Gemini API Error (Attempt ${attempt}/${maxAttempts}):`, error);
+            
+            const errMsg = error.message || "";
+            
+            // Check for non-transient configuration/key errors
+            if (errMsg.includes("Missing GOOGLE_GENERATIVE_AI_API_KEY")) {
+                return "MISSING_API_KEY";
+            }
+            if (errMsg.includes("API_KEY_INVALID") || errMsg.includes("API key not valid") || errMsg.includes("key not valid")) {
+                return "INVALID_API_KEY";
+            }
+
+            if (attempt === maxAttempts) {
+                if (errMsg.includes("429") || errMsg.includes("quota")) {
+                    return "QUOTA_EXCEEDED";
+                }
+                return "ERROR";
+            }
+
+            // Wait before retrying (exponential backoff)
+            await sleep(delay);
+            delay *= 2;
         }
-    } catch (error) {
-        console.error("Gemini API Error:", error);
-        if (error.message?.includes("429") || error.message?.includes("quota")) return "QUOTA_EXCEEDED";
-        return "ERROR";
     }
 }
+
 
 export async function askGemini(prompt) {
     if (detectJailbreak(prompt)) return "BLOCKED";
