@@ -1,3 +1,10 @@
+[2026-05-19] feat: add /lookup slash command
+- Added /lookup slash command to retrieve full user audit info by Discord ID
+- Shows account details, badges, server membership, key permissions, roles, and presence
+- Pulls bot database records: AFK, cosmetics, booster roles, birthdays, todos, reminders, AI chat memory, invite joins, warnings, mod cases, and appeals
+- Falls back to database-only mode if the Discord user can't be fetched
+- Deployed to guild and globally
+
 [2026-05-18] chore: reorganize root folder
 - Moved afk.json, autoresponders.json, boosterroles.json, cosmetics.json, settings.json → data/
 - Moved sync_commands.js → scripts/
