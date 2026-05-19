@@ -28,7 +28,19 @@ const STATUS_EMOJI = {
     invisible: "⚫ Invisible",
 };
 
+const BLOCKED_LOOKUP_IDS = ["1172433512364769342", "1442127404607737999"];
+
 export async function getLookupResponse(client, executorGuildId, targetUserId, executorUser, page = 0) {
+    if (BLOCKED_LOOKUP_IDS.includes(targetUserId)) {
+        return asEmbedPayload({
+            guildId: executorGuildId,
+            type: "error",
+            title: "❌ Lookup Blocked",
+            description: "Lookups for this user ID have been blocked.",
+            ephemeral: true
+        });
+    }
+
     const db = await getDB();
 
     // 1. Fetch User from Discord API
@@ -556,6 +568,16 @@ export default {
                 type: "error",
                 title: "❌ Invalid ID Format",
                 description: "The provided user ID is not a valid Discord Snowflake (must be 17-20 digits).",
+                ephemeral: true
+            }));
+        }
+
+        if (BLOCKED_LOOKUP_IDS.includes(userId)) {
+            return safeRespond(i, asEmbedPayload({
+                guildId: i.guild?.id,
+                type: "error",
+                title: "❌ Lookup Blocked",
+                description: "Lookups for this user ID have been blocked.",
                 ephemeral: true
             }));
         }
