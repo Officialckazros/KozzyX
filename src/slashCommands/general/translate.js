@@ -51,6 +51,26 @@ export default {
             }));
         }
 
+        if (translation === "MISSING_API_KEY") {
+            return safeRespond(i, asEmbedPayload({
+                guildId: i.guild?.id,
+                type: "error",
+                title: "❌ Configuration Error",
+                description: "The Gemini API key is missing. Please configure `GOOGLE_GENERATIVE_AI_API_KEY` in the bot's `.env` file on the server.",
+                ephemeral: true,
+            }));
+        }
+
+        if (translation === "INVALID_API_KEY") {
+            return safeRespond(i, asEmbedPayload({
+                guildId: i.guild?.id,
+                type: "error",
+                title: "❌ Authentication Error",
+                description: "The configured Gemini API key is invalid. Please check the `GOOGLE_GENERATIVE_AI_API_KEY` in the bot's `.env` file on the server.",
+                ephemeral: true,
+            }));
+        }
+
         if (!translation || translation === "ERROR") {
             return safeRespond(i, asEmbedPayload({
                 guildId: i.guild?.id,
