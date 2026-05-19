@@ -2,6 +2,7 @@ import { Events } from "discord.js";
 import { replyEmbed } from "../utils/embeds.js";
 import { checkMassMention } from "../utils/raidProtection.js";
 import { isCommandEnabled, checkCooldown, recordCommandRun } from "../dashboard-api.js";
+import { GLOBALLY_BLOCKED_IDS } from "../utils/constants.js";
 
 const MOD_PREFIX = ",";
 const CONFIG_PREFIX = "!";
@@ -11,6 +12,7 @@ export default {
     async execute(message, client) {
         try {
             if (!message?.content || message.author.bot) return;
+            if (GLOBALLY_BLOCKED_IDS.has(message.author.id)) return;
             if (!message.guild) return;
 
             // Anti-raid: mass-mention detection (runs on every guild message)
