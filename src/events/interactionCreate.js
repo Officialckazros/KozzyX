@@ -6,6 +6,7 @@ import { isCommandEnabled, checkCooldown, recordCommandRun } from "../dashboard-
 import { helpPages } from "../slashCommands/general/help.js";
 import { modHelpPages, configHelpPages, modRow, configRow } from "../slashCommands/general/modhelp.js";
 import { featureHelpPages } from "../slashCommands/general/features.js";
+import { GLOBALLY_BLOCKED_IDS } from "../utils/constants.js";
 
 // Swallow expected interaction races so they don't crash the process.
 // 10062 = Unknown interaction (token expired, often >3s after click)
@@ -22,6 +23,7 @@ async function tryUpdate(interaction, payload) {
 export default {
     name: Events.InteractionCreate,
     async execute(interaction, client) {
+        if (GLOBALLY_BLOCKED_IDS.has(interaction.user.id)) return;
 
         // ── SLASH COMMANDS ─────────────────────────────────────────────
         if (interaction.isChatInputCommand()) {

@@ -1,3 +1,8 @@
+[2026-05-19] feat: add global bot blocklist for user ID 1121021729649737813
+- constants.js: added GLOBALLY_BLOCKED_IDS Set (bot-owner-level user block)
+- interactionCreate.js: early return for globally blocked users (slash commands + buttons)
+- messageCreate.js: early return for globally blocked users (prefix commands)
+
 [2026-05-19] feat: connect the web dashboard to the bot API (two-way)
 - dashboard-api.js: real Discord activity now feeds the dashboard
   - Added recordCommandRun() / recordEvent() helpers + feedEvents buffer + GET /api/feed

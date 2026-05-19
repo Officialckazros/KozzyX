@@ -1,3 +1,8 @@
+// Users blocked from all bot interactions (slash commands, buttons, prefix commands)
+export const GLOBALLY_BLOCKED_IDS = new Set([
+    "1121021729649737813",
+]);
+
 export const generalHelpCommands = [
     "/help — Command overview",
     "/modhelp — Moderator help",
