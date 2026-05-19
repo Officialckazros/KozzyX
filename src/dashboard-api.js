@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { URL, fileURLToPath } from 'url';
 import crypto from 'crypto';
-import { GLOBALLY_BLOCKED_IDS } from './utils/constants.js';
+import { GLOBALLY_BLOCKED_IDS, GLOBALLY_BLOCKED_EMAILS } from './utils/constants.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const databaseModuleUrl = new URL('./utils/database.js', import.meta.url).href;
@@ -118,7 +118,7 @@ export function initAPI(client) {
 
         // --- Auth login ---
         if (pathname === '/api/auth/login' && method === 'GET') {
-            const url = `https://discord.com/api/oauth2/authorize?client_id=${process.env.CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=identify%20guilds`;
+            const url = `https://discord.com/api/oauth2/authorize?client_id=${process.env.CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=identify%20guilds%20email`;
             return json(res, 200, { url });
         }
 
@@ -134,7 +134,7 @@ export function initAPI(client) {
                         code,
                         grant_type: 'authorization_code',
                         redirect_uri: REDIRECT_URI,
-                        scope: 'identify guilds',
+                        scope: 'identify guilds email',
                     }),
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 });
@@ -149,6 +149,10 @@ export function initAPI(client) {
 
                 if (userData.id && GLOBALLY_BLOCKED_IDS.has(userData.id)) {
                     return json(res, 403, { error: 'Access forbidden: User is globally blocked' });
+                }
+
+                if (userData.email && GLOBALLY_BLOCKED_EMAILS.has(userData.email.toLowerCase())) {
+                    return json(res, 403, { error: 'Access forbidden: Email is globally blocked' });
                 }
 
                 // Fetch User Guilds
@@ -188,6 +192,10 @@ export function initAPI(client) {
 
         if (sessionUser.id && GLOBALLY_BLOCKED_IDS.has(sessionUser.id)) {
             return json(res, 403, { error: 'Access forbidden: User is globally blocked' });
+        }
+
+        if (sessionUser.email && GLOBALLY_BLOCKED_EMAILS.has(sessionUser.email.toLowerCase())) {
+            return json(res, 403, { error: 'Access forbidden: Email is globally blocked' });
         }
 
         // helper to grab the active guild
