@@ -3,14 +3,8 @@ import { Events } from "discord.js";
 export default {
     name: Events.GuildCreate,
     async execute(guild, client) {
-        try {
-            if (!client.user) return;
-            if (!client.readyAt) return; // Ignore initial guild cache loading on startup
-
-            await client.deploySlashCommands(guild.id);
-            console.log(`✅ Instant deployed slash commands to ${guild.name} (${guild.id})`);
-        } catch (err) {
-            console.error("GuildCreate deploy error:", err);
-        }
+        // Global commands are already deployed and available automatically in all guilds.
+        // Deploying guild commands here would cause duplicate commands.
+        console.log(`Joined new guild: ${guild.name} (${guild.id}). Global slash commands are available.`);
     }
 };
