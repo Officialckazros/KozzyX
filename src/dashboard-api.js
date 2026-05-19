@@ -12,7 +12,8 @@ async function importDatabase() {
 
 const PORT = 3456;
 const AUTH_KEY = 'KozzyX_Internal_API_' + crypto.randomBytes(32).toString('hex');
-const REDIRECT_URI = 'https://kozzyx.bazsi9849.workers.dev/dashboard';
+// Must exactly match an OAuth2 redirect registered in the Discord developer portal.
+const REDIRECT_URI = 'https://kozzyx.org/dashboard';
 
 const DATA_DIR = path.join(__dirname, '../data');
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -46,6 +47,12 @@ let botStats = {
 };
 
 const sessions = new Map();
+
+// Live activity feed — rolling buffer of real Discord events for the dashboard.
+let feedEvents = [];
+const MAX_FEED = 120;
+// Per-user-per-command cooldown tracker: `${type}:${name}:${userId}` -> last run timestamp.
+const cooldownHits = new Map();
 
 function readBody(req) {
     return new Promise((resolve, reject) => {
@@ -214,9 +221,12 @@ export function initAPI(client) {
                 })));
             }
 
-            // --- Stats ---
+            // --- Stats (incl. real server specs) ---
             if (pathname === '/api/stats' && method === 'GET') {
                 const mem = process.memoryUsage();
+                const owner = guild ? await guild.fetchOwner().catch(() => null) : null;
+                const textChannels = guild ? guild.channels.cache.filter(c => c.type === 0).size : 0;
+                const voiceChannels = guild ? guild.channels.cache.filter(c => c.type === 2).size : 0;
                 return json(res, 200, {
                     ...botStats,
                     uptime: Math.floor((Date.now() - botStats.uptime) / 1000),
@@ -225,16 +235,34 @@ export function initAPI(client) {
                     online: client.ws.status === 0,
                     ping: client.ws.ping,
                     guildName: guild?.name || '',
+                    guildId: guild?.id || '',
+                    guildIcon: guild?.iconURL({ size: 128 }) || null,
                     guildMembers: guild?.memberCount || 0,
                     guildOnline: guild ? guild.members.cache.filter(m => m.presence?.status && m.presence.status !== 'offline').size : 0,
                     guildBots: guild ? guild.members.cache.filter(m => m.user.bot).size : 0,
                     guildChannels: guild?.channels.cache.size || 0,
+                    guildTextChannels: textChannels,
+                    guildVoiceChannels: voiceChannels,
                     guildRoles: guild?.roles.cache.size || 0,
+                    guildEmojis: guild?.emojis.cache.size || 0,
+                    guildCreated: guild?.createdTimestamp || null,
+                    guildOwner: owner?.user?.tag || null,
+                    guildBoostTier: guild?.premiumTier || 0,
+                    guildBoostCount: guild?.premiumSubscriptionCount || 0,
+                    guildVerification: guild ? String(guild.verificationLevel) : null,
                     sys: {
                         memory: Math.floor(mem.rss / 1024 / 1024),
                         cpu: process.cpuUsage().user / 1000000
                     }
                 });
+            }
+
+            // --- Live activity feed (real Discord events) ---
+            if (pathname === '/api/feed' && method === 'GET') {
+                const list = feedEvents
+                    .filter(e => !guildId || !e.guildId || e.guildId === guildId)
+                    .slice(0, 40);
+                return json(res, 200, list);
             }
 
             // --- Logs ---
@@ -363,6 +391,7 @@ export function initAPI(client) {
                 try {
                     await command.execute(mockMessage, args, client);
                     botStats.commandsRan++;
+                    recordEvent('command', `${sessionUser?.username || 'Dashboard'} ran ${commandName} (dashboard)`, guild?.id);
                     return json(res, 200, { success: true, output: responses });
                 } catch (err) {
                     addLog('ERR', `Command error: ${err.message}`);
@@ -642,9 +671,26 @@ export function initAPI(client) {
                 });
             }
 
-            // --- Modlogs ---
+            // --- Modlogs (real moderation cases from the database) ---
             if (pathname === '/api/modlogs' && method === 'GET') {
-                return json(res, 200, modlogs);
+                if (!guild) return json(res, 200, []);
+                const { getDB } = await import('./utils/db.js');
+                const db = await getDB();
+                const rows = await db.all(
+                    "SELECT * FROM mod_cases WHERE guild_id = ? ORDER BY created_at DESC LIMIT 100",
+                    guild.id
+                );
+                return json(res, 200, rows.map(r => ({
+                    id: r.id,
+                    case: r.case_number,
+                    action: (r.action || 'mod').toUpperCase(),
+                    target: r.target_tag || r.target_id,
+                    targetId: r.target_id,
+                    moderator: r.executor_tag || r.executor_id,
+                    reason: r.reason || 'No reason provided',
+                    duration: r.duration_ms,
+                    timestamp: r.created_at
+                })));
             }
 
 
@@ -998,4 +1044,44 @@ export function addLog(level, msg) {
     const time = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     botLogs.push({ time, level, msg });
     if (botLogs.length > MAX_LOGS) botLogs.shift();
+}
+
+// ---------------- DASHBOARD CONNECTIVITY HELPERS ----------------
+// Push a real Discord event into the dashboard's live feed buffer.
+// `kind` is one of: command | join | mod. `text` is plain text (no HTML).
+export function recordEvent(kind, text, guildId) {
+    feedEvents.unshift({ kind, text: String(text), guildId: guildId || null, time: Date.now() });
+    if (feedEvents.length > MAX_FEED) feedEvents.pop();
+}
+
+// Called by the command handlers whenever a real Discord command runs.
+export function recordCommandRun({ name, type, user, guildId }) {
+    botStats.commandsRan++;
+    const display = `${type === 'slash' ? '/' : ''}${name}`;
+    addLog('CMD', `${user || 'user'} ran ${display}`);
+    recordEvent('command', `${user || 'Someone'} ran ${display}`, guildId);
+}
+
+// Whether a command is enabled (respects dashboard overrides).
+export function isCommandEnabled(type, name) {
+    const o = commandOverrides[`${type}:${name}`];
+    return !o || o.enabled !== false;
+}
+
+// Configured cooldown (in seconds) for a command, or 0 if none.
+export function getCommandCooldown(type, name) {
+    const o = commandOverrides[`${type}:${name}`];
+    return (o && Number(o.cooldown)) || 0;
+}
+
+// Enforce a per-user cooldown. Returns { ok } or { ok:false, remaining }.
+export function checkCooldown(type, name, userId) {
+    const cd = getCommandCooldown(type, name);
+    if (!cd) return { ok: true };
+    const key = `${type}:${name}:${userId}`;
+    const last = cooldownHits.get(key) || 0;
+    const elapsed = (Date.now() - last) / 1000;
+    if (elapsed < cd) return { ok: false, remaining: Math.ceil(cd - elapsed) };
+    cooldownHits.set(key, Date.now());
+    return { ok: true };
 }

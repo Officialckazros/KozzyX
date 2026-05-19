@@ -1,6 +1,7 @@
 import { Events } from "discord.js";
 import { replyEmbed } from "../utils/embeds.js";
 import { checkMassMention } from "../utils/raidProtection.js";
+import { isCommandEnabled, checkCooldown, recordCommandRun } from "../dashboard-api.js";
 
 const MOD_PREFIX = ",";
 const CONFIG_PREFIX = "!";
@@ -35,8 +36,28 @@ export default {
             if (isConfig && !command.config) return;
             if (isMod && command.config) return;
 
+            // Dashboard override: command disabled
+            if (!isCommandEnabled("prefix", command.name)) {
+                return replyEmbed(message, {
+                    type: "error",
+                    title: "⛔ Command Disabled",
+                    description: `The \`${command.name}\` command is currently disabled from the dashboard.`,
+                });
+            }
+
+            // Dashboard override: cooldown
+            const cd = checkCooldown("prefix", command.name, message.author.id);
+            if (!cd.ok) {
+                return replyEmbed(message, {
+                    type: "warning",
+                    title: "⏳ Slow Down",
+                    description: `Wait **${cd.remaining}s** before using \`${command.name}\` again.`,
+                });
+            }
+
             try {
                 await command.execute(message, args, client);
+                recordCommandRun({ name: command.name, type: "prefix", user: message.author.username, guildId: message.guild.id });
             } catch (error) {
                 console.error("[messageCreate] Command execution error:", error);
                 await replyEmbed(message, {

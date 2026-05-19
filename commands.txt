@@ -15,7 +15,7 @@ Prefix: ,
   Submit a ban appeal to a server.
 
 /ask <question>
-  Ask Claude AI a question. Remembers conversation history per user per server.
+  Ask Gemini AI a question. Remembers conversation history per user per server.
 
 /avatar [@user]
   Show your own or another user's avatar.
@@ -24,7 +24,7 @@ Prefix: ,
   Show your own or another user's banner.
 
 /clear_memory
-  Clear Claude AI's conversation history for you in this server.
+  Clear Gemini AI's conversation history for you in this server.
 
 /decide <options>
   Let the AI pick between your options.

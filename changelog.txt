@@ -1,15 +1,37 @@
-[2026-05-19] feat: add /lookup slash command & audit/security enhancements
+[2026-05-19] feat: connect the web dashboard to the bot API (two-way)
+- dashboard-api.js: real Discord activity now feeds the dashboard
+  - Added recordCommandRun() / recordEvent() helpers + feedEvents buffer + GET /api/feed
+  - /api/modlogs now reads real moderation cases from the mod_cases SQLite table (was JSON)
+  - /api/stats expanded with full server specs (boost tier/count, owner, verification,
+    channel/voice/role/emoji counts, creation date, icon)
+  - Added isCommandEnabled() / getCommandCooldown() / checkCooldown() exports
+  - OAuth REDIRECT_URI changed to https://kozzyx.org/dashboard
+    (must be registered in the Discord developer portal)
+- interactionCreate.js / messageCreate.js: enforce dashboard command enable/disable
+  and per-user cooldown overrides; record every command run into the live feed
+- guildMemberAdd.js: member joins recorded into the dashboard feed
+- moderationUtils.js: createCase() records mod actions into the dashboard feed
+- The dashboard itself lives in the separate website repo (~/Downloads/website):
+  every view (Overview, Moderation, Commands, Automation, AI, Members, Audit, Settings)
+  now talks to the real API instead of mock data; new Commands page manages all
+  68 commands; server switcher driven by /api/auth/guilds
+
+[2026-05-19] refactor: migrate all Claude/Anthropic systems to Gemini/Google
+- Swapped `@anthropic-ai/sdk` dependency for `@google/generative-ai` SDK
+- Refactored `src/utils/ai.js` safety prompts, system prompts, and helper functions
+- Updated AI translate and summarize slash commands to use `askGemini`
+- Renamed all instances of Claude to Gemini in `commands.txt`, `constants.js`, and general command descriptions
+- Updated website frontend pages (`index.html`, `kozzyxbotmain.html`, `privacy.html`, `dashboard.html`) to reference Gemini instead of Claude, updating links to Google's policies and displaying Gemini model choices
+
+[2026-05-19] feat: add /lookup slash command & interactive paginated auditing
 - Added /lookup slash command to retrieve full user audit info by Discord ID
-- Shows account details, badges, server membership, key permissions, roles, and presence
-- Pulls bot database records: AFK, cosmetics, booster roles, birthdays, todos, reminders, AI chat memory, invite joins, warnings, mod cases, and appeals
-- Falls back to database-only mode if the Discord user can't be fetched
-- Added Snowflake-based account age verification (always works even if the Discord API fetch fails)
-- Added default profile avatar detection
-- Added mutual servers scan showing the user's role status (Owner, Admin, Mod, Member) in each shared server
-- Added global database checks, pulling mod cases, warnings, and appeals across all bot servers
-- Added active invite links scanner in the current guild
-- Added automated Security Risk Assessment (Low / Medium / High) indicating specific risk factors
-- Deployed to guild and globally
+- Implemented interactive multi-page pagination using buttons:
+  - Page 1 (Profile & Security): Account creation (via snowflake ID), bot status, badge count, account age, default avatar check, and detailed Security Risk Assessment (Low / Medium / High) with a list of active risk factors.
+  - Page 2 (Servers & Privileges): Lists all mutual servers sorted by join date, user status inside each (Owner, Admin, Mod, Member), and full details of the current server membership.
+  - Page 3 (Moderation History): Pulls active global warnings, mod cases, and appeals across *all* database servers, detailing the 5 most recent records.
+  - Page 4 (Bot Records & Activity): Tracks invite joins/invites created, personal lists (todos, reminders, AFK status, cosmetics/titles, birthdays), AI chatbot message history count, dynamic voice channel ownership, and audit logs.
+- Functions regardless of whether the user is present in the current server or not.
+- Deployed globally.
 
 [2026-05-18] chore: reorganize root folder
 - Moved afk.json, autoresponders.json, boosterroles.json, cosmetics.json, settings.json → data/
@@ -51,8 +73,8 @@
 - /todo remove: fetches and shows the removed task text, proper error embed
 - /todo clear: reports how many tasks were removed
 
-[2026-04-27] security: harden Claude AI safety filter against jailbreaks and prompt injection
-- Added locked SAFETY_SYSTEM_PROMPT injected into every user-facing Claude call (ask, translate, summarize, conversation history)
+[2026-04-27] security: harden Gemini AI safety filter against jailbreaks and prompt injection
+- Added locked SAFETY_SYSTEM_PROMPT injected into every user-facing Gemini call (ask, translate, summarize, conversation history)
 - Added detectJailbreak() with 20+ regex patterns catching: DAN, developer mode, god mode, "ignore instructions", "no restrictions", prompt injection via [SYSTEM], and more
 - Moderation prompt made significantly stricter with explicit instruction to flag when in doubt
 - All AI commands (/ask, /translate, /summarize) now return BLOCKED with an ephemeral error instead of continuing on jailbreak detection

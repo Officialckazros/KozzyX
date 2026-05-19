@@ -1,6 +1,7 @@
 import { PermissionsBitField } from "discord.js";
 import { buildCoolEmbed, replyEmbed, postCase } from "./embeds.js";
 import { getDB } from "./db.js";
+import { recordEvent } from "../dashboard-api.js";
 
 // ---------------- HIERARCHY & VALIDATION ----------------
 // Validates that `executor` (GuildMember) can perform `action` on `target` (GuildMember | User).
@@ -64,6 +65,11 @@ export async function createCase({ guild, action, target, executor, reason = nul
         executor.id, executor.tag ?? executor.user?.tag ?? null,
         reason, durationMs, now
     );
+    try {
+        const exTag = executor.tag ?? executor.user?.tag ?? "Staff";
+        const tgTag = target.tag ?? target.user?.tag ?? target.id;
+        recordEvent("mod", `${exTag} performed ${action} on ${tgTag}`, guild.id);
+    } catch { /* feed is best-effort */ }
     return caseNumber;
 }
 

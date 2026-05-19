@@ -2,6 +2,7 @@ import { Events, PermissionsBitField, ActionRowBuilder, ButtonBuilder, ButtonSty
 import { safeRespond } from "../utils/helpers.js";
 import { asEmbedPayload, buildCoolEmbed } from "../utils/embeds.js";
 import { getDB } from "../utils/db.js";
+import { isCommandEnabled, checkCooldown, recordCommandRun } from "../dashboard-api.js";
 import { helpPages } from "../slashCommands/general/help.js";
 import { modHelpPages, configHelpPages, modRow, configRow } from "../slashCommands/general/modhelp.js";
 import { featureHelpPages } from "../slashCommands/general/features.js";
@@ -32,8 +33,20 @@ export default {
                 return safeRespond(interaction, { content: `❌ Command \`${cmdName}\` not found.`, ephemeral: true });
             }
 
+            // Dashboard override: command disabled
+            if (!isCommandEnabled("slash", cmdName)) {
+                return safeRespond(interaction, { content: `⛔ The \`/${cmdName}\` command is currently disabled.`, ephemeral: true });
+            }
+
+            // Dashboard override: cooldown
+            const cd = checkCooldown("slash", cmdName, interaction.user.id);
+            if (!cd.ok) {
+                return safeRespond(interaction, { content: `⏳ Please wait **${cd.remaining}s** before using \`/${cmdName}\` again.`, ephemeral: true });
+            }
+
             try {
                 await command.execute(interaction);
+                recordCommandRun({ name: cmdName, type: "slash", user: interaction.user.username, guildId: interaction.guildId });
             } catch (error) {
                 console.error(`[Interaction] ❌ Execution failed for '${cmdName}':`, error);
                 await safeRespond(interaction, { content: `❌ Internal error while executing \`${cmdName}\`.`, ephemeral: true });
@@ -91,6 +104,16 @@ export default {
                     new ButtonBuilder().setCustomId(`features_next:${page}`).setLabel("Next ➡").setStyle(ButtonStyle.Primary).setDisabled(page === featureHelpPages.length - 1)
                 );
                 return tryUpdate(interaction, { embeds: [featureHelpPages[page]], components: [row] });
+            }
+
+            if (id.startsWith("lookup_page:")) {
+                const [, targetUserId, pageStr] = id.split(":");
+                const page = parseInt(pageStr);
+                const lookupCmd = client.slashCommands.get("lookup");
+                if (lookupCmd && lookupCmd.getLookupResponse) {
+                    const payload = await lookupCmd.getLookupResponse(client, interaction.guildId, targetUserId, interaction.user, page);
+                    return tryUpdate(interaction, payload);
+                }
             }
 
             // ── APPEAL BUTTONS ─────────────────────────────────────────────

@@ -1,6 +1,6 @@
 import { safeRespond } from "../../utils/helpers.js";
 import { asEmbedPayload } from "../../utils/embeds.js";
-import { askClaude } from "../../utils/ai.js";
+import { askGemini } from "../../utils/ai.js";
 
 // Rate limiting: Store user IDs and their last command time
 const cooldowns = new Map();
@@ -39,7 +39,7 @@ export default {
         await i.deferReply();
 
         const prompt = `Translate the following text to ${to}. Only provide the translation, nothing else.\n\nText: ${text}`;
-        const translation = await askClaude(prompt);
+        const translation = await askGemini(prompt);
 
         if (translation === "BLOCKED") {
             return safeRespond(i, asEmbedPayload({
