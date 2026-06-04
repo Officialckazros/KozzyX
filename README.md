@@ -136,10 +136,11 @@ scripts/                # Maintenance & deploy helpers
 
 | Command          | What it does                                 |
 | ---------------- | -------------------------------------------- |
-| `npm start`      | Start the bot                                |
-| `npm run dev`    | Start with `--watch` auto-reload             |
-| `npm run deploy` | Register slash commands globally             |
-| `npm run sync`   | Sync commands via `scripts/sync_commands.js` |
+| `npm start`      | Start the bot                                 |
+| `npm run dev`    | Start with `--watch` auto-reload              |
+| `npm run deploy` | Register slash commands globally              |
+| `npm run sync`   | Sync commands via `scripts/sync_commands.js`  |
+| `npm run deploy-all` | Commit changes, push to GitHub, and deploy to VM |
 
 ## License
 

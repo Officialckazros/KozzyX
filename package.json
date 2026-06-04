@@ -9,6 +9,7 @@
     "start": "node --env-file=config/.env src/index.js",
     "dev": "node --env-file=config/.env --watch src/index.js",
     "deploy": "node --env-file=config/.env src/deploy.js",
+    "deploy-all": "./scripts/deploy-everywhere.sh",
     "sync": "node scripts/sync_commands.js"
   },
   "dependencies": {
