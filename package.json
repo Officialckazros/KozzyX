@@ -4,6 +4,7 @@
   "description": "Moderation-only Discord bot — bans, kicks, warns, anti-raid, audit log, appeals.",
   "main": "src/index.js",
   "type": "module",
+  "license": "MIT",
   "scripts": {
     "start": "node --env-file=config/.env src/index.js",
     "dev": "node --env-file=config/.env --watch src/index.js",
