@@ -6,9 +6,6 @@ const MODELS = [
     { name: "Nano Banana 2 (default)", value: "nano-banana-2" },
 ];
 
-/**
- * Generates an image using Nano Banana 2 API
- */
 async function generateImageWithNanoBanana(prompt, width, height) {
     if (!process.env.NANO_BANANA_API_KEY) {
         throw new Error("Missing NANO_BANANA_API_KEY in .env");
@@ -80,7 +77,7 @@ export default {
             const embed = buildCoolEmbed({
                 guildId: i.guild?.id,
                 type: "info",
-                title: "🎨 Nano Banana 2 Generation",
+                title: "Nano Banana 2 Generation",
                 description: `**Prompt:** ${prompt}\n\n${details.join(" • ")}`,
                 footerUser: i.user,
                 client: i.client,

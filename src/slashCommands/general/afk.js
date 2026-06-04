@@ -8,6 +8,6 @@ export default {
         ]
     },
     async execute(interaction) {
-        return safeRespond(interaction, asEmbedPayload({ guildId: interaction.guild?.id, type: "afk", title: "💤 AFK", description: "Use `,afk <reason>` in chat.", ephemeral: true }));
+        return safeRespond(interaction, asEmbedPayload({ guildId: interaction.guild?.id, type: "afk", title: "AFK", description: "Use `,afk <reason>` in chat.", ephemeral: true }));
     }
 };

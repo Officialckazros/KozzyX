@@ -16,7 +16,7 @@ export default {
         if (!word) {
             return safeRespond(i, asEmbedPayload({
                 guildId: i.guild?.id, type: "error",
-                title: "❌ Missing Word",
+                title: "Missing Word",
                 description: "Provide a word to define.",
                 ephemeral: true,
             }));
@@ -46,7 +46,7 @@ export default {
                     return line;
                 }).join("\n").slice(0, 1024);
                 fields.push({
-                    name: `📖 ${meaning.partOfSpeech}`,
+                    name: `${meaning.partOfSpeech}`,
                     value,
                     inline: false,
                 });
@@ -56,13 +56,13 @@ export default {
                 .flatMap(m => m.synonyms || [])
                 .slice(0, 6);
             if (synonyms.length) {
-                fields.push({ name: "🔁 Synonyms", value: synonyms.map(s => `\`${s}\``).join(", "), inline: false });
+                fields.push({ name: "Synonyms", value: synonyms.map(s => `\`${s}\``).join(", "), inline: false });
             }
 
             const embed = buildCoolEmbed({
                 guildId: i.guild?.id,
                 type: "info",
-                title: `📚 ${entry.word}`,
+                title: `${entry.word}`,
                 description: phonetic ? `*${phonetic}*` : null,
                 fields,
                 showAuthor: true,
@@ -70,7 +70,7 @@ export default {
             });
 
             if (entry.sourceUrls?.[0]) embed.setURL(entry.sourceUrls[0]);
-            if (audio) embed.addFields({ name: "🔊 Audio", value: `[Listen](${audio.startsWith("http") ? audio : `https:${audio}`})`, inline: true });
+            if (audio) embed.addFields({ name: "Audio", value: `[Listen](${audio.startsWith("http") ? audio : `https:${audio}`})`, inline: true });
 
             embed.setFooter({
                 text: `Requested by ${i.user.tag}`,
@@ -81,7 +81,7 @@ export default {
         } catch {
             return safeRespond(i, asEmbedPayload({
                 guildId: i.guild?.id, type: "error",
-                title: "❌ Not Found",
+                title: "Not Found",
                 description: `I couldn't find a definition for **${word}**. Check the spelling and try again.`,
                 ephemeral: true,
             }));

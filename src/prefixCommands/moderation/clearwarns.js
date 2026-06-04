@@ -7,15 +7,15 @@ export default {
     name: "clearwarns",
     async execute(message, args) {
         if (!message.member.permissions.has(PermissionsBitField.Flags.ModerateMembers)) {
-            return replyEmbed(message, { type: "error", title: "⛔ Permission Needed", description: "You need **Timeout Members** permission." });
+            return replyEmbed(message, { type: "error", title: "Permission Needed", description: "You need **Timeout Members** permission." });
         }
         const target = message.mentions.members.first();
         if (!target) {
-            return replyEmbed(message, { type: "error", title: "❌ Usage", description: "`,clearwarns @user`" });
+            return replyEmbed(message, { type: "error", title: "Usage", description: "`,clearwarns @user`" });
         }
 
         const v = validateModAction({ executor: message.member, target, action: "clear warnings of" });
-        if (!v.ok) return replyEmbed(message, { type: "error", title: "❌ Cannot Clear", description: v.reason });
+        if (!v.ok) return replyEmbed(message, { type: "error", title: "Cannot Clear", description: v.reason });
 
         const data = getWarningData(message.guild.id, target.id);
         const before = data.count;
@@ -42,7 +42,7 @@ export default {
             user: target.user,
             guild: message.guild,
             type: "success",
-            title: "🧽 All warnings cleared",
+            title: "All warnings cleared",
             description: "Your warnings in the server were cleared by a moderator.",
             moderatorTag: message.author.tag,
             reason: `Cleared ${before} warning(s).`,
@@ -52,12 +52,12 @@ export default {
         const embed = buildCoolEmbed({
             guildId: message.guild.id,
             type: "success",
-            title: "🧽 Warnings Cleared",
+            title: "Warnings Cleared",
             fields: [
-                { name: "👤 Target", value: `${target}\n\`${target.id}\``, inline: true },
-                { name: "👮 Moderator", value: `${message.author}\n\`${message.author.id}\``, inline: true },
-                { name: "📁 Case", value: `#${caseNumber}`, inline: true },
-                { name: "🧹 Cleared", value: `**${before}** warning(s)`, inline: false },
+                { name: "Target", value: `${target}\n\`${target.id}\``, inline: true },
+                { name: "Moderator", value: `${message.author}\n\`${message.author.id}\``, inline: true },
+                { name: "Case", value: `#${caseNumber}`, inline: true },
+                { name: "Cleared", value: `**${before}** warning(s)`, inline: false },
             ],
             showAuthor: false,
             showFooter: true,

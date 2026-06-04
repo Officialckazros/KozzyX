@@ -28,19 +28,19 @@ export default {
             .join(" • ");
 
         const fields = [
-            { name: "🖼️ Direct Links", value: formatLinks, inline: false },
+            { name: "Direct Links", value: formatLinks, inline: false },
         ];
 
         if (serverAvatar && serverAvatar !== globalAvatar) {
             fields.push({
-                name: "🏠 Server Avatar",
+                name: "Server Avatar",
                 value: `[Click here](${serverAvatar})`,
                 inline: true,
             });
         }
 
         fields.push({
-            name: "🌐 Global Avatar",
+            name: "Global Avatar",
             value: `[Click here](${globalAvatar})`,
             inline: true,
         });
@@ -48,7 +48,7 @@ export default {
         const embed = buildCoolEmbed({
             guildId: i.guild?.id,
             type: "info",
-            title: `🖼️ ${user.username}'s Avatar`,
+            title: `${user.username}'s Avatar`,
             description: `${user}`,
             fields,
             showAuthor: true,

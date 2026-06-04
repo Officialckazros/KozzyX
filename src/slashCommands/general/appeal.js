@@ -24,24 +24,22 @@ export default {
         if (!guild) {
             return safeRespond(interaction, asEmbedPayload({
                 guildId: null, type: "error",
-                title: "❌ Server Not Found",
+                title: "Server Not Found",
                 description: "I couldn't find that server. Make sure you have the correct server ID and that the bot is in that server.",
                 ephemeral: true,
             }));
         }
 
-        // Verify user is actually banned
         const ban = await guild.bans.fetch(interaction.user.id).catch(() => null);
         if (!ban) {
             return safeRespond(interaction, asEmbedPayload({
                 guildId: null, type: "error",
-                title: "❌ Not Banned",
+                title: "Not Banned",
                 description: `You don't appear to be banned from **${guild.name}**.`,
                 ephemeral: true,
             }));
         }
 
-        // Check for duplicate pending appeal
         const db = await getDB();
         const existing = await db.get(
             "SELECT id FROM appeals WHERE guild_id = ? AND user_id = ? AND status = 'pending'",
@@ -50,20 +48,18 @@ export default {
         if (existing) {
             return safeRespond(interaction, asEmbedPayload({
                 guildId: null, type: "warning",
-                title: "⏳ Appeal Already Pending",
+                title: "Appeal Already Pending",
                 description: `You already have a pending appeal for **${guild.name}**. Please wait for staff to review it.`,
                 ephemeral: true,
             }));
         }
 
-        // Insert appeal record
         const result = await db.run(
             "INSERT INTO appeals (guild_id, user_id, reason, status, created_at) VALUES (?, ?, ?, 'pending', ?)",
             guildId, interaction.user.id, reason, Date.now()
         );
         const appealId = result.lastID;
 
-        // Find the appeals channel in the target server
         const { getGuildSettings } = await import("../../utils/database.js");
         const settings = getGuildSettings(guildId);
         const channelId = settings.appealsChannelId;
@@ -72,7 +68,7 @@ export default {
         if (staffChannel?.isTextBased()) {
             const appealEmbed = new EmbedBuilder()
                 .setColor(0xFAA61A)
-                .setTitle("📩 New Ban Appeal")
+                .setTitle("New Ban Appeal")
                 .setThumbnail(interaction.user.displayAvatarURL())
                 .addFields(
                     { name: "User", value: `${interaction.user.tag} (<@${interaction.user.id}>)`, inline: true },
@@ -83,9 +79,9 @@ export default {
                 .setTimestamp();
 
             const row = new ActionRowBuilder().addComponents(
-                new ButtonBuilder().setCustomId(`appeal_accept_${appealId}_${interaction.user.id}`).setLabel("✅ Accept").setStyle(ButtonStyle.Success),
-                new ButtonBuilder().setCustomId(`appeal_deny_${appealId}_${interaction.user.id}`).setLabel("❌ Deny").setStyle(ButtonStyle.Danger),
-                new ButtonBuilder().setCustomId(`appeal_pending_${appealId}_${interaction.user.id}`).setLabel("⏳ Mark Pending").setStyle(ButtonStyle.Secondary),
+                new ButtonBuilder().setCustomId(`appeal_accept_${appealId}_${interaction.user.id}`).setLabel("Accept").setStyle(ButtonStyle.Success),
+                new ButtonBuilder().setCustomId(`appeal_deny_${appealId}_${interaction.user.id}`).setLabel("Deny").setStyle(ButtonStyle.Danger),
+                new ButtonBuilder().setCustomId(`appeal_pending_${appealId}_${interaction.user.id}`).setLabel("Mark Pending").setStyle(ButtonStyle.Secondary),
             );
 
             await staffChannel.send({ embeds: [appealEmbed], components: [row] }).catch(() => null);
@@ -93,7 +89,7 @@ export default {
 
         return safeRespond(interaction, asEmbedPayload({
             guildId: null, type: "success",
-            title: "📩 Appeal Submitted",
+            title: "Appeal Submitted",
             description: `Your appeal for **${guild.name}** has been submitted (ID: \`${appealId}\`). Staff will review it.`,
             ephemeral: true,
         }));

@@ -1,4 +1,3 @@
-// Manual deploy script
 import { REST, Routes } from "discord.js";
 import { readdirSync, statSync } from "fs";
 import { join, dirname } from "path";
@@ -39,7 +38,6 @@ const rest = new REST({ version: "10" }).setToken(token);
 try {
     console.log(`Started refreshing ${commands.length} application (/) commands.`);
 
-    // Global deploy
     await rest.put(
         Routes.applicationCommands(clientId),
         { body: commands },

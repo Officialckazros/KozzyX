@@ -11,7 +11,7 @@ export default {
             const embed = buildCoolEmbed({
                 guildId: message.guild.id,
                 type: "success",
-                title: "✅ Clean Record",
+                title: "Clean Record",
                 description: `${target} has no warnings.`,
                 showAuthor: true,
                 client: message.client,
@@ -34,10 +34,10 @@ export default {
         const embed = buildCoolEmbed({
             guildId: message.guild.id,
             type: "warning",
-            title: `⚠️ Warnings — ${target.user.tag}`,
+            title: `Warnings — ${target.user.tag}`,
             description: `**Active Warnings:** \`${data.count}\``,
             fields: lines.length
-                ? [{ name: `📋 Recent History (last ${lines.length})`, value: lines.join("\n").slice(0, 1024), inline: false }]
+                ? [{ name: `Recent History (last ${lines.length})`, value: lines.join("\n").slice(0, 1024), inline: false }]
                 : [],
             showAuthor: true,
             client: message.client,

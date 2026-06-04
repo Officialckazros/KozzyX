@@ -22,7 +22,7 @@ export class ExtendedClient extends Client {
         this.slashCommands = new Collection();
         this.prefixCommands = new Collection();
         this.aliases = new Collection();
-        this.slashData = []; // for registration
+        this.slashData = [];
     }
 
     async loadHandlers() {
@@ -34,10 +34,10 @@ export class ExtendedClient extends Client {
         try {
             if (guildId) {
                 await rest.put(Routes.applicationGuildCommands(this.user.id, guildId), { body: this.slashData });
-                console.log(`✅ Deployed ${this.slashData.length} guild commands to ${guildId}.`);
+                console.log(`Deployed ${this.slashData.length} guild commands to ${guildId}.`);
             } else {
                 await rest.put(Routes.applicationCommands(this.user.id), { body: this.slashData });
-                console.log(`✅ Deployed ${this.slashData.length} global commands.`);
+                console.log(`Deployed ${this.slashData.length} global commands.`);
             }
         } catch (e) {
             console.error("Deploy error:", e);

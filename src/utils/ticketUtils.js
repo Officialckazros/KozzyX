@@ -29,7 +29,7 @@ export async function scheduleTicketAutoClose(guild, channel, ms) {
 
                 await postCase(
                     guild,
-                    caseEmbed(guild.id, "🎫 Ticket Closed (Auto)", [
+                    caseEmbed(guild.id, "Ticket Closed (Auto)", [
                         `**Channel:** <#${channel.id}>`,
                         `**Reason:** Auto-close timer reached`,
                     ])
@@ -37,7 +37,7 @@ export async function scheduleTicketAutoClose(guild, channel, ms) {
 
                 await sendEmbed(fresh, guild.id, {
                     type: "ticket",
-                    title: "⏳ Ticket Auto-Closed",
+                    title: "Ticket Auto-Closed",
                     description: "This ticket has been **auto-closed**.",
                 });
 
@@ -58,7 +58,7 @@ export async function scheduleTicketAutoClose(guild, channel, ms) {
 export async function createTicketChannel(interaction, categoryId) {
     const guild = interaction.guild;
     if (!guild) return safeRespond(interaction, asEmbedPayload({
-        guildId: null, type: "error", title: "❌ Error", description: "This can only be used in a server.", ephemeral: true
+        guildId: null, type: "error", title: "Something went wrong", description: "This can only be used in a server.", ephemeral: true
     }));
 
     const settings = getGuildSettings(guild.id);
@@ -68,7 +68,7 @@ export async function createTicketChannel(interaction, categoryId) {
         return safeRespond(interaction, asEmbedPayload({
             guildId: guild.id,
             type: "error",
-            title: "⛔ Ticket Limit",
+            title: "Ticket Limit",
             description: "You can only open **3 tickets per hour**. Try again later.",
             ephemeral: true,
         }));
@@ -100,7 +100,7 @@ export async function createTicketChannel(interaction, categoryId) {
     });
 
     const closeRow = new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId("ticket_close").setLabel("🔒 Close Ticket").setStyle(ButtonStyle.Danger)
+        new ButtonBuilder().setCustomId("ticket_close").setLabel("Close Ticket").setStyle(ButtonStyle.Danger)
     );
 
     let roleDisplay = "";
@@ -112,7 +112,7 @@ export async function createTicketChannel(interaction, categoryId) {
         ...asEmbedPayload({
             guildId: guild.id,
             type: "ticket",
-            title: "🎫 Ticket Opened",
+            title: "Ticket Opened",
             description:
                 `**Opened by:** <@${interaction.user.id}>\n` +
                 `**Category:** ${label}\n\n` +
@@ -121,20 +121,20 @@ export async function createTicketChannel(interaction, categoryId) {
             footerUser: null,
         }),
         components: [closeRow],
-        allowedMentions: { parse: [] }, // show role mention but do not ping
+        allowedMentions: { parse: [] },
     });
 
     await safeRespond(interaction, asEmbedPayload({
         guildId: guild.id,
         type: "success",
-        title: "✅ Ticket Created",
+        title: "Ticket Created",
         description: `Your ticket has been created: <#${channel.id}>`,
         ephemeral: true,
     }));
 
     await postCase(
         guild,
-        caseEmbed(guild.id, "🎫 Ticket Opened", [
+        caseEmbed(guild.id, "Ticket Opened", [
             `**User:** ${interaction.user.tag} (<@${interaction.user.id}>)`,
             `**Category:** ${label}`,
             `**Channel:** <#${channel.id}>`,
@@ -148,7 +148,7 @@ export async function createTicketChannel(interaction, categoryId) {
 export async function closeTicketByStaff(interaction) {
     const guild = interaction.guild;
     if (!guild) return safeRespond(interaction, asEmbedPayload({
-        guildId: null, type: "error", title: "❌ Error", description: "This can only be used in a server.", ephemeral: true
+        guildId: null, type: "error", title: "Something went wrong", description: "This can only be used in a server.", ephemeral: true
     }));
 
     const member = await guild.members.fetch(interaction.user.id);
@@ -159,7 +159,7 @@ export async function closeTicketByStaff(interaction) {
         return safeRespond(interaction, asEmbedPayload({
             guildId: guild.id,
             type: "error",
-            title: "⛔ Staff Only",
+            title: "Restricted to staff members",
             description: "Only staff can close tickets.",
             ephemeral: true,
         }));
@@ -167,13 +167,13 @@ export async function closeTicketByStaff(interaction) {
 
     const channel = interaction.channel;
     if (!channel) return safeRespond(interaction, asEmbedPayload({
-        guildId: guild.id, type: "error", title: "❌ Error", description: "Channel not found.", ephemeral: true
+        guildId: guild.id, type: "error", title: "Something went wrong", description: "Channel not found.", ephemeral: true
     }));
 
     await safeRespond(interaction, asEmbedPayload({
         guildId: guild.id,
         type: "success",
-        title: "✅ Closing Ticket",
+        title: "Closing Ticket",
         description: "This ticket will now be closed.",
         ephemeral: true,
     }));
@@ -182,9 +182,8 @@ export async function closeTicketByStaff(interaction) {
     if (timer) clearTimeout(timer);
     ticketAutoCloseTimers.delete(channel.id);
 
-    // AI ticket summary (if plugin enabled)
     const settings = getGuildSettings(guild.id);
-    if (settings.plugins?.ai_moderation || true) { // run if any ai feature is on — cheap operation
+    if (settings.plugins?.ai_moderation || true) {
         try {
             const fetched = await channel.messages.fetch({ limit: 100 });
             const msgs = [...fetched.values()]
@@ -198,7 +197,7 @@ export async function closeTicketByStaff(interaction) {
                     await postCase(guild, buildCoolEmbed({
                         guildId: guild.id,
                         type: "ticket",
-                        title: "📋 Ticket Summary",
+                        title: "Ticket Summary",
                         description: `**Channel:** <#${channel.id}> (closed by ${interaction.user.tag})\n\n${summary}`,
                     }));
                 }
@@ -210,7 +209,7 @@ export async function closeTicketByStaff(interaction) {
 
     await postCase(
         guild,
-        caseEmbed(guild.id, "🎫 Ticket Closed (Manual)", [
+        caseEmbed(guild.id, "Ticket Closed (Manual)", [
             `**Channel:** <#${channel.id}>`,
             `**Closed by:** ${interaction.user.tag}`,
         ])
@@ -219,7 +218,7 @@ export async function closeTicketByStaff(interaction) {
     try {
         await sendEmbed(channel, guild.id, {
             type: "ticket",
-            title: "🔒 Ticket Closed",
+            title: "Ticket Closed",
             description: `Closed by **${interaction.user.tag}**.`,
         });
     } catch { }
@@ -230,7 +229,7 @@ export async function closeTicketByStaff(interaction) {
 export function buildTicketPanelEmbed(guildId) {
     const settings = getGuildSettings(guildId);
     return {
-        title: settings.ticket?.panelTitle || "🎫 Support Tickets",
+        title: settings.ticket?.panelTitle || "Support Tickets",
         description: settings.ticket?.panelDescription || "Click the button below to open a ticket.",
         color: settings.embedColors?.ticket || 0x57F287,
     };

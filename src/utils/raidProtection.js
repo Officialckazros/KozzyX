@@ -3,12 +3,10 @@ import { getGuildSettings, saveSettings } from "./database.js";
 import { buildCoolEmbed } from "./embeds.js";
 import { createCase } from "./moderationUtils.js";
 
-// guildId -> [{ id, joinedAt, accountAge }]
 const joinWindows = new Map();
-// guildId -> Set<userId> of recent raiders, tracked across most recent lockdown
 const recentRaiders = new Map();
 
-const NEW_ACCOUNT_DAYS = 7; // <7 days = "new" for embed flag
+const NEW_ACCOUNT_DAYS = 7;
 
 function getJoinWindow(guildId, windowMs) {
     const now = Date.now();
@@ -18,20 +16,17 @@ function getJoinWindow(guildId, windowMs) {
 }
 
 async function postRaidAlert({ guild, embed, alertChannelId }) {
-    // 1. Alert channel (if configured)
     if (alertChannelId) {
         const ch = guild.channels.cache.get(alertChannelId);
         if (ch?.isTextBased()) {
             await ch.send({ content: "@here", embeds: [embed], allowedMentions: { parse: ["everyone"] } }).catch(() => {});
         }
     }
-    // 2. Case channel
     const settings = getGuildSettings(guild.id);
     if (settings.caseChannelId && settings.caseChannelId !== alertChannelId) {
         const ch = guild.channels.cache.get(settings.caseChannelId);
         if (ch?.isTextBased()) await ch.send({ embeds: [embed] }).catch(() => {});
     }
-    // 3. Owner DM
     try {
         const owner = await guild.fetchOwner();
         await owner.send({ embeds: [embed] });
@@ -53,8 +48,6 @@ export async function checkRaid(member) {
     const window = getJoinWindow(guild.id, windowMs);
     window.push({ id: member.id, tag: member.user.tag, joinedAt: Date.now(), accountAge });
 
-    // ── Account-age filter (only fires during active raid pressure)
-    // If the join window is already at 50%+ threshold and this account is too new, auto-kick
     if (minAccountAgeMs > 0 && window.length >= Math.ceil(threshold / 2) && accountAge < minAccountAgeMs) {
         await member.kick(`Anti-raid: account too new during join spike (age: ${Math.round(accountAge / 86400000)}d)`).catch(() => null);
         const raiders = recentRaiders.get(guild.id) ?? new Set();
@@ -64,10 +57,8 @@ export async function checkRaid(member) {
 
     if (window.length < threshold) return false;
 
-    // ── Raid detected
     console.warn(`[antiRaid] Raid detected in ${guild.name} — ${window.length} joins in ${windowMs / 1000}s`);
 
-    // Snapshot raiders before resetting window
     const raiders = window.map(j => ({ id: j.id, tag: j.tag, accountAge: j.accountAge }));
     recentRaiders.set(guild.id, new Set(raiders.map(r => r.id)));
     joinWindows.delete(guild.id);
@@ -93,15 +84,15 @@ export async function checkRaid(member) {
     const embed = buildCoolEmbed({
         guildId: guild.id,
         type: "error",
-        title: "🚨 Anti-Raid Triggered",
+        title: "Anti-Raid Triggered",
         description: `**${window.length} accounts** joined within **${windowMs / 1000}s**.`,
         fields: [
-            { name: "🛡️ Action Taken", value: `\`${action.toUpperCase()}\``, inline: true },
+            { name: "Action Taken", value: `\`${action.toUpperCase()}\``, inline: true },
             { name: "🆕 New Accounts (<7d)", value: `${newAccounts}/${raiders.length}`, inline: true },
             { name: "⏱️ Window", value: `${windowMs / 1000}s`, inline: true },
-            { name: "👥 Raiders", value: raiderList + (raiders.length > 10 ? `\n*+${raiders.length - 10} more*` : ""), inline: false },
+            { name: "Raiders", value: raiderList + (raiders.length > 10 ? `\n*+${raiders.length - 10} more*` : ""), inline: false },
             {
-                name: "💡 Recovery",
+                name: "Recovery",
                 value: action === "lockdown"
                     ? "Use `,unraid` to lift the lockdown.\nUse `,banraid` to ban all detected raiders.\nUse `,raidlist` to see all detected raider IDs."
                     : "Use `,raidlist` to see all detected raider IDs.",
@@ -160,7 +151,6 @@ export async function unlockGuild(guild) {
     }
 }
 
-// ── PUBLIC ACCESSORS ────────────────────────────────────────────────────
 export function getRecentRaiders(guildId) {
     return recentRaiders.get(guildId) ?? new Set();
 }
@@ -169,21 +159,17 @@ export function clearRecentRaiders(guildId) {
     recentRaiders.delete(guildId);
 }
 
-// ── SIMULATION ────────────────────────────────────────────────────────────
-// Pre-fills the join window with fake entries so the next checkRaid call
-// pushes it over threshold and triggers the full raid response.
 export function primeSimulation(guildId, count) {
     const now = Date.now();
     const entries = Array.from({ length: count - 1 }, (_, i) => ({
         id: `sim_${i}`,
         tag: `SimRaider${i + 1}#0000`,
         joinedAt: now,
-        accountAge: 2 * 86400000, // 2-day-old fake accounts
+        accountAge: 2 * 86400000,
     }));
     joinWindows.set(guildId, entries);
 }
 
-// Build a minimal fake member object that checkRaid can consume.
 export function makeFakeMember(guild, index) {
     return {
         guild,
@@ -196,8 +182,7 @@ export function makeFakeMember(guild, index) {
     };
 }
 
-// ── MASS-MENTION DETECTION ──────────────────────────────────────────────
-const massMentionCooldown = new Map(); // userId -> last action timestamp
+const massMentionCooldown = new Map();
 
 export async function checkMassMention(message) {
     if (!message.guild || message.author.bot) return false;
@@ -211,19 +196,17 @@ export async function checkMassMention(message) {
     const userMentions = message.mentions.users?.size ?? 0;
     const roleMentions = message.mentions.roles?.size ?? 0;
     const totalMentions = userMentions + roleMentions;
-    const everyoneMention = message.mentions.everyone ? 5 : 0; // weighted heavier
+    const everyoneMention = message.mentions.everyone ? 5 : 0;
 
     const score = totalMentions + everyoneMention;
     if (score < threshold) return false;
 
-    // Cooldown to prevent double-action on rapid messages
     const last = massMentionCooldown.get(message.author.id) ?? 0;
     if (Date.now() - last < 5000) return false;
     massMentionCooldown.set(message.author.id, Date.now());
 
     const member = message.member;
     if (!member) return false;
-    // Don't act on staff
     if (member.permissions.has(PermissionsBitField.Flags.ModerateMembers)) return false;
 
     const timeoutMs = cfg.massMentionTimeoutMs ?? 10 * 60_000;
@@ -242,12 +225,12 @@ export async function checkMassMention(message) {
         const embed = buildCoolEmbed({
             guildId: message.guild.id,
             type: "warning",
-            title: "🚨 Mass-Mention Auto-Timeout",
+            title: "Mass-Mention Auto-Timeout",
             fields: [
-                { name: "👤 User", value: `${member}\n\`${member.id}\``, inline: true },
-                { name: "📊 Mentions", value: `**${score}** in one message`, inline: true },
+                { name: "User", value: `${member}\n\`${member.id}\``, inline: true },
+                { name: "Mentions", value: `**${score}** in one message`, inline: true },
                 { name: "⏱️ Timeout", value: `${Math.round(timeoutMs / 60000)}m`, inline: true },
-                { name: "📁 Channel", value: `${message.channel}`, inline: false },
+                { name: "Channel", value: `${message.channel}`, inline: false },
             ],
             showAuthor: false,
             showFooter: true,

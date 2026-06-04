@@ -46,7 +46,7 @@ export default {
         if (!me.permissions.has(PermissionsBitField.Flags.ManageMessages)) {
             return safeRespond(interaction, asEmbedPayload({
                 guildId: interaction.guildId, type: "error",
-                title: "❌ Bot Missing Permission",
+                title: "Bot Missing Permission",
                 description: "I need **Manage Messages** to do this.",
                 ephemeral: true,
             }));
@@ -55,13 +55,12 @@ export default {
         const target = amount ?? Infinity;
         const isLarge = !amount || amount > CONFIRM_THRESHOLD;
 
-        // ── Confirmation gate for large or "all" deletes
         if (isLarge) {
             const confirmId = `nuke_confirm_${interaction.user.id}_${Date.now()}`;
             const cancelId = `nuke_cancel_${interaction.user.id}_${Date.now()}`;
 
             const row = new ActionRowBuilder().addComponents(
-                new ButtonBuilder().setCustomId(confirmId).setLabel("💥 Confirm Nuke").setStyle(ButtonStyle.Danger),
+                new ButtonBuilder().setCustomId(confirmId).setLabel("Confirm Nuke").setStyle(ButtonStyle.Danger),
                 new ButtonBuilder().setCustomId(cancelId).setLabel("Cancel").setStyle(ButtonStyle.Secondary),
             );
 
@@ -70,13 +69,13 @@ export default {
                 embeds: [buildCoolEmbed({
                     guildId: interaction.guildId,
                     type: "warning",
-                    title: "⚠️ Confirm Channel Nuke",
+                    title: "Confirm Channel Nuke",
                     description: amount
                         ? `You are about to delete up to **${amount}** messages from ${channel}.`
                         : `You are about to delete **ALL messages** from ${channel} (subject to Discord's 14-day bulk-delete limit).`,
                     fields: [
-                        { name: "📁 Channel", value: `${channel}`, inline: true },
-                        { name: "🎯 Target", value: amount ? `${amount} messages` : "All messages", inline: true },
+                        { name: "Channel", value: `${channel}`, inline: true },
+                        { name: "Target", value: amount ? `${amount} messages` : "All messages", inline: true },
                     ],
                     showAuthor: false,
                     showFooter: true,
@@ -97,7 +96,7 @@ export default {
                     return btn.update({
                         embeds: [buildCoolEmbed({
                             guildId: interaction.guildId, type: "info",
-                            title: "❎ Cancelled",
+                            title: "Cancelled",
                             description: "Nuke cancelled — no messages were deleted.",
                         })],
                         components: [],
@@ -107,7 +106,7 @@ export default {
                 await btn.update({
                     embeds: [buildCoolEmbed({
                         guildId: interaction.guildId, type: "warning",
-                        title: "⏳ Nuking...",
+                        title: "Nuking...",
                         description: "Deleting messages, please wait.",
                     })],
                     components: [],
@@ -119,10 +118,10 @@ export default {
                     embeds: [buildCoolEmbed({
                         guildId: interaction.guildId,
                         type: "success",
-                        title: "💥 Nuked",
+                        title: "Nuked",
                         fields: [
-                            { name: "📁 Channel", value: `${channel}`, inline: true },
-                            { name: "🗑️ Deleted", value: `**${deleted}** messages`, inline: true },
+                            { name: "Channel", value: `${channel}`, inline: true },
+                            { name: "Deleted", value: `**${deleted}** messages`, inline: true },
                         ],
                         showAuthor: false,
                         showFooter: true,
@@ -141,17 +140,16 @@ export default {
             }
         }
 
-        // ── Small delete: no confirmation
         await interaction.deferReply({ flags: MessageFlags.Ephemeral });
         const deleted = await nukeChannel(channel, target);
 
         return safeRespond(interaction, asEmbedPayload({
             guildId: interaction.guildId,
             type: "success",
-            title: "💥 Nuked",
+            title: "Nuked",
             fields: [
-                { name: "📁 Channel", value: `${channel}`, inline: true },
-                { name: "🗑️ Deleted", value: `**${deleted}** messages`, inline: true },
+                { name: "Channel", value: `${channel}`, inline: true },
+                { name: "Deleted", value: `**${deleted}** messages`, inline: true },
             ],
         }));
     },

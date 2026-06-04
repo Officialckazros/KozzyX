@@ -21,7 +21,7 @@ export default {
             return safeRespond(i, asEmbedPayload({
                 guildId: i.guild?.id,
                 type: "info",
-                title: "🎨 No Banner",
+                title: "No Banner",
                 description: `${user} hasn't set a profile banner.`,
                 ephemeral: true,
             }));
@@ -37,11 +37,11 @@ export default {
         const embed = buildCoolEmbed({
             guildId: i.guild?.id,
             type: "info",
-            title: `🎨 ${user.username}'s Banner`,
+            title: `${user.username}'s Banner`,
             description: `${user}`,
             fields: [
-                { name: "🖼️ Direct Links", value: formatLinks, inline: false },
-                { name: "🔗 Open Original", value: `[Click here](${bannerUrl})`, inline: false },
+                { name: "Direct Links", value: formatLinks, inline: false },
+                { name: "Open Original", value: `[Click here](${bannerUrl})`, inline: false },
             ],
             showAuthor: true,
             client: i.client,

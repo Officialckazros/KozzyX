@@ -2,8 +2,8 @@ import { safeRespond } from "../../utils/helpers.js";
 import { asEmbedPayload } from "../../utils/embeds.js";
 
 export default {
-    data: { 
-        name: "coinflip", 
+    data: {
+        name: "coinflip",
         description: "Flip a coin",
         integration_types: [0, 1],
         contexts: [0, 1, 2]
@@ -13,7 +13,7 @@ export default {
         return safeRespond(i, asEmbedPayload({
             guildId: i.guild?.id,
             type: "info",
-            title: "🪙 Coin Flip",
+            title: "Coin Flip",
             description: `It's **${res}**!`,
             footerUser: i.user,
             client: i.client

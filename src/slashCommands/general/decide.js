@@ -19,7 +19,7 @@ export default {
             return safeRespond(i, asEmbedPayload({
                 guildId: i.guild?.id,
                 type: "error",
-                title: "❌ Need More Options",
+                title: "Need More Options",
                 description: "Provide at least **two** unique options separated by commas.\nExample: `Pizza, Sushi, Burger`",
                 ephemeral: true,
             }));
@@ -28,7 +28,7 @@ export default {
             return safeRespond(i, asEmbedPayload({
                 guildId: i.guild?.id,
                 type: "error",
-                title: "❌ Too Many Options",
+                title: "Too Many Options",
                 description: "Maximum **25** options at a time.",
                 ephemeral: true,
             }));
@@ -36,16 +36,16 @@ export default {
 
         const choice = list[Math.floor(Math.random() * list.length)];
         const optionsList = list
-            .map((o, idx) => o === choice ? `**${idx + 1}. ${o}** ✅` : `${idx + 1}. ${o}`)
+            .map((o, idx) => o === choice ? `**${idx + 1}. ${o}** ` : `${idx + 1}. ${o}`)
             .join("\n");
 
         return safeRespond(i, asEmbedPayload({
             guildId: i.guild?.id,
             type: "success",
-            title: "🎲 I have decided...",
+            title: "I have decided...",
             description: `## ${choice}`,
             fields: [
-                { name: `📝 Options [${list.length}]`, value: optionsList.slice(0, 1024), inline: false },
+                { name: `Options [${list.length}]`, value: optionsList.slice(0, 1024), inline: false },
             ],
             footerUser: i.user,
             client: i.client,

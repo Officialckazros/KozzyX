@@ -38,7 +38,7 @@ export default {
             if (!settings.plugins?.anti_raid) {
                 return safeRespond(interaction, asEmbedPayload({
                     guildId: interaction.guildId, type: "error",
-                    title: "❌ Anti-Raid Disabled",
+                    title: "Anti-Raid Disabled",
                     description: "Enable the plugin first with `/plugins enable Anti-Raid`.",
                     ephemeral: true,
                 }));
@@ -51,20 +51,18 @@ export default {
 
             await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
-            // Pre-fill the join window with (count - 1) fake entries, then fire
-            // one real checkRaid call to push it over threshold.
             primeSimulation(interaction.guildId, count);
             const fakeMember = makeFakeMember(interaction.guild, count);
             await checkRaid(fakeMember);
 
             return safeRespond(interaction, asEmbedPayload({
                 guildId: interaction.guildId, type: "warning",
-                title: "🧪 Simulation Fired",
+                title: "Simulation Fired",
                 description: `Simulated **${count}** fake accounts joining — raid detection should have triggered.`,
                 fields: [
-                    { name: "🛡️ Configured Action", value: `\`${action.toUpperCase()}\``, inline: true },
-                    { name: "🎯 Threshold", value: `${threshold} joins`, inline: true },
-                    { name: "💡 Recovery", value: action === "lockdown" ? "Use `,unraid` to lift the lockdown." : "No real accounts were affected.", inline: false },
+                    { name: "Configured Action", value: `\`${action.toUpperCase()}\``, inline: true },
+                    { name: "Threshold", value: `${threshold} joins`, inline: true },
+                    { name: "Recovery", value: action === "lockdown" ? "Use `,unraid` to lift the lockdown." : "No real accounts were affected.", inline: false },
                 ],
                 ephemeral: true,
             }));

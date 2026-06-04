@@ -23,7 +23,6 @@ function createTransporter(options = {}) {
     const transportOptions = { host, port, secure };
     if (auth) transportOptions.auth = auth;
 
-    // Allow insecure TLS for self-signed certs if explicitly requested
     if (process.env.SMTP_TLS_REJECT_UNAUTHORIZED === 'false') {
         transportOptions.tls = { rejectUnauthorized: false };
     }
@@ -44,7 +43,6 @@ export async function sendEmail({ to = OWNER_EMAIL, subject, text, html }) {
         const shouldRetry = err && (err.code === 'ESOCKET' || err.code === 'ECONNECTION' || msg.toLowerCase().includes('wrong version number') || msg.toLowerCase().includes('tls'));
         if (shouldRetry) {
             try {
-                // Toggle secure and retry once
                 const currentSecure = process.env.SMTP_SECURE !== undefined ? parseBool(process.env.SMTP_SECURE) : (Number(process.env.SMTP_PORT || 587) === 465);
                 console.log('[email] Retrying with secure=', !currentSecure);
                 transporter = createTransporter({ secure: !currentSecure });

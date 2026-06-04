@@ -2,7 +2,6 @@ import { safeRespond } from "../../utils/helpers.js";
 import { asEmbedPayload } from "../../utils/embeds.js";
 import { askGemini } from "../../utils/ai.js";
 
-// Rate limiting: Store user IDs and their last command time
 const cooldowns = new Map();
 const COOLDOWN_SECONDS = 30;
 
@@ -18,7 +17,6 @@ export default {
         ]
     },
     async execute(i) {
-        // Check cooldown
         const now = Date.now();
         const cooldownEnd = cooldowns.get(i.user.id);
 
@@ -45,7 +43,7 @@ export default {
             return safeRespond(i, asEmbedPayload({
                 guildId: i.guild?.id,
                 type: "error",
-                title: "🚫 Blocked",
+                title: "Blocked",
                 description: "Your input was blocked because it contains a prompt injection or jailbreak attempt.",
                 ephemeral: true,
             }));
@@ -55,7 +53,7 @@ export default {
             return safeRespond(i, asEmbedPayload({
                 guildId: i.guild?.id,
                 type: "error",
-                title: "❌ Configuration Error",
+                title: "Configuration Error",
                 description: "The Gemini API key is missing. Please configure `GOOGLE_GENERATIVE_AI_API_KEY` in the bot's `.env` file on the server.",
                 ephemeral: true,
             }));
@@ -65,7 +63,7 @@ export default {
             return safeRespond(i, asEmbedPayload({
                 guildId: i.guild?.id,
                 type: "error",
-                title: "❌ Authentication Error",
+                title: "Authentication Error",
                 description: "The configured Gemini API key is invalid. Please check the `GOOGLE_GENERATIVE_AI_API_KEY` in the bot's `.env` file on the server.",
                 ephemeral: true,
             }));
@@ -75,7 +73,7 @@ export default {
             return safeRespond(i, asEmbedPayload({
                 guildId: i.guild?.id,
                 type: "error",
-                title: "❌ AI Error",
+                title: "AI Error",
                 description: "Translation failed. Please try again later.",
                 ephemeral: true,
             }));
@@ -85,19 +83,18 @@ export default {
             return safeRespond(i, asEmbedPayload({
                 guildId: i.guild?.id,
                 type: "error",
-                title: "⚠️ Quota Exceeded",
+                title: "Quota Exceeded",
                 description: "The bot's AI quota has been reached. Please try again tomorrow or wait a few minutes.",
                 ephemeral: true,
             }));
         }
 
-        // Set cooldown after successful response
         cooldowns.set(i.user.id, now + (COOLDOWN_SECONDS * 1000));
 
         return safeRespond(i, asEmbedPayload({
             guildId: i.guild?.id,
             type: "info",
-            title: `🌍 Translate to ${to}`,
+            title: `Translate to ${to}`,
             description: `**Original:**\n${text}\n\n**Translation:**\n${translation}`,
             footerUser: i.user,
             client: i.client,

@@ -8,7 +8,7 @@ export default {
         if (!message.member.permissions.has(PermissionsBitField.Flags.KickMembers)) {
             return replyEmbed(message, {
                 type: "error",
-                title: "⛔ Permission Needed",
+                title: "Permission Needed",
                 description: "You need the **Kick Members** permission to use this command.",
             });
         }
@@ -17,7 +17,7 @@ export default {
         if (!target) {
             return replyEmbed(message, {
                 type: "error",
-                title: "❌ Usage",
+                title: "Usage",
                 description: "`,kick @user [reason]`",
             });
         }

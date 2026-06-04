@@ -9,13 +9,13 @@ export default {
         if (!message.guild) return;
         if (!message.member.permissions.has(PermissionsBitField.Flags.BanMembers)) {
             return replyEmbed(message, {
-                type: "error", title: "⛔ Permission Needed",
+                type: "error", title: "Permission Needed",
                 description: "You need **Ban Members** permission.",
             });
         }
         if (!message.guild.members.me.permissions.has(PermissionsBitField.Flags.BanMembers)) {
             return replyEmbed(message, {
-                type: "error", title: "❌ Bot Missing Permission",
+                type: "error", title: "Bot Missing Permission",
                 description: "I need **Ban Members**.",
             });
         }
@@ -33,7 +33,7 @@ export default {
         let failed = 0;
 
         await replyEmbed(message, {
-            type: "warning", title: "⏳ Banning Raiders...",
+            type: "warning", title: "Banning Raiders...",
             description: `Attempting to ban **${raiders.size}** detected raiders. This may take a moment.`,
         });
 
@@ -58,12 +58,12 @@ export default {
         const embed = buildCoolEmbed({
             guildId: message.guild.id,
             type: "mod",
-            title: "🔨 Raid Mass-Ban Complete",
+            title: "Raid Mass-Ban Complete",
             fields: [
-                { name: "✅ Banned", value: `**${banned}**`, inline: true },
-                { name: "❌ Failed", value: `**${failed}**`, inline: true },
-                { name: "👮 Moderator", value: `${message.author}`, inline: true },
-                { name: "📝 Reason", value: reason, inline: false },
+                { name: "Banned", value: `**${banned}**`, inline: true },
+                { name: "Failed", value: `**${failed}**`, inline: true },
+                { name: "Moderator", value: `${message.author}`, inline: true },
+                { name: "Reason", value: reason, inline: false },
             ],
             showAuthor: false,
             showFooter: true,

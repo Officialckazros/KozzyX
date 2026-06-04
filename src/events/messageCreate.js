@@ -15,7 +15,6 @@ export default {
             if (GLOBALLY_BLOCKED_IDS.has(message.author.id)) return;
             if (!message.guild) return;
 
-            // Anti-raid: mass-mention detection (runs on every guild message)
             const blocked = await checkMassMention(message);
             if (blocked) return;
 
@@ -34,25 +33,22 @@ export default {
 
             if (!command) return;
 
-            // Route by prefix: ! only runs config commands, , only runs non-config
             if (isConfig && !command.config) return;
             if (isMod && command.config) return;
 
-            // Dashboard override: command disabled
             if (!isCommandEnabled("prefix", command.name)) {
                 return replyEmbed(message, {
                     type: "error",
-                    title: "⛔ Command Disabled",
+                    title: "Command Disabled",
                     description: `The \`${command.name}\` command is currently disabled from the dashboard.`,
                 });
             }
 
-            // Dashboard override: cooldown
             const cd = checkCooldown("prefix", command.name, message.author.id);
             if (!cd.ok) {
                 return replyEmbed(message, {
                     type: "warning",
-                    title: "⏳ Slow Down",
+                    title: "Slow Down",
                     description: `Wait **${cd.remaining}s** before using \`${command.name}\` again.`,
                 });
             }
@@ -64,7 +60,7 @@ export default {
                 console.error("[messageCreate] Command execution error:", error);
                 await replyEmbed(message, {
                     type: "error",
-                    title: "❌ Error",
+                    title: "Something went wrong",
                     description: "There was an error while executing this command!",
                 });
             }

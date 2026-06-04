@@ -8,7 +8,7 @@ export default {
         if (!message.guild) return;
         if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
             return replyEmbed(message, {
-                type: "error", title: "⛔ Admin Only",
+                type: "error", title: "Admin Only",
                 description: "Only admins can lift a raid lockdown.",
             });
         }
@@ -20,10 +20,10 @@ export default {
         const embed = buildCoolEmbed({
             guildId: message.guild.id,
             type: "success",
-            title: "✅ Lockdown Lifted",
+            title: "Lockdown Lifted",
             description: "@everyone can send messages again.",
             fields: raiderCount ? [
-                { name: "👥 Detected Raiders", value: `**${raiderCount}** still tracked. Use \`,banraid\` to ban them or \`,raidlist\` to review.`, inline: false },
+                { name: "Detected Raiders", value: `**${raiderCount}** still tracked. Use \`,banraid\` to ban them or \`,raidlist\` to review.`, inline: false },
             ] : [],
             showAuthor: false,
             showFooter: true,

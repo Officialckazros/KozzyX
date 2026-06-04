@@ -7,9 +7,8 @@ export default {
     async execute(member) {
         try {
             recordEvent("leave", `${member.user?.username || "A member"} left the server`, member.guild?.id);
-        } catch { /* feed is best-effort */ }
+        } catch {  }
 
-        // Goodbye Announcement
         try {
             const s = getGuildSettings(member.guild.id);
             if (s.goodbye?.enabled && s.goodbye?.channelId) {

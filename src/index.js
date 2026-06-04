@@ -33,7 +33,6 @@ async function init() {
     client.on(voiceStateUpdate.name,         (...args) => voiceStateUpdate.execute(...args, client));
     client.once(ready.name,                  (...args) => ready.execute(...args, client));
 
-    // Email alerts for disconnects / errors
     client.on('shardDisconnect', (event, shardId) => {
         console.error('[bot] shardDisconnect', shardId, event);
         sendBotOfflineAlert('shardDisconnect', `Shard ${shardId} disconnected: ${JSON.stringify(event)}`).catch(console.error);

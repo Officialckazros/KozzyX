@@ -8,9 +8,6 @@ import { modHelpPages, configHelpPages, modRow, configRow } from "../slashComman
 import { featureHelpPages } from "../slashCommands/general/features.js";
 import { GLOBALLY_BLOCKED_IDS } from "../utils/constants.js";
 
-// Swallow expected interaction races so they don't crash the process.
-// 10062 = Unknown interaction (token expired, often >3s after click)
-// 40060 = Interaction has already been acknowledged
 async function tryUpdate(interaction, payload) {
     try {
         return await interaction.update(payload);
@@ -25,38 +22,34 @@ export default {
     async execute(interaction, client) {
         if (GLOBALLY_BLOCKED_IDS.has(interaction.user.id)) return;
 
-        // ── SLASH COMMANDS ─────────────────────────────────────────────
         if (interaction.isChatInputCommand()) {
             const cmdName = interaction.commandName;
             const command = client.slashCommands.get(cmdName);
 
             if (!command) {
-                console.error(`[Interaction] ❌ Command '${cmdName}' not found.`);
-                return safeRespond(interaction, { content: `❌ Command \`${cmdName}\` not found.`, ephemeral: true });
+                console.error(`[Interaction] Command '${cmdName}' not found.`);
+                return safeRespond(interaction, { content: `Command \`${cmdName}\` not found.`, ephemeral: true });
             }
 
-            // Dashboard override: command disabled
             if (!isCommandEnabled("slash", cmdName)) {
-                return safeRespond(interaction, { content: `⛔ The \`/${cmdName}\` command is currently disabled.`, ephemeral: true });
+                return safeRespond(interaction, { content: `The \`/${cmdName}\` command is currently disabled.`, ephemeral: true });
             }
 
-            // Dashboard override: cooldown
             const cd = checkCooldown("slash", cmdName, interaction.user.id);
             if (!cd.ok) {
-                return safeRespond(interaction, { content: `⏳ Please wait **${cd.remaining}s** before using \`/${cmdName}\` again.`, ephemeral: true });
+                return safeRespond(interaction, { content: `Please wait **${cd.remaining}s** before using \`/${cmdName}\` again.`, ephemeral: true });
             }
 
             try {
                 await command.execute(interaction);
                 recordCommandRun({ name: cmdName, type: "slash", user: interaction.user.username, guildId: interaction.guildId });
             } catch (error) {
-                console.error(`[Interaction] ❌ Execution failed for '${cmdName}':`, error);
-                await safeRespond(interaction, { content: `❌ Internal error while executing \`${cmdName}\`.`, ephemeral: true });
+                console.error(`[Interaction] Execution failed for '${cmdName}':`, error);
+                await safeRespond(interaction, { content: `Internal error while executing \`${cmdName}\`.`, ephemeral: true });
             }
             return;
         }
 
-        // ── HELP PAGINATION ────────────────────────────────────────────
         if (interaction.isButton()) {
             const id = interaction.customId;
 
@@ -68,7 +61,7 @@ export default {
                 if (!pages) return;
                 const row = new ActionRowBuilder().addComponents(
                     new ButtonBuilder().setCustomId(`help_prev:${category}:${page}`).setLabel("⬅ Previous").setStyle(ButtonStyle.Secondary).setDisabled(page === 0),
-                    new ButtonBuilder().setCustomId(`help_next:${category}:${page}`).setLabel("Next ➡").setStyle(ButtonStyle.Primary).setDisabled(page === pages.length - 1)
+                    new ButtonBuilder().setCustomId(`help_next:${category}:${page}`).setLabel("Next ").setStyle(ButtonStyle.Primary).setDisabled(page === pages.length - 1)
                 );
                 return tryUpdate(interaction, { embeds: [pages[page]], components: [row] });
             }
@@ -103,7 +96,7 @@ export default {
                 page = action === "features_next" ? page + 1 : page - 1;
                 const row = new ActionRowBuilder().addComponents(
                     new ButtonBuilder().setCustomId(`features_prev:${page}`).setLabel("⬅ Previous").setStyle(ButtonStyle.Secondary).setDisabled(page === 0),
-                    new ButtonBuilder().setCustomId(`features_next:${page}`).setLabel("Next ➡").setStyle(ButtonStyle.Primary).setDisabled(page === featureHelpPages.length - 1)
+                    new ButtonBuilder().setCustomId(`features_next:${page}`).setLabel("Next ").setStyle(ButtonStyle.Primary).setDisabled(page === featureHelpPages.length - 1)
                 );
                 return tryUpdate(interaction, { embeds: [featureHelpPages[page]], components: [row] });
             }
@@ -118,7 +111,6 @@ export default {
                 }
             }
 
-            // ── APPEAL BUTTONS ─────────────────────────────────────────────
             if (id.startsWith("appeal_")) {
                 return handleAppealButton(interaction);
             }
@@ -129,24 +121,24 @@ export default {
 async function handleAppealButton(interaction) {
     if (!interaction.guild) return;
     if (!interaction.member.permissions.has(PermissionsBitField.Flags.BanMembers)) {
-        return safeRespond(interaction, asEmbedPayload({ guildId: interaction.guildId, type: "error", title: "⛔ Permission Denied", description: "You need **Ban Members** to handle appeals.", ephemeral: true }));
+        return safeRespond(interaction, asEmbedPayload({ guildId: interaction.guildId, type: "error", title: "Restricted", description: "You need **Ban Members** to handle appeals.", ephemeral: true }));
     }
 
-    const parts = interaction.customId.split("_"); // ["appeal", action, id, userId]
-    const action   = parts[1]; // accept | deny | pending
+    const parts = interaction.customId.split("_");
+    const action   = parts[1];
     const appealId = parts[2];
     const userId   = parts[3];
 
     const db = await getDB();
     const appeal = await db.get("SELECT * FROM appeals WHERE id = ?", appealId);
     if (!appeal || appeal.status !== "pending") {
-        return safeRespond(interaction, asEmbedPayload({ guildId: interaction.guildId, type: "warning", title: "⚠️ Already Resolved", description: "This appeal has already been handled.", ephemeral: true }));
+        return safeRespond(interaction, asEmbedPayload({ guildId: interaction.guildId, type: "warning", title: "Already Resolved", description: "This appeal has already been handled.", ephemeral: true }));
     }
 
     if (action === "pending") {
         await db.run("UPDATE appeals SET status = 'reviewing', staff_id = ? WHERE id = ?", interaction.user.id, appealId);
         await interaction.update({ components: [] }).catch(() => null);
-        return safeRespond(interaction, asEmbedPayload({ guildId: interaction.guildId, type: "info", title: "⏳ Marked as Reviewing", description: `Appeal #${appealId} is marked as under review by ${interaction.user.tag}.`, ephemeral: true }));
+        return safeRespond(interaction, asEmbedPayload({ guildId: interaction.guildId, type: "info", title: "Marked as Reviewing", description: `Appeal #${appealId} is marked as under review by ${interaction.user.tag}.`, ephemeral: true }));
     }
 
     if (action === "accept") {
@@ -155,11 +147,11 @@ async function handleAppealButton(interaction) {
 
         try {
             const user = await interaction.client.users.fetch(userId);
-            await user.send({ embeds: [buildCoolEmbed({ guildId: null, type: "success", title: "✅ Appeal Accepted", description: `Your ban appeal for **${interaction.guild.name}** has been accepted. You are now unbanned.` })] }).catch(() => null);
+            await user.send({ embeds: [buildCoolEmbed({ guildId: null, type: "success", title: "Appeal Accepted", description: `Your ban appeal for **${interaction.guild.name}** has been accepted. You are now unbanned.` })] }).catch(() => null);
         } catch { }
 
         await interaction.update({ components: [] }).catch(() => null);
-        return safeRespond(interaction, asEmbedPayload({ guildId: interaction.guildId, type: "success", title: "✅ Appeal Accepted", description: `<@${userId}> has been unbanned.`, ephemeral: true }));
+        return safeRespond(interaction, asEmbedPayload({ guildId: interaction.guildId, type: "success", title: "Appeal Accepted", description: `<@${userId}> has been unbanned.`, ephemeral: true }));
     }
 
     if (action === "deny") {
@@ -167,10 +159,10 @@ async function handleAppealButton(interaction) {
 
         try {
             const user = await interaction.client.users.fetch(userId);
-            await user.send({ embeds: [buildCoolEmbed({ guildId: null, type: "error", title: "❌ Appeal Denied", description: `Your ban appeal for **${interaction.guild.name}** has been denied.` })] }).catch(() => null);
+            await user.send({ embeds: [buildCoolEmbed({ guildId: null, type: "error", title: "Appeal Denied", description: `Your ban appeal for **${interaction.guild.name}** has been denied.` })] }).catch(() => null);
         } catch { }
 
         await interaction.update({ components: [] }).catch(() => null);
-        return safeRespond(interaction, asEmbedPayload({ guildId: interaction.guildId, type: "info", title: "❌ Appeal Denied", description: `Appeal #${appealId} has been denied.`, ephemeral: true }));
+        return safeRespond(interaction, asEmbedPayload({ guildId: interaction.guildId, type: "info", title: "Appeal Denied", description: `Appeal #${appealId} has been denied.`, ephemeral: true }));
     }
 }

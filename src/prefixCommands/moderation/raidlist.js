@@ -8,7 +8,7 @@ export default {
         if (!message.guild) return;
         if (!message.member.permissions.has(PermissionsBitField.Flags.BanMembers)) {
             return replyEmbed(message, {
-                type: "error", title: "⛔ Permission Needed",
+                type: "error", title: "Permission Needed",
                 description: "You need **Ban Members** permission.",
             });
         }
@@ -31,10 +31,10 @@ export default {
         const embed = buildCoolEmbed({
             guildId: message.guild.id,
             type: "warning",
-            title: `🚨 Tracked Raiders [${raiders.size}]`,
+            title: `Tracked Raiders [${raiders.size}]`,
             description: lines.join("\n").slice(0, 4000) + (raiders.size > 30 ? `\n\n*+${raiders.size - 30} more not shown*` : ""),
             fields: [
-                { name: "💡 Actions", value: "`,banraid [reason]` — ban all\n`,kick @user` — kick individual", inline: false },
+                { name: "Actions", value: "`,banraid [reason]` — ban all\n`,kick @user` — kick individual", inline: false },
             ],
             showAuthor: true,
             showFooter: true,

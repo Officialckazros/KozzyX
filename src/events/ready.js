@@ -1,18 +1,18 @@
 import { Events } from "discord.js";
-import { 
-    loadSettings, 
-    loadWarnings, 
-    loadAutoresponders, 
-    loadBoosterRoles, 
-    loadAfk, 
-    loadCosmetics 
+import {
+    loadSettings,
+    loadWarnings,
+    loadAutoresponders,
+    loadBoosterRoles,
+    loadAfk,
+    loadCosmetics
 } from "../utils/database.js";
 
 export default {
     name: Events.ClientReady,
     once: true,
     async execute(client) {
-        console.log(`✅ Logged in as ${client.user.tag}`);
+        console.log(`Logged in as ${client.user.tag}`);
         await loadSettings();
         await loadWarnings();
         await loadAutoresponders();
@@ -20,6 +20,6 @@ export default {
         await loadAfk();
         await loadCosmetics();
         await client.deploySlashCommands();
-        console.log("✅ Bot systems fully loaded & online.");
+        console.log("Bot systems fully loaded & online.");
     }
 };

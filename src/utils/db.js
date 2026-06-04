@@ -14,7 +14,7 @@ export async function initDB() {
         PRAGMA journal_mode = WAL;
         PRAGMA synchronous = NORMAL;
         PRAGMA foreign_keys = ON;
-        
+
         CREATE TABLE IF NOT EXISTS todos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id TEXT NOT NULL,
@@ -152,7 +152,7 @@ export async function initDB() {
             user_id TEXT PRIMARY KEY
         );
     `);
-    console.log("✅ Database initialized");
+    console.log("Database initialized");
     return db;
 }
 

@@ -20,7 +20,7 @@ export default {
         if (!settings.plugins?.invite_tracking) {
             return safeRespond(interaction, asEmbedPayload({
                 guildId: interaction.guildId, type: "error",
-                title: "❌ Plugin Disabled",
+                title: "Plugin Disabled",
                 description: "Invite tracking is not enabled. An admin can enable it with `/plugins enable invite_tracking`.",
                 ephemeral: true,
             }));
@@ -35,18 +35,18 @@ export default {
             : "_No recent invites._";
 
         const fields = [
-            { name: "📊 Total Invites", value: `**${stats.total}**`, inline: true },
-            { name: "👋 Invited By", value: invitedBy?.inviter_id ? `<@${invitedBy.inviter_id}>` : "_Unknown_", inline: true },
+            { name: "Total Invites", value: `**${stats.total}**`, inline: true },
+            { name: "Invited By", value: invitedBy?.inviter_id ? `<@${invitedBy.inviter_id}>` : "_Unknown_", inline: true },
         ];
 
         if (stats.recent.length) {
-            fields.push({ name: `🕐 Recent Invites [${Math.min(stats.recent.length, 8)}]`, value: recentLines, inline: false });
+            fields.push({ name: `Recent Invites [${Math.min(stats.recent.length, 8)}]`, value: recentLines, inline: false });
         }
 
         const embed = buildCoolEmbed({
             guildId: interaction.guildId,
             type: "info",
-            title: `📨 Invites — ${target.username}`,
+            title: `Invites — ${target.username}`,
             fields,
             showAuthor: true,
             client: interaction.client,

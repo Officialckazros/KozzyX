@@ -20,7 +20,7 @@ export default {
         return safeRespond(interaction, asEmbedPayload({
             guildId: interaction.guildId,
             type: "info",
-            title: "🌐 Official Website",
+            title: "Official Website",
             description: "Stay up to date with our latest news and features by visiting our official website!\n\n**Link:** [kozzyx.org](https://kozzyx.org)",
             footerUser: interaction.user,
             client: interaction.client,

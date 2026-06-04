@@ -1,13 +1,11 @@
-# KozzyX 🤖
-
-Hey! 👋 This is **KozzyX**, a Discord bot I built and have been pouring a *lot* of
+# KozzyX 
+Hey! This is **KozzyX**, a Discord bot I built and have been pouring a *lot* of
 features into. It started as a moderation helper and kind of grew from there —
 now it handles anti-raid protection, tickets, invite tracking, reminders, booster
 roles, autoresponders, a few AI-powered toys, and even a web dashboard.
 
 Feel free to dig through the code and reuse whatever's helpful. If it saves you
-some time on your own bot, that's exactly what I was hoping for. 💛
-
+some time on your own bot, that's exactly what I was hoping for. 
 > Just a heads-up: you'll need to plug in your own API keys and tokens to run it —
 > mine aren't included (for obvious reasons ). See [Configuration](#configuration).
 
@@ -84,7 +82,7 @@ DEPLOY_VM_USER=
 DEPLOY_REMOTE_DIR=
 ```
 
-> 🔒 Please don't ever commit your `config/.env` — it's already in `.gitignore`,
+> Please don't ever commit your `config/.env` — it's already in `.gitignore`,
 > so you should be safe, but it's worth double-checking.
 
 ## Registering the slash commands
