@@ -8,7 +8,7 @@ export default {
     async execute(message, args) {
         if (!message.member.permissions.has(PermissionsBitField.Flags.ManageMessages)) {
             return replyEmbed(message, {
-                type: "error", title: "⛔ Permission Needed",
+                type: "error", title: "Permission Needed",
                 description: "You need **Manage Messages** to clear messages.",
             });
         }
@@ -19,7 +19,7 @@ export default {
 
         if (!Number.isFinite(amount) || amount < 1 || amount > 100) {
             return replyEmbed(message, {
-                type: "error", title: "❌ Usage",
+                type: "error", title: "Usage",
                 description: "`,clear <amount>` (1–100)\n`,clear <amount> @user` to filter by author",
             });
         }
@@ -39,13 +39,13 @@ export default {
                 await message.delete().catch(() => {});
             } else {
                 const result = await message.channel.bulkDelete(amount + 1, true);
-                deleted = Math.max(0, result.size - 1); // subtract the command message itself
+                deleted = Math.max(0, result.size - 1);
             }
 
             const infoMsg = await message.channel.send(asEmbedPayload({
                 guildId: message.guild.id,
                 type: "success",
-                title: "🧹 Messages Cleared",
+                title: "Messages Cleared",
                 description: filterUser
                     ? `Cleared **${deleted}** message(s) from ${filterUser}.`
                     : `Cleared **${deleted}** message(s).`,
@@ -56,7 +56,7 @@ export default {
         } catch (err) {
             console.error("Clear error:", err);
             return replyEmbed(message, {
-                type: "error", title: "❌ Clear Failed",
+                type: "error", title: "Clear Failed",
                 description: "Failed to clear messages. Discord won't bulk delete messages older than 14 days.",
             });
         }

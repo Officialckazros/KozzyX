@@ -14,7 +14,7 @@ export default {
         const embed = buildCoolEmbed({
             guildId: i.guild?.id,
             type: "success",
-            title: `🤗 Hug Time`,
+            title: `Hug Time`,
             description: `${i.user.username} hugs ${target.username}!`,
             client: i.client,
         }).setImage(gif);

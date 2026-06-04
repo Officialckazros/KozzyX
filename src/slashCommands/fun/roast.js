@@ -44,7 +44,6 @@ export default {
             roast = await askGrok(`Write a savage roast for a Discord user named "${target.username}".`);
         }
 
-        // Fall back to static lines if Grok fails or key is missing
         if (!roast) {
             roast = roastLines[Math.floor(Math.random() * roastLines.length)];
         }
@@ -52,7 +51,7 @@ export default {
         return safeRespond(i, asEmbedPayload({
             guildId: i.guild?.id,
             type: "error",
-            title: `🔥 ${target.username} got roasted`,
+            title: `${target.username} got roasted`,
             description: roast,
             client: i.client,
         }));

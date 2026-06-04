@@ -42,10 +42,9 @@ export default {
         const sub = interaction.options.getSubcommand();
         const guild = interaction.guild;
 
-        // ── setup (Manage Server) ────────────────────────────────────────────
         if (sub === "setup") {
             if (!interaction.member.permissions.has(PermissionsBitField.Flags.ManageGuild)) {
-                return safeRespond(interaction, asEmbedPayload({ guildId: guild.id, type: "error", title: "⛔ Permission Denied", description: "You need **Manage Server**.", ephemeral: true }));
+                return safeRespond(interaction, asEmbedPayload({ guildId: guild.id, type: "error", title: "Restricted", description: "You need **Manage Server**.", ephemeral: true }));
             }
             const trigger  = interaction.options.getChannel("trigger");
             const category = interaction.options.getChannel("category");
@@ -55,45 +54,44 @@ export default {
             await saveSettings();
             return safeRespond(interaction, asEmbedPayload({
                 guildId: guild.id, type: "success",
-                title: "✅ Dynamic VCs Configured",
+                title: "Dynamic VCs Configured",
                 description: `Trigger: <#${trigger.id}>\nUsers join that channel to get their own VC.\n\nEnable the plugin with \`/plugins enable dynamic_vc\`.`,
                 ephemeral: true,
             }));
         }
 
-        // ── owner-only commands ──────────────────────────────────────────────
         const voiceChannel = interaction.member.voice?.channel;
         if (!voiceChannel) {
-            return safeRespond(interaction, asEmbedPayload({ guildId: guild.id, type: "error", title: "❌ Not in a VC", description: "You must be in your dynamic VC to use this.", ephemeral: true }));
+            return safeRespond(interaction, asEmbedPayload({ guildId: guild.id, type: "error", title: "Not in a VC", description: "You must be in your dynamic VC to use this.", ephemeral: true }));
         }
 
         const db = await getDB();
         const row = await db.get("SELECT owner_id FROM dynamic_vcs WHERE channel_id = ?", voiceChannel.id);
         if (!row || row.owner_id !== interaction.user.id) {
-            return safeRespond(interaction, asEmbedPayload({ guildId: guild.id, type: "error", title: "❌ Not Your VC", description: "You can only control your own dynamic VC.", ephemeral: true }));
+            return safeRespond(interaction, asEmbedPayload({ guildId: guild.id, type: "error", title: "Not Your VC", description: "You can only control your own dynamic VC.", ephemeral: true }));
         }
 
         if (sub === "lock") {
             await voiceChannel.permissionOverwrites.edit(guild.roles.everyone, { Connect: false }).catch(() => null);
             await voiceChannel.permissionOverwrites.edit(interaction.user.id, { Connect: true }).catch(() => null);
-            return safeRespond(interaction, asEmbedPayload({ guildId: guild.id, type: "success", title: "🔒 VC Locked", description: "Only you can let others in now.", ephemeral: true }));
+            return safeRespond(interaction, asEmbedPayload({ guildId: guild.id, type: "success", title: "VC Locked", description: "Only you can let others in now.", ephemeral: true }));
         }
 
         if (sub === "unlock") {
             await voiceChannel.permissionOverwrites.delete(guild.roles.everyone).catch(() => null);
-            return safeRespond(interaction, asEmbedPayload({ guildId: guild.id, type: "success", title: "🔓 VC Unlocked", description: "Anyone can join your VC.", ephemeral: true }));
+            return safeRespond(interaction, asEmbedPayload({ guildId: guild.id, type: "success", title: "VC Unlocked", description: "Anyone can join your VC.", ephemeral: true }));
         }
 
         if (sub === "rename") {
             const name = interaction.options.getString("name").slice(0, 100);
             await voiceChannel.setName(name).catch(() => null);
-            return safeRespond(interaction, asEmbedPayload({ guildId: guild.id, type: "success", title: "✏️ VC Renamed", description: `Your VC is now **${name}**.`, ephemeral: true }));
+            return safeRespond(interaction, asEmbedPayload({ guildId: guild.id, type: "success", title: "VC Renamed", description: `Your VC is now **${name}**.`, ephemeral: true }));
         }
 
         if (sub === "limit") {
             const num = interaction.options.getInteger("number");
             await voiceChannel.setUserLimit(num).catch(() => null);
-            return safeRespond(interaction, asEmbedPayload({ guildId: guild.id, type: "success", title: "👥 Limit Set", description: num === 0 ? "Your VC is now unlimited." : `Your VC is now limited to **${num}** users.`, ephemeral: true }));
+            return safeRespond(interaction, asEmbedPayload({ guildId: guild.id, type: "success", title: "Limit Set", description: num === 0 ? "Your VC is now unlimited." : `Your VC is now limited to **${num}** users.`, ephemeral: true }));
         }
     },
 };

@@ -2,7 +2,6 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from "disc
 import { safeRespond } from "../../utils/helpers.js";
 import { generalHelpCommands, funHelpCommands } from "../../utils/constants.js";
 
-// Helper builder function since it was local in KozzyX.js
 export function buildHelpPages(commands, iconTitle) {
     const pages = [];
     for (let i = 0; i < commands.length; i += 3) {
@@ -21,15 +20,14 @@ export function buildHelpPages(commands, iconTitle) {
 }
 
 export const helpPages = {
-    general: buildHelpPages(generalHelpCommands, "📚 General Help"),
-    fun: buildHelpPages(funHelpCommands, "🎉 Fun Help"),
+    general: buildHelpPages(generalHelpCommands, "General Help"),
+    fun: buildHelpPages(funHelpCommands, "Fun Help"),
 };
 
 async function sendPagedHelp(interaction, category, page = 0) {
     const pages = helpPages[category];
     const embed = pages[page];
 
-    // Create new Components for the response
     const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
             .setCustomId(`help_prev:${category}:${page}`)
@@ -38,7 +36,7 @@ async function sendPagedHelp(interaction, category, page = 0) {
             .setDisabled(page === 0),
         new ButtonBuilder()
             .setCustomId(`help_next:${category}:${page}`)
-            .setLabel("Next ➡")
+            .setLabel("Next ")
             .setStyle(ButtonStyle.Primary)
             .setDisabled(page === pages.length - 1)
     );
@@ -46,8 +44,8 @@ async function sendPagedHelp(interaction, category, page = 0) {
 }
 
 export default {
-    data: { 
-        name: "help", 
+    data: {
+        name: "help",
         description: "Show help pages",
         integration_types: [0, 1],
         contexts: [0, 1, 2]
@@ -55,6 +53,5 @@ export default {
     async execute(i) {
         return sendPagedHelp(i, "general", 0);
     },
-    // Export helper for interactionCreate to use
     sendPagedHelp
 };

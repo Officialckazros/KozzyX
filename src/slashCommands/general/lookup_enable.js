@@ -16,7 +16,7 @@ export default {
             return safeRespond(interaction, asEmbedPayload({
                 guildId: interaction.guild?.id,
                 type: "success",
-                title: "🔓 Lookup Enabled",
+                title: "Lookup Enabled",
                 description: "Other users can now retrieve your information using `/lookup`.",
                 ephemeral: true
             }));
@@ -25,7 +25,7 @@ export default {
             return safeRespond(interaction, asEmbedPayload({
                 guildId: interaction.guild?.id,
                 type: "error",
-                title: "❌ Error",
+                title: "Something went wrong",
                 description: "An error occurred while enabling lookups for your profile.",
                 ephemeral: true
             }));

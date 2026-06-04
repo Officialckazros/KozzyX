@@ -4,36 +4,36 @@ import { getGuildSettings } from "../../utils/database.js";
 import { getDB } from "../../utils/db.js";
 
 const ACTION_LABELS = {
-    [AuditLogEvent.MemberBan]:        "🔨 Ban",
-    [AuditLogEvent.MemberBanRemove]:  "✅ Unban",
-    [AuditLogEvent.MemberKick]:       "👢 Kick",
-    [AuditLogEvent.MemberUpdate]:     "✏️ Member Update",
-    [AuditLogEvent.MemberRoleUpdate]: "🎭 Role Update",
-    [AuditLogEvent.MessageDelete]:    "🗑️ Message Deleted",
-    [AuditLogEvent.MessageBulkDelete]:"🗑️ Bulk Delete",
-    [AuditLogEvent.ChannelCreate]:    "📁 Channel Created",
-    [AuditLogEvent.ChannelDelete]:    "📁 Channel Deleted",
-    [AuditLogEvent.ChannelUpdate]:    "📁 Channel Updated",
-    [AuditLogEvent.RoleCreate]:       "🎭 Role Created",
-    [AuditLogEvent.RoleDelete]:       "🎭 Role Deleted",
-    [AuditLogEvent.RoleUpdate]:       "🎭 Role Updated",
-    [AuditLogEvent.InviteCreate]:     "📨 Invite Created",
-    [AuditLogEvent.InviteDelete]:     "📨 Invite Deleted",
-    [AuditLogEvent.GuildUpdate]:      "⚙️ Server Updated",
+    [AuditLogEvent.MemberBan]:        "Ban",
+    [AuditLogEvent.MemberBanRemove]:  "Unban",
+    [AuditLogEvent.MemberKick]:       "Kick",
+    [AuditLogEvent.MemberUpdate]:     "Member Update",
+    [AuditLogEvent.MemberRoleUpdate]: "Role Update",
+    [AuditLogEvent.MessageDelete]:    "Message Deleted",
+    [AuditLogEvent.MessageBulkDelete]:"Bulk Delete",
+    [AuditLogEvent.ChannelCreate]:    "Channel Created",
+    [AuditLogEvent.ChannelDelete]:    "Channel Deleted",
+    [AuditLogEvent.ChannelUpdate]:    "Channel Updated",
+    [AuditLogEvent.RoleCreate]:       "Role Created",
+    [AuditLogEvent.RoleDelete]:       "Role Deleted",
+    [AuditLogEvent.RoleUpdate]:       "Role Updated",
+    [AuditLogEvent.InviteCreate]:     "Invite Created",
+    [AuditLogEvent.InviteDelete]:     "Invite Deleted",
+    [AuditLogEvent.GuildUpdate]:      "Server Updated",
 };
 
 const MOD_CASE_LABELS = {
-    ban: "🔨 Ban",
-    kick: "👢 Kick",
-    softban: "🧹 Softban",
+    ban: "Ban",
+    kick: "Kick",
+    softban: "Softban",
     timeout: "⏱️ Timeout",
-    untimeout: "✅ Untimeout",
-    warn: "⚠️ Warn",
-    warn_remove: "🧹 Warn Removed",
-    warn_clear: "🧽 Warns Cleared",
+    untimeout: "Untimeout",
+    warn: "Warn",
+    warn_remove: "Warn Removed",
+    warn_clear: "Warns Cleared",
     auto_timeout: "⏱️ Auto Timeout",
-    auto_kick: "👢 Auto Kick",
-    auto_ban: "🔨 Auto Ban",
+    auto_kick: "Auto Kick",
+    auto_ban: "Auto Ban",
 };
 
 export default {
@@ -42,7 +42,7 @@ export default {
         if (!message.guild) return;
         if (!message.member.permissions.has(PermissionsBitField.Flags.ViewAuditLog)) {
             return replyEmbed(message, {
-                type: "error", title: "⛔ Permission Denied",
+                type: "error", title: "Restricted",
                 description: "You need the **View Audit Log** permission.",
             });
         }
@@ -50,7 +50,7 @@ export default {
         const settings = getGuildSettings(message.guild.id);
         if (!settings.plugins?.audit_log) {
             return replyEmbed(message, {
-                type: "error", title: "❌ Plugin Disabled",
+                type: "error", title: "Plugin Disabled",
                 description: "The Audit Log plugin is not enabled. Use `/plugins enable audit_log`.",
             });
         }
@@ -58,7 +58,7 @@ export default {
         const target = message.mentions.users.first();
         if (!target) {
             return replyEmbed(message, {
-                type: "error", title: "❌ Usage",
+                type: "error", title: "Usage",
                 description: "`,audit @user`\n*Shows the bot's recorded actions and your moderation cases for that user.*",
             });
         }
@@ -80,7 +80,7 @@ export default {
 
         if (!auditRows.length && !caseRows.length) {
             return replyEmbed(message, {
-                type: "info", title: "📋 Audit Log",
+                type: "info", title: "Audit Log",
                 description: `No logged actions found for ${target}.`,
             });
         }
@@ -96,7 +96,7 @@ export default {
                 return `**\`#${r.case_number}\`** ${label} by ${by} ${ts}${reason}`;
             });
             fields.push({
-                name: `📁 Moderation Cases [${caseRows.length}]`,
+                name: `Moderation Cases [${caseRows.length}]`,
                 value: caseLines.join("\n").slice(0, 1024),
                 inline: false,
             });
@@ -111,7 +111,7 @@ export default {
                 return `${label} by ${by} ${ts}${reason}`;
             });
             fields.push({
-                name: `🛡️ Discord Audit Log [${auditRows.length}]`,
+                name: `Discord Audit Log [${auditRows.length}]`,
                 value: auditLines.join("\n").slice(0, 1024),
                 inline: false,
             });
@@ -120,7 +120,7 @@ export default {
         const embed = buildCoolEmbed({
             guildId: message.guild.id,
             type: "info",
-            title: `📋 Audit — ${target.tag}`,
+            title: `Audit — ${target.tag}`,
             description: `User ID: \`${target.id}\``,
             fields,
             showAuthor: true,

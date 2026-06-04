@@ -2,9 +2,8 @@ import { safeRespond } from "../../utils/helpers.js";
 import { asEmbedPayload } from "../../utils/embeds.js";
 import { askGemini } from "../../utils/ai.js";
 
-// Rate limiting: Store user IDs and their last command time
 const cooldowns = new Map();
-const COOLDOWN_SECONDS = 60; // Longer cooldown for summarize
+const COOLDOWN_SECONDS = 60;
 
 export default {
     data: {
@@ -21,7 +20,6 @@ export default {
             return safeRespond(i, { content: "I cannot read messages in this context. The bot must be in the server and have permission to read message history.", ephemeral: true });
         }
 
-        // Check cooldown
         const now = Date.now();
         const cooldownEnd = cooldowns.get(i.user.id);
 
@@ -54,7 +52,7 @@ export default {
                 return safeRespond(i, asEmbedPayload({
                     guildId: i.guild?.id,
                     type: "error",
-                    title: "🚫 Blocked",
+                    title: "Blocked",
                     description: "The conversation content was blocked due to a safety violation.",
                     ephemeral: true,
                 }));
@@ -64,7 +62,7 @@ export default {
                 return safeRespond(i, asEmbedPayload({
                     guildId: i.guild?.id,
                     type: "error",
-                    title: "❌ Configuration Error",
+                    title: "Configuration Error",
                     description: "The Gemini API key is missing. Please configure `GOOGLE_GENERATIVE_AI_API_KEY` in the bot's `.env` file on the server.",
                     ephemeral: true,
                 }));
@@ -74,7 +72,7 @@ export default {
                 return safeRespond(i, asEmbedPayload({
                     guildId: i.guild?.id,
                     type: "error",
-                    title: "❌ Authentication Error",
+                    title: "Authentication Error",
                     description: "The configured Gemini API key is invalid. Please check the `GOOGLE_GENERATIVE_AI_API_KEY` in the bot's `.env` file on the server.",
                     ephemeral: true,
                 }));
@@ -84,7 +82,7 @@ export default {
                 return safeRespond(i, asEmbedPayload({
                     guildId: i.guild?.id,
                     type: "error",
-                    title: "❌ AI Error",
+                    title: "AI Error",
                     description: "Failed to generate summary. Please try again later.",
                     ephemeral: true,
                 }));
@@ -94,19 +92,18 @@ export default {
                 return safeRespond(i, asEmbedPayload({
                     guildId: i.guild?.id,
                     type: "error",
-                    title: "⚠️ Quota Exceeded",
+                    title: "Quota Exceeded",
                     description: "The bot's AI quota has been reached. Please try again tomorrow or wait a few minutes.",
                     ephemeral: true,
                 }));
             }
 
-            // Set cooldown after successful response
             cooldowns.set(i.user.id, now + (COOLDOWN_SECONDS * 1000));
 
             return safeRespond(i, asEmbedPayload({
                 guildId: i.guild?.id,
                 type: "info",
-                title: "📝 Conversation Summary",
+                title: "Conversation Summary",
                 description: summary,
                 footerUser: i.user,
                 client: i.client,

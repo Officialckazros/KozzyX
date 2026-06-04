@@ -34,7 +34,7 @@ export default {
             if (item.length > MAX_ITEM_LENGTH) {
                 return safeRespond(i, asEmbedPayload({
                     guildId: i.guild?.id, type: "error",
-                    title: "❌ Too Long",
+                    title: "Too Long",
                     description: `Tasks must be **${MAX_ITEM_LENGTH}** characters or fewer.`,
                     ephemeral: true,
                 }));
@@ -43,7 +43,7 @@ export default {
             if ((count?.c ?? 0) >= MAX_ITEMS) {
                 return safeRespond(i, asEmbedPayload({
                     guildId: i.guild?.id, type: "error",
-                    title: "❌ List Full",
+                    title: "List Full",
                     description: `You can have up to **${MAX_ITEMS}** tasks. Remove some first.`,
                     ephemeral: true,
                 }));
@@ -52,9 +52,9 @@ export default {
             const result = await db.run("INSERT INTO todos (user_id, item, created_at) VALUES (?, ?, ?)", userId, item, Date.now());
             return safeRespond(i, asEmbedPayload({
                 guildId: i.guild?.id, type: "success",
-                title: "✅ Task Added",
+                title: "Task Added",
                 fields: [
-                    { name: "📝 Task", value: item, inline: false },
+                    { name: "Task", value: item, inline: false },
                     { name: "🆔 ID", value: `\`${result.lastID}\``, inline: true },
                 ],
                 ephemeral: true,
@@ -66,7 +66,7 @@ export default {
             if (!rows.length) {
                 return safeRespond(i, asEmbedPayload({
                     guildId: i.guild?.id, type: "info",
-                    title: "📝 To-Do List",
+                    title: "To-Do List",
                     description: "Your to-do list is empty. Add one with `/todo add`.",
                     ephemeral: true,
                 }));
@@ -75,7 +75,7 @@ export default {
 
             const embed = buildCoolEmbed({
                 guildId: i.guild?.id, type: "info",
-                title: `📝 To-Do List — ${i.user.username}`,
+                title: `To-Do List — ${i.user.username}`,
                 description: list,
                 showAuthor: true,
                 client: i.client,
@@ -95,7 +95,7 @@ export default {
             if (!row) {
                 return safeRespond(i, asEmbedPayload({
                     guildId: i.guild?.id, type: "error",
-                    title: "❌ Not Found",
+                    title: "Not Found",
                     description: `Task **#${id}** not found or doesn't belong to you.`,
                     ephemeral: true,
                 }));
@@ -103,7 +103,7 @@ export default {
             await db.run("DELETE FROM todos WHERE id = ? AND user_id = ?", id, userId);
             return safeRespond(i, asEmbedPayload({
                 guildId: i.guild?.id, type: "success",
-                title: "🗑️ Task Removed",
+                title: "Task Removed",
                 description: `Removed: ~~${row.item}~~`,
                 ephemeral: true,
             }));
@@ -113,7 +113,7 @@ export default {
             const result = await db.run("DELETE FROM todos WHERE user_id = ?", userId);
             return safeRespond(i, asEmbedPayload({
                 guildId: i.guild?.id, type: "success",
-                title: "🧹 List Cleared",
+                title: "List Cleared",
                 description: `Removed **${result.changes}** task(s) from your list.`,
                 ephemeral: true,
             }));

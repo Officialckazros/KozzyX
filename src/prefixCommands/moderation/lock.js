@@ -6,7 +6,7 @@ export default {
     async execute(message, args) {
         if (!message.member.permissions.has(PermissionsBitField.Flags.ManageChannels)) {
             return replyEmbed(message, {
-                type: "error", title: "⛔ Permission Needed",
+                type: "error", title: "Permission Needed",
                 description: "You need **Manage Channels** to lock channels.",
             });
         }
@@ -14,7 +14,7 @@ export default {
         const targetChannel = message.mentions.channels.first() || message.channel;
         if (!targetChannel?.isTextBased()) {
             return replyEmbed(message, {
-                type: "error", title: "❌ Invalid Channel",
+                type: "error", title: "Invalid Channel",
                 description: "Lock can only be used on text channels.",
             });
         }
@@ -23,7 +23,7 @@ export default {
         const current = targetChannel.permissionsFor(everyone);
         if (current && !current.has(PermissionsBitField.Flags.SendMessages)) {
             return replyEmbed(message, {
-                type: "info", title: "🔒 Already Locked",
+                type: "info", title: "Already Locked",
                 description: `${targetChannel} is already locked for @everyone.`,
             });
         }
@@ -37,7 +37,7 @@ export default {
             });
         } catch {
             return replyEmbed(message, {
-                type: "error", title: "❌ Lock Failed",
+                type: "error", title: "Lock Failed",
                 description: "I don't have permission to edit that channel.",
             });
         }
@@ -45,11 +45,11 @@ export default {
         const embed = buildCoolEmbed({
             guildId: message.guild.id,
             type: "mod",
-            title: "🔒 Channel Locked",
+            title: "Channel Locked",
             fields: [
-                { name: "📁 Channel", value: `${targetChannel}`, inline: true },
-                { name: "👮 Moderator", value: `${message.author}`, inline: true },
-                { name: "📝 Reason", value: reason, inline: false },
+                { name: "Channel", value: `${targetChannel}`, inline: true },
+                { name: "Moderator", value: `${message.author}`, inline: true },
+                { name: "Reason", value: reason, inline: false },
             ],
             showAuthor: false,
             showFooter: true,

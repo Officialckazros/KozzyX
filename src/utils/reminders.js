@@ -1,7 +1,7 @@
 import { getDB } from "./db.js";
 import { buildCoolEmbed } from "./embeds.js";
 
-const MAX_TIMEOUT = 2147483647; // Max DB integer is safely within JS max safe integer, but setTimeout max is 24.8 days
+const MAX_TIMEOUT = 2147483647;
 
 export async function addReminder(userId, content, remindAt, channelId) {
     const db = await getDB();
@@ -31,7 +31,6 @@ export async function initReminders(client) {
     }
     console.log(`⏰ Loaded ${reminders.length} reminders.`);
 
-    // Belt-and-suspenders: sweep every minute for any reminders that setTimeout may have missed
     setInterval(async () => {
         try {
             const db2 = await getDB();
@@ -52,7 +51,6 @@ export function scheduleReminder(client, reminder) {
     }
 
     if (diff > MAX_TIMEOUT) {
-        // Chain: wait MAX_TIMEOUT then re-evaluate — works for any future duration
         setTimeout(() => scheduleReminder(client, reminder), MAX_TIMEOUT);
         return;
     }
@@ -62,16 +60,13 @@ export function scheduleReminder(client, reminder) {
 
 async function sendReminder(client, reminder, late = false) {
     try {
-        // Remove from DB first to prevent loop if crash happens during send
         await removeReminder(reminder.id);
 
         let target;
         try {
-            // Try fetching channel if it exists (Guild text or DM)
             if (reminder.channel_id) {
                 target = await client.channels.fetch(reminder.channel_id).catch(() => null);
             }
-            // Fallback to fetching user DM
             if (!target) {
                 const user = await client.users.fetch(reminder.user_id).catch(() => null);
                 target = user;
@@ -80,7 +75,7 @@ async function sendReminder(client, reminder, late = false) {
             console.error("[reminders] Failed to fetch delivery target:", err);
         }
 
-        if (!target) return; // User/Channel gone
+        if (!target) return;
 
         const embed = buildCoolEmbed({
             type: late ? "warning" : "info",

@@ -4,12 +4,10 @@ import { askGemini, askGeminiWithHistory } from "../../utils/ai.js";
 import { getGuildSettings } from "../../utils/database.js";
 import { getDB } from "../../utils/db.js";
 
-// Rate limiting: Store user IDs and their cooldown expiry timestamp
 const cooldowns = new Map();
 const COOLDOWN_SECONDS = 30;
-const MAX_HISTORY = 20; // max messages kept per user/guild
+const MAX_HISTORY = 20;
 
-// Prune expired entries every 10 minutes to prevent unbounded growth
 setInterval(() => {
     const now = Date.now();
     for (const [userId, cooldownEnd] of cooldowns) {
@@ -76,7 +74,6 @@ export default {
 
             if (answer && answer !== "ERROR" && answer !== "QUOTA_EXCEEDED") {
                 history.push({ role: "assistant", content: answer });
-                // Keep last MAX_HISTORY messages
                 const trimmed = history.length > MAX_HISTORY ? history.slice(-MAX_HISTORY) : history;
                 await saveHistory(i.user.id, guildId, trimmed);
             }
@@ -88,7 +85,7 @@ export default {
             return safeRespond(i, asEmbedPayload({
                 guildId: i.guild?.id,
                 type: "error",
-                title: "🚫 Blocked",
+                title: "Blocked",
                 description: "Your message was blocked because it appears to contain a prompt injection or jailbreak attempt.",
                 ephemeral: true,
             }));
@@ -98,7 +95,7 @@ export default {
             return safeRespond(i, asEmbedPayload({
                 guildId: i.guild?.id,
                 type: "error",
-                title: "❌ Configuration Error",
+                title: "Configuration Error",
                 description: "The Gemini API key is missing. Please configure `GOOGLE_GENERATIVE_AI_API_KEY` in the bot's `.env` file on the server.",
                 ephemeral: true,
             }));
@@ -108,7 +105,7 @@ export default {
             return safeRespond(i, asEmbedPayload({
                 guildId: i.guild?.id,
                 type: "error",
-                title: "❌ Authentication Error",
+                title: "Authentication Error",
                 description: "The configured Gemini API key is invalid. Please check the `GOOGLE_GENERATIVE_AI_API_KEY` in the bot's `.env` file on the server.",
                 ephemeral: true,
             }));
@@ -118,7 +115,7 @@ export default {
             return safeRespond(i, asEmbedPayload({
                 guildId: i.guild?.id,
                 type: "error",
-                title: "❌ AI Error",
+                title: "AI Error",
                 description: "Failed to get a response from Gemini. Please try again later.",
                 ephemeral: true,
             }));
@@ -128,7 +125,7 @@ export default {
             return safeRespond(i, asEmbedPayload({
                 guildId: i.guild?.id,
                 type: "error",
-                title: "⚠️ Quota Exceeded",
+                title: "Quota Exceeded",
                 description: "The bot's AI quota has been reached. Please try again later.",
                 ephemeral: true,
             }));
@@ -137,12 +134,12 @@ export default {
         cooldowns.set(i.user.id, now + (COOLDOWN_SECONDS * 1000));
 
         const trimmed = answer.length > 4000 ? answer.slice(0, 3997) + "..." : answer;
-        const footer = useHistory ? "💬 Conversation memory is ON — Gemini remembers this chat." : null;
+        const footer = useHistory ? "Conversation memory is ON — Gemini remembers this chat." : null;
 
         return safeRespond(i, asEmbedPayload({
             guildId: i.guild?.id,
             type: "info",
-            title: "🤖 Gemini Answer",
+            title: "Gemini Answer",
             description: `**Q:** ${prompt}\n\n${trimmed}`,
             footerUser: footer ? null : i.user,
             client: i.client,

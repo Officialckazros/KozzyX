@@ -6,6 +6,6 @@ export default {
     async execute(message, args) {
         const reason = args.join(" ") || "AFK";
         await setAfk(message.author.id, reason);
-        return replyEmbed(message, { type: "afk", title: "💤 AFK Enabled", description: `Reason: **${reason}**` });
+        return replyEmbed(message, { type: "afk", title: "AFK Enabled", description: `Reason: **${reason}**` });
     }
 };

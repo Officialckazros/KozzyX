@@ -2,8 +2,8 @@ import { safeRespond } from "../../utils/helpers.js";
 import { asEmbedPayload } from "../../utils/embeds.js";
 
 export default {
-    data: { 
-        name: "topic", 
+    data: {
+        name: "topic",
         description: "Get a random conversation topic",
         integration_types: [0, 1],
         contexts: [0, 1, 2]
@@ -21,6 +21,6 @@ export default {
             "What’s a goal you want to achieve this month?",
         ];
         const pick = topics[Math.floor(Math.random() * topics.length)];
-        return safeRespond(i, asEmbedPayload({ guildId: i.guild?.id, type: "info", title: "💬 Topic", description: pick, client: i.client }));
+        return safeRespond(i, asEmbedPayload({ guildId: i.guild?.id, type: "info", title: "Topic", description: pick, client: i.client }));
     }
 };

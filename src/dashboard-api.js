@@ -13,7 +13,6 @@ async function importDatabase() {
 
 const PORT = 3456;
 const AUTH_KEY = 'KozzyX_Internal_API_' + crypto.randomBytes(32).toString('hex');
-// Must exactly match an OAuth2 redirect registered in the Discord developer portal.
 const REDIRECT_URI = 'https://kozzyx.org/dashboard';
 
 const DATA_DIR = path.join(__dirname, '../data');
@@ -31,7 +30,7 @@ function saveJSON(name, data) {
     fs.writeFileSync(p, JSON.stringify(data, null, 2));
 }
 
-let triggers = []; // Legacy - now using database
+let triggers = [];
 let config = loadJSON('config.json', { prefix: ',' });
 let modlogs = loadJSON('modlogs.json', []);
 let tasks = loadJSON('tasks.json', []);
@@ -49,10 +48,8 @@ let botStats = {
 
 const sessions = new Map();
 
-// Live activity feed — rolling buffer of real Discord events for the dashboard.
 let feedEvents = [];
 const MAX_FEED = 120;
-// Per-user-per-command cooldown tracker: `${type}:${name}:${userId}` -> last run timestamp.
 const cooldownHits = new Map();
 
 function readBody(req) {
@@ -87,8 +84,6 @@ function json(res, status, data) {
     res.end(JSON.stringify(data));
 }
 
-
-
 export function initAPI(client) {
     const server = http.createServer(async (req, res) => {
         res.setHeader('Access-Control-Allow-Origin', '*');
@@ -106,7 +101,6 @@ export function initAPI(client) {
         const pathname = parsedUrl.pathname;
         const method = req.method;
 
-        // --- Static dashboard ---
         if (pathname === '/dashboard.html' || pathname === '/dashboard' || pathname === '/') {
             const filePath = path.join(__dirname, '../website/dashboard.html');
             if (fs.existsSync(filePath)) {
@@ -116,13 +110,11 @@ export function initAPI(client) {
             }
         }
 
-        // --- Auth login ---
         if (pathname === '/api/auth/login' && method === 'GET') {
             const url = `https://discord.com/api/oauth2/authorize?client_id=${process.env.CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=identify%20guilds`;
             return json(res, 200, { url });
         }
 
-        // --- Auth callback ---
         if (pathname === '/api/auth/callback' && method === 'POST') {
             try {
                 const { code } = await readBody(req);
@@ -141,7 +133,6 @@ export function initAPI(client) {
                 const tokens = await tokenResponse.json();
                 if (!tokens.access_token) throw new Error(tokens.error_description || 'Failed to get access token');
 
-                // Fetch User Data
                 const userRes = await fetch('https://discord.com/api/users/@me', {
                     headers: { Authorization: `Bearer ${tokens.access_token}` }
                 });
@@ -155,7 +146,6 @@ export function initAPI(client) {
                     return json(res, 403, { error: 'Access forbidden: Email is globally blocked' });
                 }
 
-                // Fetch User Guilds
                 const guildsRes = await fetch('https://discord.com/api/users/@me/guilds', {
                     headers: { Authorization: `Bearer ${tokens.access_token}` }
                 });
@@ -164,7 +154,6 @@ export function initAPI(client) {
                 const isOwner = userData.id === process.env.OWNER_ID;
                 const sessionToken = crypto.randomBytes(32).toString('hex');
 
-                // Store user data AND their guilds in the session
                 sessions.set(sessionToken, { ...userData, guilds: Array.isArray(userGuilds) ? userGuilds : [], isOwner });
 
                 addLog('OK', `Login: ${userData.username}`);
@@ -177,7 +166,6 @@ export function initAPI(client) {
             }
         }
 
-        // --- Auth check for everything below ---
         const authHeader = req.headers['authorization'];
         const sessionToken = authHeader ? authHeader.split(' ')[1] : null;
         const apiKey = req.headers['x-api-key'];
@@ -187,7 +175,6 @@ export function initAPI(client) {
             return json(res, 401, { error: 'Unauthorized' });
         }
 
-        // Ensure sessionUser is always an object to prevent crashes
         const sessionUser = sessions.get(sessionToken) || { isOwner: isInternal, guilds: [], id: 'INTERNAL' };
 
         if (sessionUser.id && GLOBALLY_BLOCKED_IDS.has(sessionUser.id)) {
@@ -198,11 +185,9 @@ export function initAPI(client) {
             return json(res, 403, { error: 'Access forbidden: Email is globally blocked' });
         }
 
-        // helper to grab the active guild
         const guildId = req.headers['x-guild-id'] || process.env.GUILD_ID;
         const guild = client.guilds.cache.get(guildId);
 
-        // Security Lock: Ensure user has access to this specific guild
         if (guildId && !sessionUser.isOwner && !pathname.startsWith('/api/auth/')) {
             const userGuilds = sessionUser.guilds || [];
             const ug = userGuilds.find(u => u.id === guildId);
@@ -214,7 +199,7 @@ export function initAPI(client) {
 
         const executorId = sessionUser?.id || process.env.OWNER_ID;
         const executorMember = guild ? await guild.members.fetch(executorId).catch(() => null) : null;
-        
+
         function canActOn(targetMember, reqPerm) {
             if (sessionUser.isOwner) return true;
             if (!executorMember) return false;
@@ -224,21 +209,20 @@ export function initAPI(client) {
         }
 
         try {
-            // --- Guild list ---
+
             if (pathname === '/api/auth/guilds' && method === 'GET') {
                 const userGuilds = sessionUser.guilds || [];
                 const accessibleGuilds = client.guilds.cache.filter(g => {
                     if (sessionUser.isOwner) return true;
                     const ug = userGuilds.find(u => u.id === g.id);
                     if (!ug) return false;
-                    return ug.owner || (BigInt(ug.permissions) & 0x20n); // Owner or Manage Guild
+                    return ug.owner || (BigInt(ug.permissions) & 0x20n);
                 });
                 return json(res, 200, accessibleGuilds.map(g => ({
                     id: g.id, name: g.name, icon: g.iconURL(), memberCount: g.memberCount
                 })));
             }
 
-            // --- Stats (incl. real server specs) ---
             if (pathname === '/api/stats' && method === 'GET') {
                 const mem = process.memoryUsage();
                 const owner = guild ? await guild.fetchOwner().catch(() => null) : null;
@@ -274,7 +258,6 @@ export function initAPI(client) {
                 });
             }
 
-            // --- Live activity feed (real Discord events) ---
             if (pathname === '/api/feed' && method === 'GET') {
                 const list = feedEvents
                     .filter(e => !guildId || !e.guildId || e.guildId === guildId)
@@ -282,13 +265,11 @@ export function initAPI(client) {
                 return json(res, 200, list);
             }
 
-            // --- Logs ---
             if (pathname === '/api/logs' && method === 'GET') {
                 if (!sessionUser.isOwner) return json(res, 403, { error: 'Owner only' });
                 return json(res, 200, botLogs);
             }
 
-            // --- Send message to channel ---
             if (pathname === '/api/message' && method === 'POST') {
                 const { channelId, content } = await readBody(req);
                 const channel = await client.channels.fetch(channelId);
@@ -299,7 +280,6 @@ export function initAPI(client) {
                 return json(res, 200, { success: true });
             }
 
-            // --- Broadcast to all text channels ---
             if (pathname === '/api/broadcast' && method === 'POST') {
                 if (!canActOn(null, 'ManageChannels') && !canActOn(null, 'Administrator')) return json(res, 403, { error: 'Missing Manage Channels permission' });
                 const { content, isEmbed } = await readBody(req);
@@ -320,7 +300,6 @@ export function initAPI(client) {
                 return json(res, 200, { success: true, sent });
             }
 
-            // --- Terminal: execute prefix command ---
             if (pathname === '/api/terminal' && method === 'POST') {
                 const { command: fullCommand, channelId } = await readBody(req);
                 addLog('CMD', `> ${fullCommand}`);
@@ -346,7 +325,6 @@ export function initAPI(client) {
                 const member = await guild.members.fetch(executorId).catch(() => null);
                 if (!member) return json(res, 500, { error: 'Could not resolve executing member' });
 
-                // Parse mentions from args
                 const mentionedUsers = new Map();
                 const mentionedMembers = new Map();
                 for (const a of args) {
@@ -416,7 +394,6 @@ export function initAPI(client) {
                 }
             }
 
-            // --- Members ---
             if (pathname === '/api/members' && method === 'GET') {
                 if (!guild) return json(res, 200, []);
                 await guild.members.fetch().catch(() => { });
@@ -433,7 +410,6 @@ export function initAPI(client) {
                 return json(res, 200, members);
             }
 
-            // --- Member actions: mute/kick/ban/timeout/unmute/unban ---
             if (pathname === '/api/members/action' && method === 'POST') {
                 const { userId, action, reason, duration } = await readBody(req);
                 if (!guild) return json(res, 404, { error: 'Guild not found' });
@@ -477,7 +453,6 @@ export function initAPI(client) {
                 }
             }
 
-            // --- Roles ---
             if (pathname === '/api/roles' && method === 'GET') {
                 if (!guild) return json(res, 200, []);
                 const roles = guild.roles.cache
@@ -535,7 +510,6 @@ export function initAPI(client) {
                 return json(res, 200, { success: true });
             }
 
-            // --- Live channel messages ---
             if (pathname.match(/^\/api\/channels\/[^/]+\/messages$/) && method === 'GET') {
                 const channelId = pathname.split('/')[3];
                 const channel = await client.channels.fetch(channelId).catch(() => null);
@@ -559,7 +533,6 @@ export function initAPI(client) {
                 return json(res, 200, out);
             }
 
-            // --- Send to channel & also return the message ---
             if (pathname.match(/^\/api\/channels\/[^/]+\/send$/) && method === 'POST') {
                 const channelId = pathname.split('/')[3];
                 const { content } = await readBody(req);
@@ -575,7 +548,6 @@ export function initAPI(client) {
                 });
             }
 
-            // --- Channels ---
             if (pathname === '/api/channels' && method === 'GET') {
                 if (!guild) return json(res, 200, []);
                 const channels = guild.channels.cache
@@ -633,7 +605,6 @@ export function initAPI(client) {
                 return json(res, 200, { success: true });
             }
 
-            // --- Commands ---
             if (pathname === '/api/commands' && method === 'GET') {
                 const slash = Array.from(client.slashCommands.values()).map(c => {
                     const override = commandOverrides[`slash:${c.data.name}`] || {};
@@ -661,7 +632,7 @@ export function initAPI(client) {
                 if (!sessionUser.isOwner) return json(res, 403, { error: 'Owner only' });
                 const parts = pathname.split('/');
                 const name = parts.pop();
-                const type = parts.pop(); // slash or prefix
+                const type = parts.pop();
                 const body = await readBody(req);
 
                 commandOverrides[`${type}:${name}`] = {
@@ -673,7 +644,6 @@ export function initAPI(client) {
                 return json(res, 200, { success: true });
             }
 
-            // --- History (real growth & top channels) ---
             if (pathname === '/api/history' && method === 'GET') {
                 const memberCount = guild?.memberCount || 0;
                 const growth = Array(7).fill(0).map((_, i) => Math.max(0, memberCount - (6 - i) * 2));
@@ -688,7 +658,6 @@ export function initAPI(client) {
                 });
             }
 
-            // --- Modlogs (real moderation cases from the database) ---
             if (pathname === '/api/modlogs' && method === 'GET') {
                 if (!guild) return json(res, 200, []);
                 const { getDB } = await import('./utils/db.js');
@@ -710,9 +679,6 @@ export function initAPI(client) {
                 })));
             }
 
-
-
-            // --- Config ---
             if (pathname === '/api/config' && method === 'GET') {
                 return json(res, 200, config);
             }
@@ -725,7 +691,6 @@ export function initAPI(client) {
                 return json(res, 200, { success: true, config });
             }
 
-            // --- Tasks ---
             if (pathname === '/api/tasks' && method === 'GET') {
                 return json(res, 200, tasks);
             }
@@ -737,7 +702,6 @@ export function initAPI(client) {
                 return json(res, 200, { success: true });
             }
 
-            // --- Restart ---
             if (pathname === '/api/restart' && method === 'POST') {
                 if (!sessionUser.isOwner) return json(res, 403, { error: 'Owner only' });
                 addLog('WARN', 'Restart requested from dashboard');
@@ -749,7 +713,6 @@ export function initAPI(client) {
                 return;
             }
 
-            // --- Wipe (reset stored dashboard data, NOT the bot data) ---
             if (pathname === '/api/wipe' && method === 'POST') {
                 if (!sessionUser.isOwner) return json(res, 403, { error: 'Owner only' });
                 triggers = []; modlogs = []; tasks = [];
@@ -761,7 +724,6 @@ export function initAPI(client) {
                 return json(res, 200, { success: true });
             }
 
-            // --- Leave guild ---
             if (pathname === '/api/leave' && method === 'POST') {
                 if (!sessionUser.isOwner) return json(res, 403, { error: 'Owner only' });
                 if (guild) {
@@ -771,7 +733,6 @@ export function initAPI(client) {
                 return json(res, 200, { success: true });
             }
 
-            // --- Triggers (Fixed to use database) ---
             if (pathname === '/api/triggers' && method === 'GET') {
                 const { guildAutoresponders } = await importDatabase();
                 const list = guildAutoresponders.get(guild.id) || [];
@@ -800,7 +761,6 @@ export function initAPI(client) {
                 return json(res, 200, { success: true });
             }
 
-            // --- FULL SETTINGS (New) ---
             if (pathname === '/api/settings' && method === 'GET') {
                 const { getGuildSettings } = await importDatabase();
                 const settings = getGuildSettings(guild.id);
@@ -812,14 +772,12 @@ export function initAPI(client) {
                 const { getGuildSettings, saveSettings } = await importDatabase();
                 const settings = getGuildSettings(guild.id);
 
-                // Deep merge or specific updates
                 Object.assign(settings, body);
                 await saveSettings();
                 addLog('OK', `Settings updated for ${guild.name}`);
                 return json(res, 200, { success: true, settings });
             }
 
-            // --- PLUGINS (New) ---
             if (pathname === '/api/plugins' && method === 'GET') {
                 const { getGuildSettings } = await importDatabase();
                 const settings = getGuildSettings(guild.id);
@@ -837,7 +795,6 @@ export function initAPI(client) {
                 return json(res, 200, { success: true });
             }
 
-            // --- Ticketing Panel Edit ---
             if (pathname === '/api/tickets' && method === 'GET') {
                 const { getGuildSettings } = await importDatabase();
                 const settings = getGuildSettings(guild.id);
@@ -851,8 +808,7 @@ export function initAPI(client) {
                 if (ticket !== undefined) settings.ticket = ticket;
                 await saveSettings();
                 addLog('OK', `Ticketing panel updated for ${guild.name}`);
-                
-                // If they want to deploy the panel, we'd do it here. For now just save.
+
                 if (req.headers['x-deploy-panel'] === 'true' && settings.ticketPanelChannelId) {
                     const channel = await client.channels.fetch(settings.ticketPanelChannelId).catch(() => null);
                     if (channel) {
@@ -878,11 +834,10 @@ export function initAPI(client) {
                         addLog('OK', `Ticket panel deployed to #${channel.name}`);
                     }
                 }
-                
+
                 return json(res, 200, { success: true });
             }
 
-            // --- Custom Commands ---
             if (pathname === '/api/custom-commands' && method === 'GET') {
                 const { getDB } = await import('./utils/db.js');
                 const db = await getDB();
@@ -906,7 +861,6 @@ export function initAPI(client) {
                 return json(res, 200, { success: true });
             }
 
-            // --- Automations ---
             if (pathname === '/api/automations' && method === 'GET') {
                 const { getDB } = await import('./utils/db.js');
                 const db = await getDB();
@@ -930,7 +884,6 @@ export function initAPI(client) {
                 return json(res, 200, { success: true });
             }
 
-            // --- Giveaways ---
             if (pathname === '/api/giveaways' && method === 'GET') {
                 const { getDB } = await import('./utils/db.js');
                 const db = await getDB();
@@ -941,13 +894,12 @@ export function initAPI(client) {
                 const { channel_id, prize, winners, end_time } = await readBody(req);
                 const { getDB } = await import('./utils/db.js');
                 const db = await getDB();
-                
-                // Simulate sending giveaway embed
+
                 const channel = await client.channels.fetch(channel_id).catch(() => null);
                 let message_id = null;
                 if (channel) {
-                    const msg = await channel.send({ embeds: [{ title: '🎉 GIVEAWAY 🎉', description: `Prize: **${prize}**\nWinners: ${winners}\nEnds: <t:${Math.floor(end_time / 1000)}:R>\nReact with 🎉 to enter!`, color: 0x9b87f5 }] });
-                    await msg.react('🎉');
+                    const msg = await channel.send({ embeds: [{ title: 'GIVEAWAY ', description: `Prize: **${prize}**\nWinners: ${winners}\nEnds: <t:${Math.floor(end_time / 1000)}:R>\nReact with to enter!`, color: 0x9b87f5 }] });
+                    await msg.react('');
                     message_id = msg.id;
                 }
 
@@ -956,7 +908,6 @@ export function initAPI(client) {
                 return json(res, 200, { success: true });
             }
 
-            // --- Birthdays ---
             if (pathname === '/api/birthdays' && method === 'GET') {
                 const { getDB } = await import('./utils/db.js');
                 const db = await getDB();
@@ -979,18 +930,16 @@ export function initAPI(client) {
                 return json(res, 200, { success: true });
             }
 
-            // --- Kozzyx Assistant Execution ---
             if (pathname === '/api/ai/execute' && method === 'POST') {
                 const { prompt } = await readBody(req);
                 if (!guild) return json(res, 404, { error: 'Guild not found' });
                 addLog('AI', `Command received: ${prompt}`);
-                
+
                 const p = prompt.toLowerCase();
                 let actionsTaken = [];
-                
+
                 try {
                     if (p.includes('organize') && p.includes('channel')) {
-                        // Create default categories
                         const cat = await guild.channels.create({ name: 'Information', type: 4 });
                         await guild.channels.create({ name: 'rules', type: 0, parent: cat.id });
                         await guild.channels.create({ name: 'announcements', type: 0, parent: cat.id });
@@ -1014,12 +963,11 @@ export function initAPI(client) {
                 } catch (e) {
                     return json(res, 500, { error: 'Failed to execute actions: ' + e.message });
                 }
-                
+
                 addLog('OK', `AI Assistant completed: ${actionsTaken.join(', ')}`);
                 return json(res, 200, { success: true, actions: actionsTaken });
             }
 
-            // --- Fallback ---
             return json(res, 404, { error: 'Backend route not found', path: pathname, method });
         } catch (err) {
             addLog('ERR', `${pathname}: ${err.message}`);
@@ -1038,7 +986,6 @@ export function initAPI(client) {
         addLog('INFO', args.join(' '));
     };
 
-    // Trigger matching: hook into messageCreate (Fixed to use database)
     client.on('messageCreate', async (message) => {
         if (message.author.bot || !message.guild) return;
 
@@ -1063,15 +1010,11 @@ export function addLog(level, msg) {
     if (botLogs.length > MAX_LOGS) botLogs.shift();
 }
 
-// ---------------- DASHBOARD CONNECTIVITY HELPERS ----------------
-// Push a real Discord event into the dashboard's live feed buffer.
-// `kind` is one of: command | join | mod. `text` is plain text (no HTML).
 export function recordEvent(kind, text, guildId) {
     feedEvents.unshift({ kind, text: String(text), guildId: guildId || null, time: Date.now() });
     if (feedEvents.length > MAX_FEED) feedEvents.pop();
 }
 
-// Called by the command handlers whenever a real Discord command runs.
 export function recordCommandRun({ name, type, user, guildId }) {
     botStats.commandsRan++;
     const display = `${type === 'slash' ? '/' : ''}${name}`;
@@ -1079,19 +1022,16 @@ export function recordCommandRun({ name, type, user, guildId }) {
     recordEvent('command', `${user || 'Someone'} ran ${display}`, guildId);
 }
 
-// Whether a command is enabled (respects dashboard overrides).
 export function isCommandEnabled(type, name) {
     const o = commandOverrides[`${type}:${name}`];
     return !o || o.enabled !== false;
 }
 
-// Configured cooldown (in seconds) for a command, or 0 if none.
 export function getCommandCooldown(type, name) {
     const o = commandOverrides[`${type}:${name}`];
     return (o && Number(o.cooldown)) || 0;
 }
 
-// Enforce a per-user cooldown. Returns { ok } or { ok:false, remaining }.
 export function checkCooldown(type, name, userId) {
     const cd = getCommandCooldown(type, name);
     if (!cd) return { ok: true };

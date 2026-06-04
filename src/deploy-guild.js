@@ -1,4 +1,3 @@
-// Manual guild-specific deploy script for instant updates
 import { REST, Routes } from "discord.js";
 import { readdirSync, statSync } from "fs";
 import { join, dirname } from "path";
@@ -11,10 +10,8 @@ const token = process.env.TOKEN;
 const clientId = process.env.CLIENT_ID?.replace(/\D/g, "");
 const guildId = process.env.GUILD_ID?.replace(/\D/g, "");
 
-
-// Error Handling: Check if GUILD_ID is missing
 if (!guildId) {
-    console.error("❌ Error: GUILD_ID is missing from the .env file. Please add it to deploy commands to a specific guild.");
+    console.error("Error: GUILD_ID is missing from the .env file. Please add it to deploy commands to a specific guild.");
     process.exit(1);
 }
 
@@ -47,7 +44,6 @@ const rest = new REST({ version: "10" }).setToken(token);
 try {
     console.log(`Started refreshing ${commands.length} GUILD application (/) commands.`);
 
-    // Guild-specific deploy (instant)
     await rest.put(
         Routes.applicationGuildCommands(clientId, guildId),
         { body: commands },

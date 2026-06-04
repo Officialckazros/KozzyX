@@ -23,7 +23,7 @@ export default {
             {
                 name: "list",
                 description: "Show all plugins and their current status.",
-                type: 1, // SUB_COMMAND
+                type: 1,
             },
             {
                 name: "enable",
@@ -48,12 +48,12 @@ export default {
         if (sub === "list") {
             const lines = Object.entries(PLUGIN_META).map(([key, meta]) => {
                 const on = settings.plugins[key];
-                return `${on ? "🟢" : "⚫"} **${meta.label}** — ${meta.desc}`;
+                return `${on ? "" : ""} **${meta.label}** — ${meta.desc}`;
             });
             return safeRespond(interaction, asEmbedPayload({
                 guildId: interaction.guildId,
                 type: "settings",
-                title: "🔌 Plugins",
+                title: "Plugins",
                 description: lines.join("\n"),
                 ephemeral: true,
             }));
@@ -61,7 +61,7 @@ export default {
 
         const plugin = interaction.options.getString("plugin");
         if (!PLUGIN_META[plugin]) {
-            return safeRespond(interaction, asEmbedPayload({ guildId: interaction.guildId, type: "error", title: "❌ Unknown plugin", description: `No plugin named \`${plugin}\`.`, ephemeral: true }));
+            return safeRespond(interaction, asEmbedPayload({ guildId: interaction.guildId, type: "error", title: "Unknown plugin", description: `No plugin named \`${plugin}\`.`, ephemeral: true }));
         }
 
         const enabling = sub === "enable";
@@ -71,7 +71,7 @@ export default {
         return safeRespond(interaction, asEmbedPayload({
             guildId: interaction.guildId,
             type: "success",
-            title: `${enabling ? "🟢 Enabled" : "⚫ Disabled"}: ${PLUGIN_META[plugin].label}`,
+            title: `${enabling ? "Enabled" : "Disabled"}: ${PLUGIN_META[plugin].label}`,
             description: PLUGIN_META[plugin].desc,
             ephemeral: true,
         }));

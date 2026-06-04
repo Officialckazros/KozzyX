@@ -8,9 +8,8 @@ export default {
     async execute(member) {
         try {
             recordEvent("join", `${member.user?.username || "A new member"} joined the server`, member.guild?.id);
-        } catch { /* feed is best-effort */ }
+        } catch {  }
 
-        // Welcome Announcement
         try {
             const s = getGuildSettings(member.guild.id);
             if (s.welcome?.enabled && s.welcome?.channelId) {

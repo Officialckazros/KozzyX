@@ -21,7 +21,7 @@ export default {
         return safeRespond(i, asEmbedPayload({
             guildId: i.guild?.id,
             type: cleared ? "success" : "info",
-            title: cleared ? "🧹 Memory Cleared" : "💭 Nothing to Clear",
+            title: cleared ? "Memory Cleared" : "Nothing to Clear",
             description: cleared
                 ? "Gemini's conversation history for you in this server has been wiped. Next `/ask` starts fresh."
                 : "You have no stored conversation history here.",

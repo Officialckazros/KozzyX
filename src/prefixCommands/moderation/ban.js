@@ -8,7 +8,7 @@ export default {
         if (!message.member.permissions.has(PermissionsBitField.Flags.BanMembers)) {
             return replyEmbed(message, {
                 type: "error",
-                title: "⛔ Permission Needed",
+                title: "Permission Needed",
                 description: "You need the **Ban Members** permission to use this command.",
             });
         }
@@ -19,7 +19,7 @@ export default {
         if (!target) {
             return replyEmbed(message, {
                 type: "error",
-                title: "❌ Usage",
+                title: "Usage",
                 description: "`,ban @user [reason]`\n`,ban <user-id> [reason]`",
             });
         }

@@ -13,7 +13,7 @@ export default {
                 : message.channel;
 
         if (!target || !target.isTextBased()) {
-            return replyEmbed(message, { type: "error", title: "❌ Error", description: "Ticket panel channel not set or invalid." });
+            return replyEmbed(message, { type: "error", title: "Something went wrong", description: "Ticket panel channel not set or invalid." });
         }
         const embed = buildTicketPanelEmbed(message.guild.id);
         const rows = buildTicketPanelComponents(message.guild.id);
@@ -21,7 +21,7 @@ export default {
 
         return replyEmbed(message, {
             type: "ticket",
-            title: "🎫 Ticket Panel Posted",
+            title: "Ticket Panel Posted",
             description: `Posted the ticket panel in ${target}.`,
         });
     }

@@ -3,17 +3,17 @@ import { safeRespond } from "../../utils/helpers.js";
 import { buildCoolEmbed, asEmbedPayload } from "../../utils/embeds.js";
 
 const VERIFICATION_LEVELS = {
-    0: "🔓 None",
-    1: "📧 Low (verified email)",
-    2: "📅 Medium (registered 5+ min)",
-    3: "👥 High (in server 10+ min)",
-    4: "📱 Very High (verified phone)",
+    0: "None",
+    1: "Low (verified email)",
+    2: "Medium (registered 5+ min)",
+    3: "High (in server 10+ min)",
+    4: "Very High (verified phone)",
 };
 
 const CONTENT_FILTER = {
-    0: "🔓 Disabled",
-    1: "🛡️ Members without roles",
-    2: "🛡️ All members",
+    0: "Disabled",
+    1: "Members without roles",
+    2: "All members",
 };
 
 const NSFW_LEVEL = {
@@ -36,7 +36,7 @@ export default {
         const g = i.guild;
         if (!g) {
             return safeRespond(i, asEmbedPayload({
-                guildId: null, type: "error", title: "❌ Server Only",
+                guildId: null, type: "error", title: "This can only be used in a server",
                 description: "This command must be used inside a server.",
                 ephemeral: true,
             }));
@@ -64,7 +64,7 @@ export default {
         const stickerCount = g.stickers?.cache?.size ?? 0;
         const animatedEmojis = g.emojis.cache.filter(e => e.animated).size;
 
-        const roleCount = g.roles.cache.size - 1; // exclude @everyone
+        const roleCount = g.roles.cache.size - 1;
         const topRoles = g.roles.cache
             .filter(r => r.id !== g.id)
             .sort((a, b) => b.position - a.position)
@@ -75,52 +75,52 @@ export default {
         const features = (g.features ?? []).map(f => `\`${f.toLowerCase().replace(/_/g, " ")}\``).join(", ") || "None";
 
         const fields = [
-            { name: "👑 Owner", value: owner ? `${owner.user.tag}\n\`${owner.id}\`` : "Unknown", inline: true },
+            { name: "Owner", value: owner ? `${owner.user.tag}\n\`${owner.id}\`` : "Unknown", inline: true },
             { name: "🆔 Server ID", value: `\`${g.id}\``, inline: true },
-            { name: "📅 Created", value: created, inline: false },
+            { name: "Created", value: created, inline: false },
             {
-                name: `👥 Members [${memberCount}]`,
-                value: `👤 Humans: **${humanCount}**\n🤖 Bots: **${botCount}**`,
+                name: `Members [${memberCount}]`,
+                value: `Humans: **${humanCount}**\nBots: **${botCount}**`,
                 inline: true,
             },
             {
-                name: `📁 Channels [${textCount + voiceCount + stageCount + forumCount}]`,
-                value: `💬 Text: **${textCount}**\n🔊 Voice: **${voiceCount}**\n🎤 Stage: **${stageCount}**\n📂 Categories: **${categoryCount}**${forumCount ? `\n💡 Forums: **${forumCount}**` : ""}${threadCount ? `\n🧵 Threads: **${threadCount}**` : ""}`,
+                name: `Channels [${textCount + voiceCount + stageCount + forumCount}]`,
+                value: `Text: **${textCount}**\nVoice: **${voiceCount}**\nStage: **${stageCount}**\nCategories: **${categoryCount}**${forumCount ? `\nForums: **${forumCount}**` : ""}${threadCount ? `\nThreads: **${threadCount}**` : ""}`,
                 inline: true,
             },
             {
-                name: `🎭 Roles [${roleCount}]`,
+                name: `Roles [${roleCount}]`,
                 value: topRoles + (roleCount > 5 ? `\n*+${roleCount - 5} more*` : ""),
                 inline: false,
             },
             {
-                name: `😀 Emojis [${emojiCount}]`,
+                name: `Emojis [${emojiCount}]`,
                 value: `Static: **${emojiCount - animatedEmojis}**\nAnimated: **${animatedEmojis}**${stickerCount ? `\nStickers: **${stickerCount}**` : ""}`,
                 inline: true,
             },
             {
-                name: "🚀 Boost Status",
+                name: "Boost Status",
                 value: `Tier: **${BOOST_TIERS[g.premiumTier] ?? "None"}**\nBoosts: **${g.premiumSubscriptionCount ?? 0}**`,
                 inline: true,
             },
             {
-                name: "🔐 Security",
+                name: "Security",
                 value: `Verification: ${VERIFICATION_LEVELS[g.verificationLevel] ?? "Unknown"}\nContent Filter: ${CONTENT_FILTER[g.explicitContentFilter] ?? "Unknown"}`,
                 inline: false,
             },
         ];
 
         if (g.vanityURLCode) {
-            fields.push({ name: "✨ Vanity URL", value: `discord.gg/${g.vanityURLCode}`, inline: true });
+            fields.push({ name: "Vanity URL", value: `discord.gg/${g.vanityURLCode}`, inline: true });
         }
         if (g.preferredLocale) {
-            fields.push({ name: "🌐 Locale", value: `\`${g.preferredLocale}\``, inline: true });
+            fields.push({ name: "Locale", value: `\`${g.preferredLocale}\``, inline: true });
         }
         if (g.nsfwLevel != null) {
-            fields.push({ name: "🔞 NSFW Level", value: NSFW_LEVEL[g.nsfwLevel] ?? "Unknown", inline: true });
+            fields.push({ name: "NSFW Level", value: NSFW_LEVEL[g.nsfwLevel] ?? "Unknown", inline: true });
         }
         if (g.description) {
-            fields.push({ name: "📝 Description", value: g.description.slice(0, 1024), inline: false });
+            fields.push({ name: "Description", value: g.description.slice(0, 1024), inline: false });
         }
         if (features !== "None") {
             fields.push({ name: "⭐ Features", value: features.slice(0, 1024), inline: false });
@@ -129,7 +129,7 @@ export default {
         const embed = buildCoolEmbed({
             guildId: g.id,
             type: "info",
-            title: `🏠 ${g.name}`,
+            title: `${g.name}`,
             fields,
             showAuthor: true,
             showFooter: false,

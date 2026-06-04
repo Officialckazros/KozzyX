@@ -6,8 +6,7 @@ export default {
     async execute(oldM, newM) {
         try {
             const settings = getGuildSettings(newM.guild.id);
-            
-            // Nickname lock
+
             if (settings.nickLocks && settings.nickLocks[newM.id]) {
                 const lock = settings.nickLocks[newM.id];
                 if (oldM.nickname !== newM.nickname) {
@@ -15,7 +14,6 @@ export default {
                 }
             }
 
-            // Booster welcome custom role
             if (settings.boosterWelcomeBonus?.enabled && !oldM.premiumSince && newM.premiumSince) {
                 const roleName = settings.boosterWelcomeBonus.title || "Server Booster";
                 let role = newM.guild.roles.cache.find(r => r.name === roleName);

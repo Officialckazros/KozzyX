@@ -7,7 +7,7 @@ export default {
         const res = Math.random() < 0.5 ? "Heads" : "Tails";
         return replyEmbed(message, {
             type: "info",
-            title: "🪙 Coin Flip",
+            title: "Coin Flip",
             description: `It's **${res}**!`
         });
     }

@@ -16,7 +16,6 @@ export default {
 
         const db = await getDB();
 
-        // User joined the trigger channel — create their VC
         if (newState.channelId === triggerChannelId && newState.member) {
             const member = newState.member;
             const categoryId = settings.dynamicVc?.categoryId ?? newState.channel?.parentId ?? null;
@@ -42,7 +41,6 @@ export default {
             }
         }
 
-        // User left a dynamic VC — delete if empty
         if (oldState.channelId && oldState.channelId !== triggerChannelId) {
             const row = await db.get("SELECT owner_id FROM dynamic_vcs WHERE channel_id = ?", oldState.channelId);
             if (row) {

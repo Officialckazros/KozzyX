@@ -1,7 +1,6 @@
 import { EmbedBuilder } from "discord.js";
 import { getGuildSettings } from "./database.js";
 
-// ---------------- BASIC EMBED BUILDER ----------------
 export function buildCoolEmbed({ guildId, type = "info", client, title = null, description = null, footerUser = null, fields = null, showAuthor = false, showFooter = false, footerText = null }) {
     const settings = guildId ? getGuildSettings(guildId) : null;
     const color = settings?.embedColors?.[type] ?? 0x5865f2;
@@ -28,7 +27,7 @@ export function buildCoolEmbed({ guildId, type = "info", client, title = null, d
         });
     } else if (footerText) {
         embed.setFooter({ text: footerText });
-    } else if (showFooter && footerUser) { // fallback if both used logically
+    } else if (showFooter && footerUser) {
         embed.setFooter({ text: `Requested by ${footerUser.tag}` });
     }
 
@@ -45,7 +44,6 @@ export function asEmbedPayload({ guildId, type, client, title, description, foot
 }
 
 export async function replyEmbed(message, opts) {
-    // opts: { type, title, description, fields, client }
     return message.reply(asEmbedPayload({ guildId: message.guild?.id, footerUser: message.author, client: message.client, ...opts }));
 }
 
@@ -53,7 +51,6 @@ export async function sendEmbed(channel, guildId, opts) {
     return channel.send(asEmbedPayload({ guildId, client: channel.client, ...opts }));
 }
 
-// ---------------- CASE SYSTEM HELPERS ----------------
 export function caseEmbed(guildId, title, lines = []) {
     return buildCoolEmbed({
         guildId,
@@ -70,7 +67,6 @@ export async function postCase(guild, embed, originChannelId = null) {
         const settings = getGuildSettings(guild.id);
         if (!settings.caseChannelId) return;
 
-        // Avoid duplicates if the case channel is the same channel the command was run in
         if (originChannelId && settings.caseChannelId === originChannelId) return;
 
         const ch = guild.channels.cache.get(settings.caseChannelId);

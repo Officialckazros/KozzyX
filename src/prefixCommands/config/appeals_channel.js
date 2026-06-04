@@ -9,12 +9,12 @@ export default {
     async execute(message) {
         if (!message.guild) return;
         if (!message.member.permissions.has(PermissionsBitField.Flags.ManageGuild)) {
-            return replyEmbed(message, { type: "error", title: "⛔ Permission Denied", description: "You need **Manage Server**." });
+            return replyEmbed(message, { type: "error", title: "Restricted", description: "You need **Manage Server**." });
         }
 
         const channel = message.mentions.channels.first();
         if (!channel) {
-            return replyEmbed(message, { type: "error", title: "❌ Usage", description: "`,appealschannel #channel`" });
+            return replyEmbed(message, { type: "error", title: "Usage", description: "`,appealschannel #channel`" });
         }
 
         const settings = getGuildSettings(message.guild.id);
@@ -23,7 +23,7 @@ export default {
 
         return replyEmbed(message, {
             type: "success",
-            title: "✅ Appeals Channel Set",
+            title: "Appeals Channel Set",
             description: `Ban appeals will be sent to <#${channel.id}>.\n\nEnable the appeals plugin with \`/plugins enable appeals\`.`,
         });
     },

@@ -1,7 +1,6 @@
 import { Events, AuditLogEvent } from "discord.js";
 import { getDB } from "../utils/db.js";
 
-// Only persist these action types — keeps the table focused
 const TRACKED_ACTIONS = new Set([
     AuditLogEvent.MemberBan,
     AuditLogEvent.MemberUnban,

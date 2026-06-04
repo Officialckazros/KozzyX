@@ -1,23 +1,3 @@
-// ========================================================================
-//  /server_setup  —  One-shot server provisioning command
-// ========================================================================
-//  Creates roles, categories, channels, permission overwrites, and posts
-//  pre-built welcome/rules embeds. Wires bot settings (case channel, ticket
-//  panel channel) so every in-bot system works out of the box.
-//
-//  Presets (premade setup blueprints — pick one):
-//    • full       — Full community server (roles + all categories)
-//    • community  — Social / chat-focused layout
-//    • gaming     — Gaming community with game chats + voice lounges
-//    • minimal    — Small private server (one category, light roles)
-//    • staff_only — Only staff tools (mod-log, case channel, staff chat)
-//
-//  Options:
-//    • dry_run       — Preview actions without touching the server
-//    • skip_existing — If a role/channel with the same name already exists
-//                      (default: true), skip it instead of duplicating
-// ========================================================================
-
 import {
     ChannelType,
     PermissionFlagsBits,
@@ -29,10 +9,8 @@ import { buildCoolEmbed, asEmbedPayload } from "../../utils/embeds.js";
 import { getGuildSettings, saveSettings } from "../../utils/database.js";
 import { buildTicketPanelEmbed, buildTicketPanelComponents } from "../../utils/ticketUtils.js";
 
-// ---------- Permission aliases -----------------------------------------
 const P = PermissionFlagsBits;
 
-// Full administrator-esque bundle for staff roles
 const STAFF_PERMS = [
     P.ViewChannel, P.SendMessages, P.ReadMessageHistory, P.EmbedLinks,
     P.AttachFiles, P.AddReactions, P.UseExternalEmojis,
@@ -41,108 +19,96 @@ const STAFF_PERMS = [
     P.MuteMembers, P.DeafenMembers, P.MoveMembers,
 ];
 
-// Everyday member bundle
 const MEMBER_PERMS = [
     P.ViewChannel, P.SendMessages, P.ReadMessageHistory, P.EmbedLinks,
     P.AttachFiles, P.AddReactions, P.UseExternalEmojis, P.Connect, P.Speak,
     P.Stream, P.UseVAD,
 ];
 
-// ---------- Role blueprints --------------------------------------------
-// Listed top→bottom (highest→lowest). Bot places them in that hierarchy.
 const ROLE_BLUEPRINTS = {
     staff: [
-        { name: "👑 Owner",     color: 0xFEE75C, hoist: true, mentionable: false, perms: [P.Administrator] },
-        { name: "🛡️ Admin",     color: 0xED4245, hoist: true, mentionable: true,  perms: [P.Administrator] },
-        { name: "⚔️ Moderator", color: 0xEB459E, hoist: true, mentionable: true,  perms: STAFF_PERMS },
-        { name: "🧰 Helper",    color: 0x57F287, hoist: true, mentionable: true,
+        { name: "Owner",     color: 0xFEE75C, hoist: true, mentionable: false, perms: [P.Administrator] },
+        { name: "Admin",     color: 0xED4245, hoist: true, mentionable: true,  perms: [P.Administrator] },
+        { name: "Moderator", color: 0xEB459E, hoist: true, mentionable: true,  perms: STAFF_PERMS },
+        { name: "Helper",    color: 0x57F287, hoist: true, mentionable: true,
           perms: [P.ViewChannel, P.SendMessages, P.ManageMessages, P.ModerateMembers, P.ReadMessageHistory] },
     ],
     special: [
-        { name: "💎 VIP",           color: 0x9B59B6, hoist: true, mentionable: true, perms: MEMBER_PERMS },
-        { name: "💜 Booster",       color: 0xF47FFF, hoist: true, mentionable: true, perms: MEMBER_PERMS },
+        { name: "VIP",           color: 0x9B59B6, hoist: true, mentionable: true, perms: MEMBER_PERMS },
+        { name: "Booster",       color: 0xF47FFF, hoist: true, mentionable: true, perms: MEMBER_PERMS },
         { name: "⭐ Active Member", color: 0x1ABC9C, hoist: true, mentionable: true, perms: MEMBER_PERMS },
     ],
     base: [
-        { name: "🧍 Member", color: 0x95A5A6, hoist: false, mentionable: false, perms: MEMBER_PERMS },
-        { name: "🤖 Bots",   color: 0x2F3136, hoist: true,  mentionable: false, perms: MEMBER_PERMS },
-        // Muted is the LAST role created but is special: we deny SendMessages server-wide via overwrites.
-        { name: "🔇 Muted",  color: 0x4F545C, hoist: false, mentionable: false, perms: [] },
+        { name: "Member", color: 0x95A5A6, hoist: false, mentionable: false, perms: MEMBER_PERMS },
+        { name: "Bots",   color: 0x2F3136, hoist: true,  mentionable: false, perms: MEMBER_PERMS },
+        { name: "Muted",  color: 0x4F545C, hoist: false, mentionable: false, perms: [] },
     ],
 };
 
-// ---------- Channel blueprints -----------------------------------------
-// Each category lists { type, name, topic, readOnly?, staffOnly? }.
-// "readOnly" means @everyone can view but not send (announcements/rules).
-// "staffOnly" means only staff roles can view.
 const CATEGORY_BLUEPRINTS = {
     information: {
-        name: "📢 INFORMATION",
+        name: "INFORMATION",
         channels: [
-            { type: "text", name: "welcome",         topic: "👋 Welcome to the server!",         readOnly: true },
-            { type: "text", name: "rules",           topic: "📜 Server rules — please read!",    readOnly: true },
-            { type: "text", name: "announcements",   topic: "📣 Important server updates.",      readOnly: true },
+            { type: "text", name: "welcome",         topic: "Welcome to the server!",         readOnly: true },
+            { type: "text", name: "rules",           topic: "Server rules — please read!",    readOnly: true },
+            { type: "text", name: "announcements",   topic: "Important server updates.",      readOnly: true },
             { type: "text", name: "server-updates",  topic: "🆕 Changelog and feature updates.", readOnly: true },
         ],
     },
     community: {
-        name: "💬 COMMUNITY",
+        name: "COMMUNITY",
         channels: [
-            { type: "text", name: "general",       topic: "💬 General chat. Be nice!" },
-            { type: "text", name: "introductions", topic: "👋 Say hi! Introduce yourself." },
-            { type: "text", name: "media",         topic: "🖼️ Share images, videos, and art." },
-            { type: "text", name: "memes",         topic: "😂 Memes and funny content only." },
-            { type: "text", name: "bot-commands",  topic: "🤖 Use bot commands here." },
+            { type: "text", name: "general",       topic: "General chat. Be nice!" },
+            { type: "text", name: "introductions", topic: "Say hi! Introduce yourself." },
+            { type: "text", name: "media",         topic: "Share images, videos, and art." },
+            { type: "text", name: "memes",         topic: "Memes and funny content only." },
+            { type: "text", name: "bot-commands",  topic: "Use bot commands here." },
         ],
     },
     gaming: {
-        name: "🎮 GAMING",
+        name: "GAMING",
         channels: [
-            { type: "text", name: "lfg",          topic: "🔎 Looking for group / teammates." },
-            { type: "text", name: "gaming-chat",  topic: "🎮 General gaming discussion." },
-            { type: "text", name: "clips",        topic: "🎬 Your best clips and highlights." },
+            { type: "text", name: "lfg",          topic: "Looking for group / teammates." },
+            { type: "text", name: "gaming-chat",  topic: "General gaming discussion." },
+            { type: "text", name: "clips",        topic: "Your best clips and highlights." },
         ],
     },
     voice: {
-        name: "🎧 VOICE",
+        name: "VOICE",
         channels: [
-            { type: "voice", name: "🔊 General Lounge" },
-            { type: "voice", name: "🎵 Music" },
-            { type: "voice", name: "🎮 Gaming VC" },
-            { type: "voice", name: "😴 AFK" },
+            { type: "voice", name: "General Lounge" },
+            { type: "voice", name: "Music" },
+            { type: "voice", name: "Gaming VC" },
+            { type: "voice", name: "AFK" },
         ],
     },
     support: {
-        name: "🎫 SUPPORT",
+        name: "SUPPORT",
         channels: [
-            { type: "text", name: "support",     topic: "🎫 Need help? Open a ticket here." },
-            { type: "text", name: "suggestions", topic: "💡 Suggest ideas and improvements." },
-            { type: "text", name: "bug-reports", topic: "🐛 Report bugs you've found." },
+            { type: "text", name: "support",     topic: "Need help? Open a ticket here." },
+            { type: "text", name: "suggestions", topic: "Suggest ideas and improvements." },
+            { type: "text", name: "bug-reports", topic: "Report bugs you've found." },
         ],
     },
     staff: {
-        name: "🛠️ STAFF",
+        name: "STAFF",
         staffOnly: true,
         channels: [
-            { type: "text",  name: "staff-chat",  topic: "🛠️ Staff only chat.",              staffOnly: true },
-            { type: "text",  name: "mod-log",     topic: "📝 Moderation action log.",         staffOnly: true },
-            { type: "text",  name: "cases",       topic: "🧾 Case feed — for the bot.",       staffOnly: true },
-            { type: "voice", name: "🛠️ Staff VC", staffOnly: true },
+            { type: "text",  name: "staff-chat",  topic: "Staff only chat.",              staffOnly: true },
+            { type: "text",  name: "mod-log",     topic: "Moderation action log.",         staffOnly: true },
+            { type: "text",  name: "cases",       topic: "Case feed — for the bot.",       staffOnly: true },
+            { type: "voice", name: "Staff VC", staffOnly: true },
         ],
     },
 };
 
-// Max emojis per boost tier (regular & animated share the same cap)
 const EMOJI_LIMIT_BY_TIER   = [50, 100, 150, 250];
 const STICKER_LIMIT_BY_TIER = [5,  15,  30,  60];
 
-// emoji.gg meme category ID (confirmed: category 3 = Meme)
 const EMOJI_GG_MEME_CAT = 3;
 const EMOJI_GG_API      = "https://emoji.gg/api/";
 const EMOJI_GG_STICKERS = "https://emoji.gg/api/stickers";
 
-// ---------- Preset blueprints ------------------------------------------
-// Each preset lists which role groups and which categories to provision.
 const PRESETS = {
     full: {
         label: "Full Community Server",
@@ -176,21 +142,17 @@ const PRESETS = {
     },
 };
 
-// ========================================================================
-//  MAIN COMMAND
-// ========================================================================
 export default {
     data: {
         name: "server_setup",
         description: "Provision roles, channels, and settings in one command.",
-        // 0x20 = ManageGuild — only server managers can even see this command.
         default_member_permissions: String(PermissionsBitField.Flags.ManageGuild),
         dm_permission: false,
         options: [
             {
                 name: "preset",
                 description: "Which premade setup to use.",
-                type: 3, // STRING
+                type: 3,
                 required: true,
                 choices: Object.entries(PRESETS).map(([k, v]) => ({
                     name: `${v.label}`,
@@ -200,13 +162,13 @@ export default {
             {
                 name: "dry_run",
                 description: "Preview what would be created without touching the server.",
-                type: 5, // BOOLEAN
+                type: 5,
                 required: false,
             },
             {
                 name: "skip_existing",
                 description: "Skip roles/channels that already exist by name (default: true).",
-                type: 5, // BOOLEAN
+                type: 5,
                 required: false,
             },
         ],
@@ -216,7 +178,7 @@ export default {
         if (!interaction.guildId) {
             return safeRespond(interaction, asEmbedPayload({
                 guildId: null, type: "error",
-                title: "❌ Server Only",
+                title: "This can only be used in a server",
                 description: "This command can only be used in a server.",
                 ephemeral: true,
             }));
@@ -225,18 +187,17 @@ export default {
         if (!guild) {
             return safeRespond(interaction, asEmbedPayload({
                 guildId: null, type: "error",
-                title: "❌ Cannot Access Server",
+                title: "Cannot Access Server",
                 description: "I couldn't load this server. Make sure I have been properly invited.",
                 ephemeral: true,
             }));
         }
 
-        // --- Permission checks ---------------------------------------
         const invoker = interaction.member;
         if (!invoker?.permissions?.has(P.ManageGuild) && !invoker?.permissions?.has(P.Administrator)) {
             return safeRespond(interaction, asEmbedPayload({
                 guildId: guild.id, type: "error",
-                title: "❌ Insufficient Permissions",
+                title: "Insufficient Permissions",
                 description: "You need the **Manage Server** permission to run this.",
                 ephemeral: true,
             }));
@@ -246,7 +207,7 @@ export default {
         if (!me) {
             return safeRespond(interaction, asEmbedPayload({
                 guildId: guild.id, type: "error",
-                title: "❌ Couldn't fetch bot member",
+                title: "Couldn't fetch bot member",
                 description: "I can't fetch my own member object in this guild.",
                 ephemeral: true,
             }));
@@ -256,7 +217,7 @@ export default {
         if (missing.length) {
             return safeRespond(interaction, asEmbedPayload({
                 guildId: guild.id, type: "error",
-                title: "❌ Bot Missing Permissions",
+                title: "Bot Missing Permissions",
                 description:
                     "I need the following permissions to run setup:\n" +
                     "• **Manage Channels**\n• **Manage Roles**\n• **Manage Server**\n\n" +
@@ -272,35 +233,29 @@ export default {
         if (!preset) {
             return safeRespond(interaction, asEmbedPayload({
                 guildId: guild.id, type: "error",
-                title: "❌ Unknown preset",
+                title: "Unknown preset",
                 description: `No preset named \`${presetKey}\`.`,
                 ephemeral: true,
             }));
         }
 
-        // Long-running op — defer ASAP.
         try {
             await interaction.deferReply();
-        } catch { /* already replied somehow */ }
+        } catch {  }
 
-        // ------------------------------------------------------------
-        //  Execute setup
-        // ------------------------------------------------------------
         const log = new SetupLog();
-        const createdRoles = new Map();   // name -> Role
-        const createdChannels = new Map();// name -> Channel
+        const createdRoles = new Map();
+        const createdChannels = new Map();
 
         try {
-            // 1. ROLES
             for (const group of preset.roleGroups) {
                 for (const bp of ROLE_BLUEPRINTS[group] || []) {
                     await provisionRole({ guild, bp, dryRun, skipExisting, log, createdRoles });
                 }
             }
 
-            // 2. CATEGORIES + CHANNELS
             const staffRoles = [...createdRoles.values()].filter((r) =>
-                ["👑 Owner", "🛡️ Admin", "⚔️ Moderator", "🧰 Helper"].includes(r.name)
+                ["Owner", "Admin", "Moderator", "Helper"].includes(r.name)
             );
 
             for (const catKey of preset.categories) {
@@ -311,8 +266,7 @@ export default {
                 });
             }
 
-            // 3. MUTED ROLE OVERWRITES — deny SendMessages/AddReactions in all text/voice channels
-            const mutedRole = createdRoles.get("🔇 Muted") || guild.roles.cache.find((r) => r.name === "🔇 Muted");
+            const mutedRole = createdRoles.get("Muted") || guild.roles.cache.find((r) => r.name === "Muted");
             if (mutedRole && !dryRun) {
                 for (const ch of guild.channels.cache.values()) {
                     if (ch.type === ChannelType.GuildText || ch.type === ChannelType.GuildVoice || ch.type === ChannelType.GuildAnnouncement) {
@@ -325,29 +279,27 @@ export default {
                                 CreatePublicThreads: false,
                                 CreatePrivateThreads: false,
                             });
-                        } catch { /* ignore per-channel failures */ }
+                        } catch {  }
                     }
                 }
-                log.add("🔇", `Applied Muted-role overwrites to ${guild.channels.cache.size} channels.`);
+                log.add("", `Applied Muted-role overwrites to ${guild.channels.cache.size} channels.`);
             }
 
-            // 4. WIRE BOT SETTINGS (case channel, ticket panel channel, etc.)
             if (!dryRun) {
                 const settings = getGuildSettings(guild.id);
                 const casesCh = findCreatedByName(createdChannels, "cases");
                 const supportCh = findCreatedByName(createdChannels, "support");
                 if (casesCh) {
                     settings.caseChannelId = casesCh.id;
-                    log.add("🧾", `Case feed set to <#${casesCh.id}>.`);
+                    log.add("", `Case feed set to <#${casesCh.id}>.`);
                 }
                 if (supportCh) {
                     settings.ticketPanelChannelId = supportCh.id;
-                    log.add("🎫", `Ticket panel channel set to <#${supportCh.id}>.`);
+                    log.add("", `Ticket panel channel set to <#${supportCh.id}>.`);
                 }
                 await saveSettings().catch((e) => console.error("[server_setup] saveSettings:", e));
             }
 
-            // 5. POST CHANNEL CONTENT — wire every channel to its system
             if (!dryRun) {
                 const welcomeCh       = findCreatedByName(createdChannels, "welcome");
                 const rulesCh         = findCreatedByName(createdChannels, "rules");
@@ -360,71 +312,64 @@ export default {
                 const lfgCh           = findCreatedByName(createdChannels, "lfg");
                 const announcementsCh = findCreatedByName(createdChannels, "announcements");
 
-                // #welcome
                 if (welcomeCh) {
                     await postWelcomeEmbed(welcomeCh, guild, { rulesCh, supportCh, generalCh }).catch(() => {});
-                    log.add("👋", `Posted welcome message in <#${welcomeCh.id}>.`);
+                    log.add("", `Posted welcome message in <#${welcomeCh.id}>.`);
                 }
 
-                // #rules
                 if (rulesCh) {
                     await postRulesEmbed(rulesCh, guild).catch(() => {});
-                    log.add("📜", `Posted rules in <#${rulesCh.id}>.`);
+                    log.add("", `Posted rules in <#${rulesCh.id}>.`);
                 }
 
-                // #support — post the live ticket panel (buttons work immediately)
                 if (supportCh) {
                     const panelEmbed = buildTicketPanelEmbed(guild.id);
                     const panelRows  = buildTicketPanelComponents(guild.id);
                     await supportCh.send({ embeds: [new EmbedBuilder().setColor(panelEmbed.color).setTitle(panelEmbed.title).setDescription(panelEmbed.description)], components: panelRows }).catch(() => {});
-                    log.add("🎫", `Posted live ticket panel in <#${supportCh.id}>.`);
+                    log.add("", `Posted live ticket panel in <#${supportCh.id}>.`);
                 }
 
-                // #cases — post activation notice
                 if (casesCh) {
                     const casesEmbed = new EmbedBuilder()
                         .setColor(0x5865F2)
-                        .setTitle("🧾 Case Feed Active")
+                        .setTitle("Case Feed Active")
                         .setDescription("All moderation actions and ticket events will be logged here automatically.\n\nDo **not** send messages in this channel.")
                         .setTimestamp();
                     await casesCh.send({ embeds: [casesEmbed] }).catch(() => {});
-                    log.add("🧾", `Posted case feed notice in <#${casesCh.id}>.`);
+                    log.add("", `Posted case feed notice in <#${casesCh.id}>.`);
                 }
 
-                // #mod-log — post activation notice
                 if (modLogCh) {
                     const modLogEmbed = new EmbedBuilder()
                         .setColor(0xFEE75C)
-                        .setTitle("📝 Mod Log Active")
+                        .setTitle("Mod Log Active")
                         .setDescription("Staff actions will be logged here.\n\nUse `,warn`, `,kick`, `,ban`, `,damage` and other mod commands — they'll appear here automatically.")
                         .setTimestamp();
                     await modLogCh.send({ embeds: [modLogEmbed] }).catch(() => {});
-                    log.add("📝", `Posted mod log notice in <#${modLogCh.id}>.`);
+                    log.add("", `Posted mod log notice in <#${modLogCh.id}>.`);
                 }
 
-                // #suggestions — post guide
                 if (suggestionsCh) {
                     const suggestEmbed = new EmbedBuilder()
                         .setColor(0x57F287)
-                        .setTitle("💡 Suggestions")
+                        .setTitle("Suggestions")
                         .setDescription(
                             "Have an idea to improve the server or bot? Drop it here!\n\n" +
                             "**How to suggest:**\n" +
                             "• Be clear and specific\n" +
                             "• One idea per message\n" +
-                            "• React 👍 or 👎 to vote on others' ideas\n\n" +
+                            "• React or to vote on others' ideas\n\n" +
                             "_Staff will review all suggestions._"
                         )
                         .setTimestamp();
                     await suggestionsCh.send({ embeds: [suggestEmbed] }).catch(() => {});
-                    log.add("💡", `Posted suggestions guide in <#${suggestionsCh.id}>.`);
+                    log.add("", `Posted suggestions guide in <#${suggestionsCh.id}>.`);
                 }
 
-                // #introductions — post prompt
                 if (introsCh) {
                     const introsEmbed = new EmbedBuilder()
                         .setColor(0x1ABC9C)
-                        .setTitle("👋 Introduce Yourself!")
+                        .setTitle("Introduce Yourself!")
                         .setDescription(
                             "Tell us a bit about yourself! Here's a template to get started:\n\n" +
                             "```\n" +
@@ -437,14 +382,13 @@ export default {
                         )
                         .setTimestamp();
                     await introsCh.send({ embeds: [introsEmbed] }).catch(() => {});
-                    log.add("👋", `Posted intro prompt in <#${introsCh.id}>.`);
+                    log.add("", `Posted intro prompt in <#${introsCh.id}>.`);
                 }
 
-                // #lfg — post guide
                 if (lfgCh) {
                     const lfgEmbed = new EmbedBuilder()
                         .setColor(0xEB459E)
-                        .setTitle("🔎 Looking for Group")
+                        .setTitle("Looking for Group")
                         .setDescription(
                             "Use this channel to find teammates!\n\n" +
                             "**Format your post like this:**\n" +
@@ -457,62 +401,54 @@ export default {
                         )
                         .setTimestamp();
                     await lfgCh.send({ embeds: [lfgEmbed] }).catch(() => {});
-                    log.add("🔎", `Posted LFG guide in <#${lfgCh.id}>.`);
+                    log.add("", `Posted LFG guide in <#${lfgCh.id}>.`);
                 }
 
-                // #announcements — post placeholder
                 if (announcementsCh) {
                     const annEmbed = new EmbedBuilder()
                         .setColor(0xED4245)
-                        .setTitle("📣 Announcements")
+                        .setTitle("Announcements")
                         .setDescription("This is where important server announcements will be posted. Stay tuned!")
                         .setTimestamp();
                     await announcementsCh.send({ embeds: [annEmbed] }).catch(() => {});
-                    log.add("📣", `Posted announcement placeholder in <#${announcementsCh.id}>.`);
+                    log.add("", `Posted announcement placeholder in <#${announcementsCh.id}>.`);
                 }
             }
-            // 6. EMOJIS — fill up to the server's limit
             if (!dryRun) {
                 await addMemeEmojis(guild, log);
             } else {
-                log.add("🧪", `Would add up to ${EMOJI_LIMIT_BY_TIER[guild.premiumTier] || 50} meme emojis.`);
+                log.add("", `Would add up to ${EMOJI_LIMIT_BY_TIER[guild.premiumTier] || 50} meme emojis.`);
             }
 
-            // 7. STICKERS — up to the server's sticker limit
             if (!dryRun) {
                 await addMemeStickers(guild, log);
             } else {
-                log.add("🧪", `Would add up to 5 meme stickers.`);
+                log.add("", `Would add up to 5 meme stickers.`);
             }
 
-            // 8. ENABLE COMMUNITY MODE
             if (!dryRun) {
                 const rulesCh  = findCreatedByName(createdChannels, "rules");
                 const updateCh = findCreatedByName(createdChannels, "announcements") ||
                                  findCreatedByName(createdChannels, "server-updates");
                 await enableCommunity(guild, { rulesCh, updateCh }, log);
             } else {
-                log.add("🧪", `Would enable Community mode.`);
+                log.add("", `Would enable Community mode.`);
             }
 
-            // 9. SET UP ONBOARDING
             if (!dryRun) {
                 await enableOnboarding(guild, { createdChannels, createdRoles }, log);
             } else {
-                log.add("🧪", `Would set up onboarding prompts (interests + member rank).`);
+                log.add("", `Would set up onboarding prompts (interests + member rank).`);
             }
 
         } catch (err) {
             console.error("[server_setup] Fatal error:", err);
-            log.add("❌", `Fatal error: \`${err?.message || err}\``);
+            log.add("", `Fatal error: \`${err?.message || err}\``);
         }
 
-        // ------------------------------------------------------------
-        //  Build summary embed
-        // ------------------------------------------------------------
         const title = dryRun
-            ? `🧪 Dry Run — ${preset.label}`
-            : `✅ Setup Complete — ${preset.label}`;
+            ? `Dry Run — ${preset.label}`
+            : `Setup Complete — ${preset.label}`;
         const description = dryRun
             ? "No changes were made. Here's what **would** happen:"
             : `Your server has been provisioned with the **${preset.label}** preset.`;
@@ -537,15 +473,10 @@ export default {
     },
 };
 
-// ========================================================================
-//  HELPERS
-// ========================================================================
-
 class SetupLog {
     constructor() { this.entries = []; }
     add(icon, line) { this.entries.push(`${icon} ${line}`); }
     toFields() {
-        // Discord embed field values cap at 1024 chars — chunk if needed.
         const chunks = [];
         let cur = "";
         for (const line of this.entries) {
@@ -559,7 +490,7 @@ class SetupLog {
         if (cur) chunks.push(cur);
         if (!chunks.length) return [{ name: "Actions", value: "*(nothing to do)*" }];
         return chunks.map((c, i) => ({
-            name: i === 0 ? "📋 Actions" : `📋 Actions (cont.)`,
+            name: i === 0 ? "Actions" : `Actions (cont.)`,
             value: c,
         }));
     }
@@ -580,7 +511,7 @@ async function provisionRole({ guild, bp, dryRun, skipExisting, log, createdRole
         return;
     }
     if (dryRun) {
-        log.add("🧪", `Would create role **${bp.name}**.`);
+        log.add("", `Would create role **${bp.name}**.`);
         return;
     }
     try {
@@ -593,16 +524,15 @@ async function provisionRole({ guild, bp, dryRun, skipExisting, log, createdRole
             reason: "server_setup command",
         });
         createdRoles.set(bp.name, role);
-        log.add("🎭", `Created role **${bp.name}**.`);
+        log.add("", `Created role **${bp.name}**.`);
     } catch (e) {
-        log.add("⚠️", `Failed to create role **${bp.name}**: \`${e.message}\``);
+        log.add("", `Failed to create role **${bp.name}**: \`${e.message}\``);
     }
 }
 
 async function provisionCategory({
     guild, cat, dryRun, skipExisting, log, staffRoles, createdChannels, createdRoles,
 }) {
-    // Build permission overwrites for the category if staff-only
     const staffOverwrites = cat.staffOnly
         ? [
               { id: guild.roles.everyone.id, deny: [P.ViewChannel] },
@@ -610,14 +540,13 @@ async function provisionCategory({
           ]
         : [];
 
-    // 1) Create or fetch the category
     let category = guild.channels.cache.find(
         (c) => c.type === ChannelType.GuildCategory && c.name === cat.name
     );
 
     if (!category) {
         if (dryRun) {
-            log.add("🧪", `Would create category **${cat.name}**.`);
+            log.add("", `Would create category **${cat.name}**.`);
         } else {
             try {
                 category = await guild.channels.create({
@@ -626,9 +555,9 @@ async function provisionCategory({
                     permissionOverwrites: staffOverwrites,
                     reason: "server_setup command",
                 });
-                log.add("📁", `Created category **${cat.name}**.`);
+                log.add("", `Created category **${cat.name}**.`);
             } catch (e) {
-                log.add("⚠️", `Failed to create category **${cat.name}**: \`${e.message}\``);
+                log.add("", `Failed to create category **${cat.name}**: \`${e.message}\``);
                 return;
             }
         }
@@ -636,7 +565,6 @@ async function provisionCategory({
         log.add("⏭️", `Category **${cat.name}** already exists — reusing.`);
     }
 
-    // 2) Create child channels
     for (const ch of cat.channels) {
         const existing = guild.channels.cache.find(
             (c) => c.name === ch.name && c.parentId === (category?.id ?? null)
@@ -647,11 +575,10 @@ async function provisionCategory({
             continue;
         }
         if (dryRun) {
-            log.add("🧪", `Would create **#${ch.name}** (${ch.type}) in **${cat.name}**.`);
+            log.add("", `Would create **#${ch.name}** (${ch.type}) in **${cat.name}**.`);
             continue;
         }
 
-        // Permission overwrites for this channel
         const overwrites = [];
         if (ch.staffOnly || cat.staffOnly) {
             overwrites.push({ id: guild.roles.everyone.id, deny: [P.ViewChannel] });
@@ -681,9 +608,9 @@ async function provisionCategory({
                 reason: "server_setup command",
             });
             createdChannels.set(ch.name, channel);
-            log.add(ch.type === "voice" ? "🔊" : "💬", `Created **${ch.type === "voice" ? channel.name : "#" + channel.name}**.`);
+            log.add(ch.type === "voice" ? "" : "", `Created **${ch.type === "voice" ? channel.name : "#" + channel.name}**.`);
         } catch (e) {
-            log.add("⚠️", `Failed to create **${ch.name}**: \`${e.message}\``);
+            log.add("", `Failed to create **${ch.name}**: \`${e.message}\``);
         }
     }
 }
@@ -695,12 +622,12 @@ async function postWelcomeEmbed(channel, guild, { rulesCh, supportCh, generalCh 
 
     const embed = new EmbedBuilder()
         .setColor(0x5865F2)
-        .setTitle(`👋 Welcome to ${guild.name}!`)
+        .setTitle(`Welcome to ${guild.name}!`)
         .setDescription(
             `We're glad to have you here!\n\n` +
-            `📜 Read the rules in ${rulesMention}\n` +
-            `💬 Jump into ${generalMention} and say hi\n` +
-            `🎫 Need help? Open a ticket in ${supportMention}\n\n` +
+            `Read the rules in ${rulesMention}\n` +
+            `Jump into ${generalMention} and say hi\n` +
+            `Need help? Open a ticket in ${supportMention}\n\n` +
             `_Enjoy your stay!_`
         )
         .setThumbnail(guild.iconURL({ size: 256 }) || null)
@@ -711,7 +638,7 @@ async function postWelcomeEmbed(channel, guild, { rulesCh, supportCh, generalCh 
 async function postRulesEmbed(channel, guild) {
     const embed = new EmbedBuilder()
         .setColor(0xED4245)
-        .setTitle(`📜 ${guild.name} — Server Rules`)
+        .setTitle(`${guild.name} — Server Rules`)
         .setDescription(
             "By being in this server, you agree to follow these rules:"
         )
@@ -728,11 +655,6 @@ async function postRulesEmbed(channel, guild) {
     await channel.send({ embeds: [embed] });
 }
 
-// ========================================================================
-//  EMOJI / STICKER / COMMUNITY HELPERS
-// ========================================================================
-
-// Sanitise a title from emoji.gg into a valid Discord emoji name (2-32 chars, [a-zA-Z0-9_])
 function sanitiseEmojiName(title) {
     return (title || "emoji")
         .replace(/[^a-zA-Z0-9_]/g, "_")
@@ -758,7 +680,6 @@ async function addMemeEmojis(guild, log) {
         return;
     }
 
-    // Fetch meme emojis from emoji.gg (category 3 = Meme), sorted by popularity
     let pool = [];
     try {
         const res  = await fetch(EMOJI_GG_API);
@@ -767,7 +688,7 @@ async function addMemeEmojis(guild, log) {
             .filter((e) => e.category === EMOJI_GG_MEME_CAT && e.image)
             .sort((a, b) => (b.faves ?? 0) - (a.faves ?? 0));
     } catch (e) {
-        log.add("⚠️", `emoji.gg fetch failed: \`${e.message}\` — skipping emojis.`);
+        log.add("", `emoji.gg fetch failed: \`${e.message}\` — skipping emojis.`);
         return;
     }
 
@@ -789,14 +710,13 @@ async function addMemeEmojis(guild, log) {
             });
             existingNames.add(name);
             isGif ? addedAnim++ : addedStatic++;
-        } catch { /* skip individual failures */ }
+        } catch {  }
 
-        // Stop when both buckets are full
         if (addedStatic >= staticSlots && addedAnim >= animSlots) break;
     }
 
     const total = addedStatic + addedAnim;
-    log.add("😂", `Added **${total}** meme emoji(s) from emoji.gg (${addedStatic} static, ${addedAnim} animated).`);
+    log.add("", `Added **${total}** meme emoji(s) from emoji.gg (${addedStatic} static, ${addedAnim} animated).`);
 }
 
 async function addMemeStickers(guild, log) {
@@ -809,7 +729,6 @@ async function addMemeStickers(guild, log) {
         return;
     }
 
-    // Fetch meme stickers from emoji.gg sticker API
     let pool = [];
     try {
         const res = await fetch(EMOJI_GG_STICKERS);
@@ -819,7 +738,7 @@ async function addMemeStickers(guild, log) {
             .sort((a, b) => (b.faves ?? 0) - (a.faves ?? 0))
             .slice(0, slots);
     } catch (e) {
-        log.add("⚠️", `emoji.gg sticker fetch failed: \`${e.message}\` — skipping stickers.`);
+        log.add("", `emoji.gg sticker fetch failed: \`${e.message}\` — skipping stickers.`);
         return;
     }
 
@@ -831,21 +750,21 @@ async function addMemeStickers(guild, log) {
             await guild.stickers.create({
                 file:        item.image,
                 name,
-                tags:        "🔥",
+                tags:        "",
                 description: item.title,
                 reason:      "server_setup — emoji.gg meme sticker pack",
             });
             existingNames.add(name);
             added++;
-        } catch { /* skip */ }
+        } catch {  }
     }
 
-    log.add("🎨", `Added **${added}** meme sticker(s) from emoji.gg (${guild.stickers.cache.size}/${maxStickers} slots used).`);
+    log.add("", `Added **${added}** meme sticker(s) from emoji.gg (${guild.stickers.cache.size}/${maxStickers} slots used).`);
 }
 
 async function enableCommunity(guild, { rulesCh, updateCh }, log) {
     if (!rulesCh || !updateCh) {
-        log.add("⚠️", `Community mode skipped — need both #rules and #announcements channels.`);
+        log.add("", `Community mode skipped — need both #rules and #announcements channels.`);
         return;
     }
     if (guild.features.includes("COMMUNITY")) {
@@ -862,14 +781,12 @@ async function enableCommunity(guild, { rulesCh, updateCh }, log) {
             verificationLevel: guild.verificationLevel < 1 ? 1 : guild.verificationLevel,
             reason: "server_setup — enabling Community mode",
         });
-        log.add("🏘️", `Enabled **Community mode** (rules: <#${rulesCh.id}>, updates: <#${updateCh.id}>).`);
+        log.add("", `Enabled **Community mode** (rules: <#${rulesCh.id}>, updates: <#${updateCh.id}>).`);
     } catch (e) {
-        log.add("⚠️", `Community mode failed: \`${e.message}\` — enable it manually in Server Settings.`);
+        log.add("", `Community mode failed: \`${e.message}\` — enable it manually in Server Settings.`);
     }
 }
 
-// Generate a unique-enough snowflake for onboarding prompt/option IDs.
-// Discord epoch = Jan 1, 2015. We shift by 22 bits as per the spec.
 let _sfIncrement = 0;
 function makeSnowflake() {
     const DISCORD_EPOCH = 1420070400000n;
@@ -883,7 +800,6 @@ async function enableOnboarding(guild, { createdChannels, createdRoles }, log) {
         return;
     }
 
-    // Resolve channels + roles from the maps (fall back to guild cache)
     const ch  = (name) => createdChannels.get(name) || guild.channels.cache.find((c) => c.name === name);
     const role = (name) => createdRoles.get(name)    || guild.roles.cache.find((r) => r.name === name);
 
@@ -899,66 +815,63 @@ async function enableOnboarding(guild, { createdChannels, createdRoles }, log) {
     const lfgCh         = ch("lfg");
     const mediaCh       = ch("media");
 
-    const memberRole = role("🧍 Member");
+    const memberRole = role("Member");
     const activRole  = role("⭐ Active Member");
-    const vipRole    = role("💎 VIP");
+    const vipRole    = role("VIP");
 
-    // Default channels every new member can see immediately
     const defaultChannelIds = [
         generalCh, welcomeCh, rulesCh, announceCh, supportCh,
     ].filter(Boolean).map((c) => c.id);
 
-    // ---------- Prompt 1: What are you here for? ----------
     const prompt1Options = [
         {
             id: makeSnowflake(),
-            title: "Gaming 🎮",
+            title: "Gaming ",
             description: "Find teammates, share clips, and game together.",
-            emoji: { name: "🎮" },
+            emoji: { name: "" },
             role_ids: [],
             channel_ids: [gamingCh, lfgCh].filter(Boolean).map((c) => c.id),
         },
         {
             id: makeSnowflake(),
-            title: "Memes & Vibes 😂",
+            title: "Memes & Vibes ",
             description: "For the shitposters and meme lords.",
-            emoji: { name: "😂" },
+            emoji: { name: "" },
             role_ids: [],
             channel_ids: [memeCh, mediaCh].filter(Boolean).map((c) => c.id),
         },
         {
             id: makeSnowflake(),
-            title: "Just chatting 💬",
+            title: "Just chatting ",
             description: "General talk, chill, hang out.",
-            emoji: { name: "💬" },
+            emoji: { name: "" },
             role_ids: [],
             channel_ids: [generalCh, introsCh].filter(Boolean).map((c) => c.id),
         },
         {
             id: makeSnowflake(),
-            title: "Need support 🎫",
+            title: "Need support ",
             description: "I have a question or issue.",
-            emoji: { name: "🎫" },
+            emoji: { name: "" },
             role_ids: [],
             channel_ids: [supportCh, suggestionsCh].filter(Boolean).map((c) => c.id),
         },
         {
             id: makeSnowflake(),
-            title: "Stay updated 📢",
+            title: "Stay updated ",
             description: "Keep up with announcements and news.",
-            emoji: { name: "📢" },
+            emoji: { name: "" },
             role_ids: [],
             channel_ids: [announceCh].filter(Boolean).map((c) => c.id),
         },
     ].filter((o) => o.channel_ids.length > 0 || o.role_ids.length > 0);
 
-    // ---------- Prompt 2: Pick your rank vibe ----------
     const prompt2Options = [
         memberRole && {
             id: makeSnowflake(),
             title: "Regular Member",
             description: "Just here to chill.",
-            emoji: { name: "🧍" },
+            emoji: { name: "" },
             role_ids: [memberRole.id],
             channel_ids: [],
         },
@@ -974,7 +887,7 @@ async function enableOnboarding(guild, { createdChannels, createdRoles }, log) {
             id: makeSnowflake(),
             title: "VIP",
             description: "I'm a VIP / supporter.",
-            emoji: { name: "💎" },
+            emoji: { name: "" },
             role_ids: [vipRole.id],
             channel_ids: [],
         },
@@ -985,7 +898,7 @@ async function enableOnboarding(guild, { createdChannels, createdRoles }, log) {
     if (prompt1Options.length >= 2) {
         prompts.push({
             id: makeSnowflake(),
-            type: 0,            // MULTIPLE_CHOICE
+            type: 0,
             title: "What are you here for?",
             options: prompt1Options,
             single_select: false,
@@ -1017,11 +930,11 @@ async function enableOnboarding(guild, { createdChannels, createdRoles }, log) {
                 prompts,
                 default_channel_ids: defaultChannelIds,
                 enabled: true,
-                mode: 0,    // ONBOARDING_DEFAULT
+                mode: 0,
             },
         });
-        log.add("🎓", `Set up **Onboarding** with ${prompts.length} prompt(s) and ${defaultChannelIds.length} default channel(s).`);
+        log.add("", `Set up **Onboarding** with ${prompts.length} prompt(s) and ${defaultChannelIds.length} default channel(s).`);
     } catch (e) {
-        log.add("⚠️", `Onboarding setup failed: \`${e.message}\``);
+        log.add("", `Onboarding setup failed: \`${e.message}\``);
     }
 }

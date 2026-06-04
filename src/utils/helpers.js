@@ -1,8 +1,5 @@
-// ---------------- UTIL: SAFE INTERACTION REPLY ----------------
-// MessageFlags.Ephemeral = 1 << 6 = 64. Use literal to avoid adding an import.
 const EPHEMERAL_FLAG = 64;
 
-// Convert deprecated { ephemeral: true } -> { flags: 64 } and strip editReply-incompatible keys when needed.
 function normalizePayload(payload, { stripEphemeral = false } = {}) {
     if (!payload || typeof payload !== "object") return payload;
     const out = { ...payload };
@@ -17,28 +14,21 @@ function normalizePayload(payload, { stripEphemeral = false } = {}) {
     return out;
 }
 
-// Discord API error codes we should silently swallow
-// 10008 = Unknown Message, 10062 = Unknown Interaction, 40060 = Already acknowledged
 const SILENT_ERRORS = new Set([10008, 10062, 40060]);
 
 export async function safeRespond(interaction, payload) {
-    // Force ephemeral if error for User Apps (usually safer)
     if (payload?.type === "error" && payload.ephemeral === undefined) {
         payload.ephemeral = true;
     }
 
     try {
         if (interaction.replied || interaction.deferred) {
-            // editReply does NOT accept ephemeral/flags — strip them.
             return await interaction.editReply(normalizePayload(payload, { stripEphemeral: true }));
         }
         return await interaction.reply(normalizePayload(payload));
     } catch (e) {
-        // Silently ignore expected, non-actionable Discord errors
         if (SILENT_ERRORS.has(e?.code)) return;
 
-        // Only attempt a followUp if the interaction was actually acknowledged.
-        // Otherwise followUp will throw InteractionNotReplied and spam logs.
         if (!(interaction.replied || interaction.deferred)) {
             console.error("[safeRespond] Reply failed (not acknowledged):", e?.message || e);
             return;
@@ -57,13 +47,11 @@ export async function safeUpdate(interaction, payload) {
             return await interaction.update(normalizePayload(payload, { stripEphemeral: true }));
         }
     } catch (e) {
-        // 10062 = Unknown interaction (expired), 40060 = already acknowledged — both unrecoverable for .update()
         if (e?.code === 10062 || e?.code === 40060) return;
         try { return await safeRespond(interaction, payload); } catch { }
     }
 }
 
-// ---------------- TIME PARSER ----------------
 export function parseDurationToMs(input) {
     if (!input) return null;
     const s = String(input).trim().toLowerCase();
@@ -80,7 +68,6 @@ export function parseDurationToMs(input) {
     return null;
 }
 
-// ---------------- COLOR PARSER ----------------
 export function parseHexColorToInt(hex) {
     if (!hex) return null;
     const cleaned = String(hex).trim().replace(/^#/, "");
@@ -88,7 +75,6 @@ export function parseHexColorToInt(hex) {
     return parseInt(cleaned, 16);
 }
 
-// ---------------- AUTORESPONDER MATCHING ----------------
 export function matchesTrigger(messageLower, triggerLower) {
     if (!triggerLower) return false;
     if (triggerLower.includes(" ")) return messageLower.includes(triggerLower);
@@ -124,4 +110,3 @@ export function isEmojiResponse(str) {
     }
     return false;
 }
-

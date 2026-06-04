@@ -1,9 +1,7 @@
 import { getDB } from "./db.js";
 
-// guildId -> Map<code, uses>
 export const inviteCache = new Map();
 
-// Seed invite cache for all guilds on startup
 export async function seedInviteCache(client) {
     for (const [, guild] of client.guilds.cache) {
         try {
@@ -11,11 +9,10 @@ export async function seedInviteCache(client) {
             const map = new Map();
             for (const inv of invites.values()) map.set(inv.code, inv.uses ?? 0);
             inviteCache.set(guild.id, map);
-        } catch { /* bot lacks Manage Guild or invites disabled */ }
+        } catch {  }
     }
 }
 
-// Find which invite was used by comparing before/after snapshots
 export async function resolveUsedInvite(guild) {
     const before = inviteCache.get(guild.id) ?? new Map();
     try {
@@ -31,11 +28,10 @@ export async function resolveUsedInvite(guild) {
                 return { code, inviterId: invite?.inviter?.id ?? null };
             }
         }
-    } catch { /* guild invites unavailable */ }
+    } catch {  }
     return { code: null, inviterId: null };
 }
 
-// Persist a join record
 export async function recordJoin(guildId, userId, inviterId, inviteCode) {
     const db = await getDB();
     await db.run(
@@ -44,7 +40,6 @@ export async function recordJoin(guildId, userId, inviterId, inviteCode) {
     );
 }
 
-// Get invite stats for a user (how many people they invited)
 export async function getInviteStats(guildId, userId) {
     const db = await getDB();
     const total = await db.get(
@@ -58,7 +53,6 @@ export async function getInviteStats(guildId, userId) {
     return { total: total?.count ?? 0, recent };
 }
 
-// Get who invited a specific user
 export async function getInvitedBy(guildId, userId) {
     const db = await getDB();
     return db.get(

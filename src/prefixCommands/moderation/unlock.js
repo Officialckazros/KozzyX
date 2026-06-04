@@ -6,7 +6,7 @@ export default {
     async execute(message, args) {
         if (!message.member.permissions.has(PermissionsBitField.Flags.ManageChannels)) {
             return replyEmbed(message, {
-                type: "error", title: "⛔ Permission Needed",
+                type: "error", title: "Permission Needed",
                 description: "You need **Manage Channels** to unlock channels.",
             });
         }
@@ -14,7 +14,7 @@ export default {
         const targetChannel = message.mentions.channels.first() || message.channel;
         if (!targetChannel?.isTextBased()) {
             return replyEmbed(message, {
-                type: "error", title: "❌ Invalid Channel",
+                type: "error", title: "Invalid Channel",
                 description: "Unlock can only be used on text channels.",
             });
         }
@@ -23,7 +23,7 @@ export default {
         const current = targetChannel.permissionsFor(everyone);
         if (current && current.has(PermissionsBitField.Flags.SendMessages)) {
             return replyEmbed(message, {
-                type: "info", title: "🔓 Already Unlocked",
+                type: "info", title: "Already Unlocked",
                 description: `${targetChannel} is not locked.`,
             });
         }
@@ -34,7 +34,7 @@ export default {
             });
         } catch {
             return replyEmbed(message, {
-                type: "error", title: "❌ Unlock Failed",
+                type: "error", title: "Unlock Failed",
                 description: "I don't have permission to edit that channel.",
             });
         }
@@ -42,10 +42,10 @@ export default {
         const embed = buildCoolEmbed({
             guildId: message.guild.id,
             type: "success",
-            title: "🔓 Channel Unlocked",
+            title: "Channel Unlocked",
             fields: [
-                { name: "📁 Channel", value: `${targetChannel}`, inline: true },
-                { name: "👮 Moderator", value: `${message.author}`, inline: true },
+                { name: "Channel", value: `${targetChannel}`, inline: true },
+                { name: "Moderator", value: `${message.author}`, inline: true },
             ],
             showAuthor: false,
             showFooter: true,

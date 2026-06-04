@@ -7,14 +7,14 @@ export default {
     async execute(message, args) {
         if (!message.member.permissions.has(PermissionsBitField.Flags.ManageNicknames)) {
             return replyEmbed(message, {
-                type: "error", title: "⛔ Permission Needed",
+                type: "error", title: "Permission Needed",
                 description: "You need **Manage Nicknames** to unlock nicknames.",
             });
         }
         const target = message.mentions.members.first();
         if (!target) {
             return replyEmbed(message, {
-                type: "error", title: "❌ Usage",
+                type: "error", title: "Usage",
                 description: "`,nickunlock @user`",
             });
         }
@@ -33,10 +33,10 @@ export default {
         const embed = buildCoolEmbed({
             guildId: message.guild.id,
             type: "success",
-            title: "🔓 Nickname Unlocked",
+            title: "Nickname Unlocked",
             fields: [
-                { name: "👤 Member", value: `${target}`, inline: true },
-                { name: "👮 Moderator", value: `${message.author}`, inline: true },
+                { name: "Member", value: `${target}`, inline: true },
+                { name: "Moderator", value: `${message.author}`, inline: true },
             ],
             showAuthor: false,
             showFooter: true,
