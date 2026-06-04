@@ -1,18 +1,17 @@
-import { ExtendedClient } from "./src/structures/Client.js";
-import "dotenv/config";
-import { initDB } from "./src/utils/db.js";
+import { ExtendedClient } from "./structures/Client.js";
+import { initDB } from "./utils/db.js";
 
-import interactionCreate from "./src/events/interactionCreate.js";
-import messageCreate from "./src/events/messageCreate.js";
-import ready from "./src/events/ready.js";
-import guildMemberAdd from "./src/events/guildMemberAdd.js";
-import guildMemberUpdate from "./src/events/guildMemberUpdate.js";
-import guildAuditLogEntryCreate from "./src/events/guildAuditLogEntryCreate.js";
-import guildCreate from "./src/events/guildCreate.js";
-import voiceStateUpdate from "./src/events/voiceStateUpdate.js";
-import loadCommands from "./src/handlers/commandHandler.js";
-import { initAPI } from "./src/dashboard-api.js";
-import { sendBotOfflineAlert } from "./src/utils/email.js";
+import interactionCreate from "./events/interactionCreate.js";
+import messageCreate from "./events/messageCreate.js";
+import ready from "./events/ready.js";
+import guildMemberAdd from "./events/guildMemberAdd.js";
+import guildMemberUpdate from "./events/guildMemberUpdate.js";
+import guildAuditLogEntryCreate from "./events/guildAuditLogEntryCreate.js";
+import guildCreate from "./events/guildCreate.js";
+import voiceStateUpdate from "./events/voiceStateUpdate.js";
+import loadCommands from "./handlers/commandHandler.js";
+import { initAPI } from "./dashboard-api.js";
+import { sendBotOfflineAlert } from "./utils/email.js";
 
 const client = new ExtendedClient();
 

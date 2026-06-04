@@ -1,5 +1,4 @@
 // Manual deploy script
-import "dotenv/config";
 import { REST, Routes } from "discord.js";
 import { readdirSync, statSync } from "fs";
 import { join, dirname } from "path";
