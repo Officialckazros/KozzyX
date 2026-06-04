@@ -1,6 +1,4 @@
 #!/usr/bin/env node
-import 'dotenv/config';
-
 (async () => {
   const t = process.env.TOKEN;
   if (!t) {

@@ -4,7 +4,7 @@ INSTANCE_NAME="discordbot"
 ZONE="us-west1-a"
 VM_USER="bazsi9849"
 REMOTE_DIR="/home/bazsi9849/my-discord-bot"
-LAST_DEPLOY_FILE=".last-deploy-commit"
+LAST_DEPLOY_FILE="config/.last-deploy-commit"
 
 CURRENT_COMMIT=$(git rev-parse HEAD)
 
@@ -14,14 +14,14 @@ if [ -f "$LAST_DEPLOY_FILE" ]; then
     CHANGED_FILES=$(git diff --name-only "$LAST_COMMIT" "$CURRENT_COMMIT" 2>/dev/null)
 else
     echo "No previous deploy found — doing full deploy..."
-    CHANGED_FILES=$(git ls-files -- src website package.json index.js ecosystem.config.cjs)
+    CHANGED_FILES=$(git ls-files -- src website package.json config/)
 fi
 
 # Filter out files we never deploy
 DEPLOY_FILES=()
 while IFS= read -r file; do
     [[ -z "$file" ]] && continue
-    [[ "$file" == node_modules* || "$file" == data/* || "$file" == *.sqlite* || "$file" == .env* || "$file" == scripts/* || "$file" == changelog.txt || "$file" == .gitignore || "$file" == deploy-vm.sh ]] && continue
+    [[ "$file" == node_modules* || "$file" == data/* || "$file" == *.sqlite* || "$file" == .env* || "$file" == scripts/* || "$file" == .gitignore ]] && continue
     [[ ! -f "$file" ]] && echo "Skipping deleted: $file" && continue
     DEPLOY_FILES+=("$file")
 done <<< "$CHANGED_FILES"

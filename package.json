@@ -2,12 +2,12 @@
   "name": "mod-bot",
   "version": "1.0.0",
   "description": "Moderation-only Discord bot — bans, kicks, warns, anti-raid, audit log, appeals.",
-  "main": "index.js",
+  "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "start": "node index.js",
-    "dev": "node --watch index.js",
-    "deploy": "node src/deploy.js",
+    "start": "node --env-file=config/.env src/index.js",
+    "dev": "node --env-file=config/.env --watch src/index.js",
+    "deploy": "node --env-file=config/.env src/deploy.js",
     "sync": "node scripts/sync_commands.js"
   },
   "dependencies": {

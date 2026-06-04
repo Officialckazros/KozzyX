@@ -1,5 +1,4 @@
 // Manual guild-specific deploy script for instant updates
-import "dotenv/config";
 import { REST, Routes } from "discord.js";
 import { readdirSync, statSync } from "fs";
 import { join, dirname } from "path";
