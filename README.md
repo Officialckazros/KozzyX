@@ -9,7 +9,7 @@ Feel free to dig through the code and reuse whatever's helpful. If it saves you
 some time on your own bot, that's exactly what I was hoping for. 💛
 
 > Just a heads-up: you'll need to plug in your own API keys and tokens to run it —
-> mine aren't included (for obvious reasons 😅). See [Configuration](#configuration).
+> mine aren't included (for obvious reasons ). See [Configuration](#configuration).
 
 ## What it can do
 
@@ -144,4 +144,4 @@ scripts/                # Maintenance & deploy helpers
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](file:///Users/ckazros/Library/Mobile%20Documents/com~apple~CloudDocs/my%20projects/my-discord-bot/LICENSE) file for details. Feel free to use and borrow pieces for your own projects! 🙂
+This project is licensed under the MIT License. See the [LICENSE](file:///Users/ckazros/Library/Mobile%20Documents/com~apple~CloudDocs/my%20projects/my-discord-bot/LICENSE) file for details. Feel free to use and borrow pieces for your own projects! 
