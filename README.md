@@ -141,8 +141,6 @@ scripts/                # Maintenance & deploy helpers
 | `npm run deploy` | Register slash commands globally             |
 | `npm run sync`   | Sync commands via `scripts/sync_commands.js` |
 
-## A note on usage
+## License
 
-There's no formal license here yet, so technically all rights are reserved — but
-honestly, you're more than welcome to read the code, learn from it, and borrow
-pieces for your own projects. If KozzyX helps you out, I'd love to hear about it. 🙂
+This project is licensed under the MIT License. See the [LICENSE](file:///Users/ckazros/Library/Mobile%20Documents/com~apple~CloudDocs/my%20projects/my-discord-bot/LICENSE) file for details. Feel free to use and borrow pieces for your own projects! 🙂
