@@ -76,6 +76,12 @@ SMTP_DOMAIN=
 WATCHDOG_URL=
 WATCHDOG_INTERVAL_MS=
 WATCHDOG_FAIL_THRESHOLD=
+
+# --- VM Deployment (optional, used by scripts/deploy-vm.sh) ---
+DEPLOY_INSTANCE_NAME=
+DEPLOY_ZONE=
+DEPLOY_VM_USER=
+DEPLOY_REMOTE_DIR=
 ```
 
 > 🔒 Please don't ever commit your `config/.env` — it's already in `.gitignore`,

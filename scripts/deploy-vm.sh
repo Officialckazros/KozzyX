@@ -1,10 +1,50 @@
 #!/bin/bash
 
-INSTANCE_NAME="discordbot"
-ZONE="us-west1-a"
-VM_USER="bazsi9849"
-REMOTE_DIR="/home/bazsi9849/my-discord-bot"
-LAST_DEPLOY_FILE="config/.last-deploy-commit"
+# Load environment variables from config/.env if it exists
+ENV_FILE="config/.env"
+if [ -f "$ENV_FILE" ]; then
+    while IFS= read -r line || [ -n "$line" ]; do
+        # Ignore comments and empty lines
+        [[ "$line" =~ ^[[:space:]]*# ]] && continue
+        [[ "$line" =~ ^[[:space:]]*$ ]] && continue
+        
+        # Parse key=value
+        if [[ "$line" =~ ^[[:space:]]*([^=[:space:]]+)[[:space:]]*=[[:space:]]*(.*)$ ]]; then
+            key="${BASH_REMATCH[1]}"
+            val="${BASH_REMATCH[2]}"
+            # Strip outer single/double quotes
+            val="${val#\"}"
+            val="${val%\"}"
+            val="${val#\'}"
+            val="${val%\'}"
+            export "$key"="$val"
+        fi
+    done < "$ENV_FILE"
+fi
+
+# Assign deployment variables from environment
+INSTANCE_NAME="${DEPLOY_INSTANCE_NAME}"
+ZONE="${DEPLOY_ZONE}"
+VM_USER="${DEPLOY_VM_USER}"
+REMOTE_DIR="${DEPLOY_REMOTE_DIR}"
+LAST_DEPLOY_FILE="${DEPLOY_LAST_DEPLOY_FILE:-config/.last-deploy-commit}"
+
+# Validate required variables
+MISSING_VARS=()
+[ -z "$INSTANCE_NAME" ] && MISSING_VARS+=("DEPLOY_INSTANCE_NAME")
+[ -z "$ZONE" ] && MISSING_VARS+=("DEPLOY_ZONE")
+[ -z "$VM_USER" ] && MISSING_VARS+=("DEPLOY_VM_USER")
+[ -z "$REMOTE_DIR" ] && MISSING_VARS+=("DEPLOY_REMOTE_DIR")
+
+if [ ${#MISSING_VARS[@]} -ne 0 ]; then
+    echo "❌ Error: Missing required deployment environment variables:"
+    for var in "${MISSING_VARS[@]}"; do
+        echo "  - $var"
+    done
+    echo "Please define these variables in '$ENV_FILE' or export them in your environment."
+    exit 1
+fi
+
 
 CURRENT_COMMIT=$(git rev-parse HEAD)
 
