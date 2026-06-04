@@ -1,18 +1,14 @@
 #!/bin/bash
 
-# Load environment variables from config/.env if it exists
 ENV_FILE="config/.env"
 if [ -f "$ENV_FILE" ]; then
     while IFS= read -r line || [ -n "$line" ]; do
-        # Ignore comments and empty lines
         [[ "$line" =~ ^[[:space:]]*# ]] && continue
         [[ "$line" =~ ^[[:space:]]*$ ]] && continue
         
-        # Parse key=value
         if [[ "$line" =~ ^[[:space:]]*([^=[:space:]]+)[[:space:]]*=[[:space:]]*(.*)$ ]]; then
             key="${BASH_REMATCH[1]}"
             val="${BASH_REMATCH[2]}"
-            # Strip outer single/double quotes
             val="${val#\"}"
             val="${val%\"}"
             val="${val#\'}"
@@ -22,14 +18,12 @@ if [ -f "$ENV_FILE" ]; then
     done < "$ENV_FILE"
 fi
 
-# Assign deployment variables from environment
 INSTANCE_NAME="${DEPLOY_INSTANCE_NAME}"
 ZONE="${DEPLOY_ZONE}"
 VM_USER="${DEPLOY_VM_USER}"
 REMOTE_DIR="${DEPLOY_REMOTE_DIR}"
 LAST_DEPLOY_FILE="${DEPLOY_LAST_DEPLOY_FILE:-config/.last-deploy-commit}"
 
-# Validate required variables
 MISSING_VARS=()
 [ -z "$INSTANCE_NAME" ] && MISSING_VARS+=("DEPLOY_INSTANCE_NAME")
 [ -z "$ZONE" ] && MISSING_VARS+=("DEPLOY_ZONE")
@@ -37,7 +31,7 @@ MISSING_VARS=()
 [ -z "$REMOTE_DIR" ] && MISSING_VARS+=("DEPLOY_REMOTE_DIR")
 
 if [ ${#MISSING_VARS[@]} -ne 0 ]; then
-    echo "❌ Error: Missing required deployment environment variables:"
+    echo "Error: Missing required deployment environment variables:"
     for var in "${MISSING_VARS[@]}"; do
         echo "  - $var"
     done
@@ -45,10 +39,8 @@ if [ ${#MISSING_VARS[@]} -ne 0 ]; then
     exit 1
 fi
 
-
 CURRENT_COMMIT=$(git rev-parse HEAD)
 
-# Determine which files changed
 if [ -f "$LAST_DEPLOY_FILE" ]; then
     LAST_COMMIT=$(cat "$LAST_DEPLOY_FILE")
     CHANGED_FILES=$(git diff --name-only "$LAST_COMMIT" "$CURRENT_COMMIT" 2>/dev/null)
@@ -57,7 +49,6 @@ else
     CHANGED_FILES=$(git ls-files -- src website package.json config/)
 fi
 
-# Filter out files we never deploy
 DEPLOY_FILES=()
 while IFS= read -r file; do
     [[ -z "$file" ]] && continue
