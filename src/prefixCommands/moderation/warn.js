@@ -3,13 +3,10 @@ import { getWarningData, saveWarnings, getGuildSettings } from "../../utils/data
 import { replyEmbed, postCase, sendEmbed, buildCoolEmbed } from "../../utils/embeds.js";
 import { trySendModDM, validateModAction, createCase, formatDuration } from "../../utils/moderationUtils.js";
 
-const WARN_THRESHOLD_EMOJIS = ["", "", "", "", ""];
-
 function sendWarnThresholdNotice(channel, guildId, text) {
-    const emoji = WARN_THRESHOLD_EMOJIS[Math.floor(Math.random() * WARN_THRESHOLD_EMOJIS.length)];
     return sendEmbed(channel, guildId, {
         type: "warning",
-        title: `${emoji} Warn Threshold Triggered`,
+        title: "Warn Threshold Triggered",
         description: text,
     });
 }

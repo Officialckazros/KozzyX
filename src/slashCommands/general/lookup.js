@@ -361,7 +361,7 @@ export async function getLookupResponse(client, executorGuildId, targetUserId, e
 
             const status = memberInExecutorGuild.presence?.status ? STATUS_EMOJI[memberInExecutorGuild.presence.status] : null;
             const activity = memberInExecutorGuild.presence?.activities?.[0];
-            const activityText = activity ? `${activity.type === 4 ? "" : ""} ${activity.state || activity.name}` : null;
+            const activityText = activity ? `${activity.state || activity.name}` : null;
             const joinedHere = `<t:${Math.floor(memberInExecutorGuild.joinedTimestamp / 1000)}:F> (<t:${Math.floor(memberInExecutorGuild.joinedTimestamp / 1000)}:R>)`;
 
             let memberVal = `**Nickname:** ${memberInExecutorGuild.nickname || "None"}\n**Joined Here:** ${joinedHere}`;
@@ -419,9 +419,8 @@ export async function getLookupResponse(client, executorGuildId, targetUserId, e
         if (globalModCasesCount > 0) {
             const casesText = globalModCases.slice(0, 5).map(c => {
                 const gName = client.guilds.cache.get(c.guild_id)?.name || `Guild (${c.guild_id})`;
-                const actionEmoji = c.action === "ban" ? "" : c.action === "kick" ? "" : c.action === "timeout" ? "" : "";
                 const durText = c.duration_ms ? ` (${Math.floor(c.duration_ms / 60000)}m)` : "";
-                return `• **[${gName}] Case #${c.case_number}** ${actionEmoji} \`${c.action.toUpperCase()}\`${durText} by <@${c.executor_id}>: *${String(c.reason || "No reason").slice(0, 60)}*`;
+                return `• **[${gName}] Case #${c.case_number}** \`${c.action.toUpperCase()}\`${durText} by <@${c.executor_id}>: *${String(c.reason || "No reason").slice(0, 60)}*`;
             }).join("\n");
 
             fields.push({ name: `Global Moderation Cases [${globalModCasesCount}]`, value: casesText.slice(0, 1024), inline: false });
@@ -432,8 +431,7 @@ export async function getLookupResponse(client, executorGuildId, targetUserId, e
         if (globalAppealsCount > 0) {
             const appealsText = globalAppeals.slice(0, 3).map(a => {
                 const gName = client.guilds.cache.get(a.guild_id)?.name || `Guild (${a.guild_id})`;
-                const statusEmoji = a.status === "accepted" ? "" : a.status === "denied" ? "" : "";
-                return `• **[${gName}] Appeal #${a.id}** ${statusEmoji} \`${a.status.toUpperCase()}\` (Submitted <t:${Math.floor(a.created_at / 1000)}:R>)`;
+                return `• **[${gName}] Appeal #${a.id}** \`${a.status.toUpperCase()}\` (Submitted <t:${Math.floor(a.created_at / 1000)}:R>)`;
             }).join("\n");
             fields.push({ name: `Global Submitted Appeals [${globalAppealsCount}]`, value: appealsText.slice(0, 1024), inline: false });
         }

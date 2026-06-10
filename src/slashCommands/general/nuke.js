@@ -132,7 +132,7 @@ export default {
                 return interaction.editReply({
                     embeds: [buildCoolEmbed({
                         guildId: interaction.guildId, type: "info",
-                        title: "⏰ Timed Out",
+                        title: "Timed Out",
                         description: "Confirmation expired — no messages were deleted.",
                     })],
                     components: [],

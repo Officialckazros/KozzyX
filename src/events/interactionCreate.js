@@ -60,7 +60,7 @@ export default {
                 const pages = helpPages[category];
                 if (!pages) return;
                 const row = new ActionRowBuilder().addComponents(
-                    new ButtonBuilder().setCustomId(`help_prev:${category}:${page}`).setLabel("⬅ Previous").setStyle(ButtonStyle.Secondary).setDisabled(page === 0),
+                    new ButtonBuilder().setCustomId(`help_prev:${category}:${page}`).setLabel("Previous").setStyle(ButtonStyle.Secondary).setDisabled(page === 0),
                     new ButtonBuilder().setCustomId(`help_next:${category}:${page}`).setLabel("Next ").setStyle(ButtonStyle.Primary).setDisabled(page === pages.length - 1)
                 );
                 return tryUpdate(interaction, { embeds: [pages[page]], components: [row] });
@@ -95,7 +95,7 @@ export default {
                 let page = parseInt(pageStr);
                 page = action === "features_next" ? page + 1 : page - 1;
                 const row = new ActionRowBuilder().addComponents(
-                    new ButtonBuilder().setCustomId(`features_prev:${page}`).setLabel("⬅ Previous").setStyle(ButtonStyle.Secondary).setDisabled(page === 0),
+                    new ButtonBuilder().setCustomId(`features_prev:${page}`).setLabel("Previous").setStyle(ButtonStyle.Secondary).setDisabled(page === 0),
                     new ButtonBuilder().setCustomId(`features_next:${page}`).setLabel("Next ").setStyle(ButtonStyle.Primary).setDisabled(page === featureHelpPages.length - 1)
                 );
                 return tryUpdate(interaction, { embeds: [featureHelpPages[page]], components: [row] });

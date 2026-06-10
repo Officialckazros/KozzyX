@@ -31,7 +31,7 @@ async function sendPagedHelp(interaction, category, page = 0) {
     const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
             .setCustomId(`help_prev:${category}:${page}`)
-            .setLabel("⬅ Previous")
+            .setLabel("Previous")
             .setStyle(ButtonStyle.Secondary)
             .setDisabled(page === 0),
         new ButtonBuilder()

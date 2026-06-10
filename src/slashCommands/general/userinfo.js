@@ -70,11 +70,11 @@ export default {
 
         const status = member?.presence?.status ? STATUS_EMOJI[member.presence.status] : null;
         const activity = member?.presence?.activities?.[0];
-        const activityText = activity ? `${activity.type === 4 ? "" : ""} ${activity.state || activity.name}` : null;
+        const activityText = activity ? `${activity.state || activity.name}` : null;
 
         const fields = [
             { name: "Username", value: `\`${user.username}\``, inline: true },
-            { name: "🆔 User ID", value: `\`${user.id}\``, inline: true },
+            { name: "User ID", value: `\`${user.id}\``, inline: true },
             { name: "Bot", value: user.bot ? "Yes" : "No", inline: true },
             { name: "Account Created", value: created, inline: false },
         ];

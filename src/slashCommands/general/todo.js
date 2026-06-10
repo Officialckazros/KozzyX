@@ -55,7 +55,7 @@ export default {
                 title: "Task Added",
                 fields: [
                     { name: "Task", value: item, inline: false },
-                    { name: "🆔 ID", value: `\`${result.lastID}\``, inline: true },
+                    { name: "ID", value: `\`${result.lastID}\``, inline: true },
                 ],
                 ephemeral: true,
             }));

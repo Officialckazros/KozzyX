@@ -16,7 +16,7 @@ export default {
         const raiders = getRecentRaiders(message.guild.id);
         if (!raiders.size) {
             return replyEmbed(message, {
-                type: "info", title: "ℹ️ No Raiders Tracked",
+                type: "info", title: "No Raiders Tracked",
                 description: "No raiders are currently tracked. The list resets after `,banraid` or after a fresh raid is detected.",
             });
         }

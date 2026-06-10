@@ -23,7 +23,7 @@ export default {
         settings.nickLocks = settings.nickLocks || {};
         if (!settings.nickLocks[target.id]) {
             return replyEmbed(message, {
-                type: "info", title: "ℹ️ Not Locked",
+                type: "info", title: "Not Locked",
                 description: `${target}'s nickname isn't locked.`,
             });
         }

@@ -19,7 +19,7 @@ async function sendFeatureHelpPage(interaction, page = 0) {
     const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
             .setCustomId(`features_prev:${page}`)
-            .setLabel("⬅ Previous")
+            .setLabel("Previous")
             .setStyle(ButtonStyle.Secondary)
             .setDisabled(page === 0),
         new ButtonBuilder()

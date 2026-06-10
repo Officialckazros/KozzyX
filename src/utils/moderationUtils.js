@@ -90,9 +90,9 @@ export async function trySendModDM({ user, guild, type = "mod", title, descripti
             { name: "Moderator", value: moderatorTag || "Unknown", inline: true },
         ];
         if (caseNumber != null) fields.push({ name: "Case", value: `#${caseNumber}`, inline: true });
-        if (durationText) fields.push({ name: "⏱️ Duration", value: durationText, inline: true });
+        if (durationText) fields.push({ name: "Duration", value: durationText, inline: true });
         if (reason) fields.push({ name: "Reason", value: String(reason).slice(0, 1024), inline: false });
-        fields.push({ name: "🆔 Your ID", value: `\`${user.id}\``, inline: true });
+        fields.push({ name: "Your ID", value: `\`${user.id}\``, inline: true });
 
         const embed = buildCoolEmbed({
             guildId: guild.id,
@@ -122,7 +122,7 @@ function buildModEmbed({ guild, type = "mod", title, target, executor, reason, d
         { name: "Moderator", value: `${executorUser.tag}\n\`${executorUser.id}\``, inline: true },
     ];
     if (caseNumber != null) fields.push({ name: "Case", value: `#${caseNumber}`, inline: true });
-    if (durationText) fields.push({ name: "⏱️ Duration", value: durationText, inline: true });
+    if (durationText) fields.push({ name: "Duration", value: durationText, inline: true });
     if (reason) fields.push({ name: "Reason", value: String(reason).slice(0, 1024), inline: false });
     fields.push(...extra);
 
@@ -240,7 +240,7 @@ export async function doSoftban(message, target, reason) {
         const embed = buildModEmbed({
             guild: message.guild, type: "mod", title: "Member Softbanned",
             target, executor: message.author, reason, caseNumber,
-            extra: [{ name: "ℹ️ Notice", value: "Messages from the last 7 days were purged. User may rejoin.", inline: false }],
+            extra: [{ name: "Notice", value: "Messages from the last 7 days were purged. User may rejoin.", inline: false }],
         });
         await message.reply({ embeds: [embed] });
         await postCase(message.guild, embed, message.channel.id);
@@ -266,7 +266,7 @@ export async function doTimeout(message, target, ms, reason = null) {
             user: target.user,
             guild: message.guild,
             type: "mod",
-            title: "⏱️ You were timed out",
+            title: "You were timed out",
             description: "You were timed out in the server.",
             moderatorTag: message.author.tag,
             reason,
@@ -276,7 +276,7 @@ export async function doTimeout(message, target, ms, reason = null) {
         await target.timeout(ms, `${message.author.tag}: ${reason || "Timeout"}`);
 
         const embed = buildModEmbed({
-            guild: message.guild, type: "mod", title: "⏱️ Member Timed Out",
+            guild: message.guild, type: "mod", title: "Member Timed Out",
             target, executor: message.author, reason, caseNumber, durationText,
         });
         await message.reply({ embeds: [embed] });

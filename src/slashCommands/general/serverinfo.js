@@ -76,7 +76,7 @@ export default {
 
         const fields = [
             { name: "Owner", value: owner ? `${owner.user.tag}\n\`${owner.id}\`` : "Unknown", inline: true },
-            { name: "🆔 Server ID", value: `\`${g.id}\``, inline: true },
+            { name: "Server ID", value: `\`${g.id}\``, inline: true },
             { name: "Created", value: created, inline: false },
             {
                 name: `Members [${memberCount}]`,
@@ -123,7 +123,7 @@ export default {
             fields.push({ name: "Description", value: g.description.slice(0, 1024), inline: false });
         }
         if (features !== "None") {
-            fields.push({ name: "⭐ Features", value: features.slice(0, 1024), inline: false });
+            fields.push({ name: "Features", value: features.slice(0, 1024), inline: false });
         }
 
         const embed = buildCoolEmbed({

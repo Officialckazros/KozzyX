@@ -23,7 +23,7 @@ export default {
         const raiders = getRecentRaiders(message.guild.id);
         if (!raiders.size) {
             return replyEmbed(message, {
-                type: "info", title: "ℹ️ No Raiders Tracked",
+                type: "info", title: "No Raiders Tracked",
                 description: "There are no recently detected raiders to ban.",
             });
         }
