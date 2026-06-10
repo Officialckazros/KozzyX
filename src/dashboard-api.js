@@ -679,6 +679,45 @@ export function initAPI(client) {
                 })));
             }
 
+            if (pathname === '/api/appeals' && method === 'GET') {
+                if (!guild) return json(res, 200, []);
+                const status = (parsedUrl.searchParams.get('status') || 'pending').toLowerCase();
+                const { getDB } = await import('./utils/db.js');
+                const db = await getDB();
+                const rows = status === 'all'
+                    ? await db.all("SELECT * FROM appeals WHERE guild_id = ? ORDER BY created_at DESC LIMIT 200", guild.id)
+                    : await db.all("SELECT * FROM appeals WHERE guild_id = ? AND status = ? ORDER BY created_at DESC LIMIT 200", guild.id, status);
+                return json(res, 200, rows);
+            }
+
+            if (pathname.match(/^\/api\/appeals\/\d+\/(accept|reject)$/) && method === 'POST') {
+                if (!guild) return json(res, 404, { error: 'Guild not found' });
+                if (!canActOn(null, 'BanMembers')) return json(res, 403, { error: 'Missing Ban Members permission' });
+                const appealId = pathname.split('/')[3];
+                const decision = pathname.split('/')[4];
+                const moderator = sessionUser?.username || 'Dashboard';
+                const { getDB } = await import('./utils/db.js');
+                const db = await getDB();
+                const appeal = await db.get("SELECT * FROM appeals WHERE id = ? AND guild_id = ?", appealId, guild.id);
+                if (!appeal) return json(res, 404, { error: 'Appeal not found' });
+                if (appeal.status !== 'pending') return json(res, 400, { error: 'Appeal already resolved' });
+
+                let unbanned = false;
+                if (decision === 'accept') {
+                    try {
+                        await guild.members.unban(appeal.user_id, `Appeal #${appealId} accepted by ${moderator}`);
+                        unbanned = true;
+                        addModLog('UNBAN', appeal.user_id, moderator, `Appeal #${appealId} accepted`);
+                    } catch (e) {
+                        // User may no longer be banned — still resolve the appeal.
+                    }
+                }
+                const newStatus = decision === 'accept' ? 'accepted' : 'rejected';
+                await db.run("UPDATE appeals SET status = ?, staff_id = ?, resolved_at = ? WHERE id = ?", newStatus, executorId, Date.now(), appealId);
+                addLog('MOD', `Appeal #${appealId} ${newStatus} by ${moderator}`);
+                return json(res, 200, { success: true, status: newStatus, unbanned });
+            }
+
             if (pathname === '/api/config' && method === 'GET') {
                 return json(res, 200, config);
             }
