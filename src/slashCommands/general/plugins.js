@@ -48,7 +48,7 @@ export default {
         if (sub === "list") {
             const lines = Object.entries(PLUGIN_META).map(([key, meta]) => {
                 const on = settings.plugins[key];
-                return `${on ? "" : ""} **${meta.label}** — ${meta.desc}`;
+                return `\`${on ? "ON " : "OFF"}\` **${meta.label}** — ${meta.desc}`;
             });
             return safeRespond(interaction, asEmbedPayload({
                 guildId: interaction.guildId,

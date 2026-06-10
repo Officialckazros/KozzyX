@@ -36,7 +36,7 @@ const ROLE_BLUEPRINTS = {
     special: [
         { name: "VIP",           color: 0x9B59B6, hoist: true, mentionable: true, perms: MEMBER_PERMS },
         { name: "Booster",       color: 0xF47FFF, hoist: true, mentionable: true, perms: MEMBER_PERMS },
-        { name: "⭐ Active Member", color: 0x1ABC9C, hoist: true, mentionable: true, perms: MEMBER_PERMS },
+        { name: "Active Member", color: 0x1ABC9C, hoist: true, mentionable: true, perms: MEMBER_PERMS },
     ],
     base: [
         { name: "Member", color: 0x95A5A6, hoist: false, mentionable: false, perms: MEMBER_PERMS },
@@ -52,7 +52,7 @@ const CATEGORY_BLUEPRINTS = {
             { type: "text", name: "welcome",         topic: "Welcome to the server!",         readOnly: true },
             { type: "text", name: "rules",           topic: "Server rules — please read!",    readOnly: true },
             { type: "text", name: "announcements",   topic: "Important server updates.",      readOnly: true },
-            { type: "text", name: "server-updates",  topic: "🆕 Changelog and feature updates.", readOnly: true },
+            { type: "text", name: "server-updates",  topic: "Changelog and feature updates.", readOnly: true },
         ],
     },
     community: {
@@ -475,7 +475,7 @@ export default {
 
 class SetupLog {
     constructor() { this.entries = []; }
-    add(icon, line) { this.entries.push(`${icon} ${line}`); }
+    add(icon, line) { this.entries.push(icon ? `${icon} ${line}` : line); }
     toFields() {
         const chunks = [];
         let cur = "";
@@ -507,7 +507,7 @@ async function provisionRole({ guild, bp, dryRun, skipExisting, log, createdRole
     const existing = guild.roles.cache.find((r) => r.name === bp.name);
     if (existing && skipExisting) {
         createdRoles.set(bp.name, existing);
-        log.add("⏭️", `Role **${bp.name}** already exists — skipped.`);
+        log.add("", `Role **${bp.name}** already exists — skipped.`);
         return;
     }
     if (dryRun) {
@@ -562,7 +562,7 @@ async function provisionCategory({
             }
         }
     } else {
-        log.add("⏭️", `Category **${cat.name}** already exists — reusing.`);
+        log.add("", `Category **${cat.name}** already exists — reusing.`);
     }
 
     for (const ch of cat.channels) {
@@ -571,7 +571,7 @@ async function provisionCategory({
         );
         if (existing && skipExisting) {
             createdChannels.set(ch.name, existing);
-            log.add("⏭️", `Channel **#${ch.name}** already exists — skipped.`);
+            log.add("", `Channel **#${ch.name}** already exists — skipped.`);
             continue;
         }
         if (dryRun) {
@@ -608,7 +608,7 @@ async function provisionCategory({
                 reason: "server_setup command",
             });
             createdChannels.set(ch.name, channel);
-            log.add(ch.type === "voice" ? "" : "", `Created **${ch.type === "voice" ? channel.name : "#" + channel.name}**.`);
+            log.add("", `Created **${ch.type === "voice" ? channel.name : "#" + channel.name}**.`);
         } catch (e) {
             log.add("", `Failed to create **${ch.name}**: \`${e.message}\``);
         }
@@ -643,12 +643,12 @@ async function postRulesEmbed(channel, guild) {
             "By being in this server, you agree to follow these rules:"
         )
         .addFields(
-            { name: "1️⃣  Be respectful",       value: "No harassment, hate speech, discrimination, or personal attacks." },
-            { name: "2️⃣  No spam",              value: "Don't flood chat, post in the wrong channel, or mass-ping." },
-            { name: "3️⃣  Keep it SFW",          value: "No NSFW, gore, or suggestive content — anywhere." },
-            { name: "4️⃣  No advertising",       value: "No self-promo, invite links, or DM advertising without staff approval." },
-            { name: "5️⃣  Follow Discord ToS",   value: "Obey Discord's [Terms of Service](https://discord.com/terms) and [Community Guidelines](https://discord.com/guidelines)." },
-            { name: "6️⃣  Staff has final say",  value: "Moderators can enforce rules and make judgment calls as needed." },
+            { name: "Be respectful",       value: "No harassment, hate speech, discrimination, or personal attacks." },
+            { name: "No spam",              value: "Don't flood chat, post in the wrong channel, or mass-ping." },
+            { name: "Keep it SFW",          value: "No NSFW, gore, or suggestive content — anywhere." },
+            { name: "No advertising",       value: "No self-promo, invite links, or DM advertising without staff approval." },
+            { name: "Follow Discord ToS",   value: "Obey Discord's [Terms of Service](https://discord.com/terms) and [Community Guidelines](https://discord.com/guidelines)." },
+            { name: "Staff has final say",  value: "Moderators can enforce rules and make judgment calls as needed." },
         )
         .setFooter({ text: "Breaking these rules may result in warnings, mutes, kicks, or bans." })
         .setTimestamp();
@@ -676,7 +676,7 @@ async function addMemeEmojis(guild, log) {
     const animSlots      = maxAnim   - existingAnim.size;
 
     if (staticSlots <= 0 && animSlots <= 0) {
-        log.add("⏭️", `Emoji slots full — skipped emoji upload.`);
+        log.add("", `Emoji slots full — skipped emoji upload.`);
         return;
     }
 
@@ -725,7 +725,7 @@ async function addMemeStickers(guild, log) {
     const slots          = maxStickers - guild.stickers.cache.size;
 
     if (slots <= 0) {
-        log.add("⏭️", `Sticker slots full (${guild.stickers.cache.size}/${maxStickers}) — skipped.`);
+        log.add("", `Sticker slots full (${guild.stickers.cache.size}/${maxStickers}) — skipped.`);
         return;
     }
 
@@ -768,7 +768,7 @@ async function enableCommunity(guild, { rulesCh, updateCh }, log) {
         return;
     }
     if (guild.features.includes("COMMUNITY")) {
-        log.add("⏭️", `Community mode already enabled — skipped.`);
+        log.add("", `Community mode already enabled — skipped.`);
         return;
     }
     try {
@@ -796,7 +796,7 @@ function makeSnowflake() {
 
 async function enableOnboarding(guild, { createdChannels, createdRoles }, log) {
     if (!guild.features.includes("COMMUNITY")) {
-        log.add("⏭️", `Onboarding skipped — Community mode must be enabled first.`);
+        log.add("", `Onboarding skipped — Community mode must be enabled first.`);
         return;
     }
 
@@ -816,7 +816,7 @@ async function enableOnboarding(guild, { createdChannels, createdRoles }, log) {
     const mediaCh       = ch("media");
 
     const memberRole = role("Member");
-    const activRole  = role("⭐ Active Member");
+    const activRole  = role("Active Member");
     const vipRole    = role("VIP");
 
     const defaultChannelIds = [
@@ -879,7 +879,7 @@ async function enableOnboarding(guild, { createdChannels, createdRoles }, log) {
             id: makeSnowflake(),
             title: "Active Member",
             description: "I plan to be active and participate!",
-            emoji: { name: "⭐" },
+            emoji: { name: "" },
             role_ids: [activRole.id],
             channel_ids: [],
         },
@@ -920,7 +920,7 @@ async function enableOnboarding(guild, { createdChannels, createdRoles }, log) {
     }
 
     if (prompts.length === 0) {
-        log.add("⏭️", `Onboarding skipped — not enough channels/roles to build prompts.`);
+        log.add("", `Onboarding skipped — not enough channels/roles to build prompts.`);
         return;
     }
 

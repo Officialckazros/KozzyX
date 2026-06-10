@@ -23,7 +23,7 @@ export default {
         if (before === 0) {
             return replyEmbed(message, {
                 type: "info",
-                title: "ℹ️ Nothing to clear",
+                title: "Nothing to clear",
                 description: `${target} already has no warnings.`,
             });
         }

@@ -20,7 +20,7 @@ export default {
         }
         if (!target.communicationDisabledUntilTimestamp || target.communicationDisabledUntilTimestamp < Date.now()) {
             return replyEmbed(message, {
-                type: "info", title: "ℹ️ Not Timed Out",
+                type: "info", title: "Not Timed Out",
                 description: `${target} is not currently timed out.`,
             });
         }

@@ -65,10 +65,10 @@ export default {
         const embed = buildCoolEmbed({
             guildId: message.guild.id,
             type: "settings",
-            title: "⏱️ Slowmode Updated",
+            title: "Slowmode Updated",
             fields: [
                 { name: "Channel", value: `${targetChannel}`, inline: true },
-                { name: "⏱️ Slowmode", value: seconds === 0 ? "**Disabled**" : `**${seconds}s**`, inline: true },
+                { name: "Slowmode", value: seconds === 0 ? "**Disabled**" : `**${seconds}s**`, inline: true },
                 { name: "Moderator", value: `${message.author}`, inline: true },
             ],
             showAuthor: false,

@@ -57,7 +57,7 @@ export default {
                 },
                 {
                     name: "Health",
-                    value: `Ping: **${ping}ms** ${pingHealth(ping)}\n⏱️ Uptime: **${formatUptime(client.uptime)}**`,
+                    value: `Ping: **${ping}ms** ${pingHealth(ping)}\nUptime: **${formatUptime(client.uptime)}**`,
                     inline: false,
                 },
                 {

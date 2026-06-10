@@ -3,7 +3,7 @@ import { getGuildSettings, saveSettings } from "../../utils/database.js";
 import { replyEmbed, buildCoolEmbed } from "../../utils/embeds.js";
 
 const ACTION_LABEL = {
-    timeout: "⏱️ Timeout",
+    timeout: "Timeout",
     kick: "Kick",
     ban: "Ban",
 };

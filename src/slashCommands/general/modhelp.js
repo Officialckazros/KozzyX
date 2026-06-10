@@ -60,8 +60,7 @@ modHelpPages.push(
             "`,boosterrole create <name>` – Create a custom role (boosters only).\n" +
             "`,boosterrole color <#hex>` – Change your booster role colour.\n\n" +
             "**AFK**\n" +
-            "`,afk [reason]` – Set yourself AFK.\n" +
-            "`,clearafk [@user]` – Clear AFK status.\n\n" +
+            "`,afk [reason]` or `/afk` – Set yourself AFK. It clears automatically when you next send a message, and anyone who pings you is told you're away.\n\n" +
             "**Autoresponders**\n" +
             "Use `!autoresponder` (config prefix) — see Config tab.\n\n" +
             "**Bot Info**\n" +
@@ -180,7 +179,7 @@ export function modRow(page) {
     return new ActionRowBuilder().addComponents(
         new ButtonBuilder()
             .setCustomId(`modhelp_prev:${page}`)
-            .setLabel("⬅ Previous")
+            .setLabel("Previous")
             .setStyle(ButtonStyle.Secondary)
             .setDisabled(page === 0),
         new ButtonBuilder()
@@ -199,7 +198,7 @@ export function configRow(page) {
     return new ActionRowBuilder().addComponents(
         new ButtonBuilder()
             .setCustomId(`cfghelp_prev:${page}`)
-            .setLabel("⬅ Previous")
+            .setLabel("Previous")
             .setStyle(ButtonStyle.Secondary)
             .setDisabled(page === 0),
         new ButtonBuilder()

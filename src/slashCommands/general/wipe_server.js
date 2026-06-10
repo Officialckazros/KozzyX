@@ -100,7 +100,7 @@ export default {
                 `Would delete **${channels.length}** channel(s) and categor(ies).`,
                 `Would delete **${roles.length}** role(s).`,
                 `Would clear bot settings (case channel, ticket panel).`,
-                skippedRoles.length ? `⏭️ Would skip: ${skippedRoles.map(r => `@${r.name}`).slice(0, 5).join(", ")}${skippedRoles.length > 5 ? ` +${skippedRoles.length - 5} more` : ""} (managed/above bot)` : null,
+                skippedRoles.length ? `Would skip: ${skippedRoles.map(r => `@${r.name}`).slice(0, 5).join(", ")}${skippedRoles.length > 5 ? ` +${skippedRoles.length - 5} more` : ""} (managed/above bot)` : null,
             ].filter(Boolean);
 
             return safeRespond(interaction, asEmbedPayload({

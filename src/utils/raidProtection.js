@@ -88,8 +88,8 @@ export async function checkRaid(member) {
         description: `**${window.length} accounts** joined within **${windowMs / 1000}s**.`,
         fields: [
             { name: "Action Taken", value: `\`${action.toUpperCase()}\``, inline: true },
-            { name: "🆕 New Accounts (<7d)", value: `${newAccounts}/${raiders.length}`, inline: true },
-            { name: "⏱️ Window", value: `${windowMs / 1000}s`, inline: true },
+            { name: "New Accounts (<7d)", value: `${newAccounts}/${raiders.length}`, inline: true },
+            { name: "Window", value: `${windowMs / 1000}s`, inline: true },
             { name: "Raiders", value: raiderList + (raiders.length > 10 ? `\n*+${raiders.length - 10} more*` : ""), inline: false },
             {
                 name: "Recovery",
@@ -229,7 +229,7 @@ export async function checkMassMention(message) {
             fields: [
                 { name: "User", value: `${member}\n\`${member.id}\``, inline: true },
                 { name: "Mentions", value: `**${score}** in one message`, inline: true },
-                { name: "⏱️ Timeout", value: `${Math.round(timeoutMs / 60000)}m`, inline: true },
+                { name: "Timeout", value: `${Math.round(timeoutMs / 60000)}m`, inline: true },
                 { name: "Channel", value: `${message.channel}`, inline: false },
             ],
             showAuthor: false,

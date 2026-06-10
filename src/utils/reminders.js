@@ -29,7 +29,7 @@ export async function initReminders(client) {
             scheduleReminder(client, r);
         }
     }
-    console.log(`⏰ Loaded ${reminders.length} reminders.`);
+    console.log(`Loaded ${reminders.length} reminders.`);
 
     setInterval(async () => {
         try {
@@ -79,7 +79,7 @@ async function sendReminder(client, reminder, late = false) {
 
         const embed = buildCoolEmbed({
             type: late ? "warning" : "info",
-            title: "⏰ Reminder",
+            title: "Reminder",
             description: late ? `(Sorry I'm late!)\n\n${reminder.content}` : reminder.content,
             footerText: "Stored with SQLite",
         });

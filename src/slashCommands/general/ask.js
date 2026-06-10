@@ -52,7 +52,7 @@ export default {
             return safeRespond(i, asEmbedPayload({
                 guildId: i.guild?.id,
                 type: "error",
-                title: "⏰ Cooldown Active",
+                title: "Cooldown Active",
                 description: `Please wait ${timeLeft} seconds before using this command again.`,
                 ephemeral: true,
             }));

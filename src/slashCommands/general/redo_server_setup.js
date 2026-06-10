@@ -12,7 +12,7 @@ const P = PermissionFlagsBits;
 
 const SETUP_ROLE_NAMES = new Set([
     "Owner", "Admin", "Moderator", "Helper",
-    "VIP", "Booster", "⭐ Active Member",
+    "VIP", "Booster", "Active Member",
     "Member", "Bots", "Muted",
 ]);
 

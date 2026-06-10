@@ -53,11 +53,11 @@ export default {
         const embed = buildCoolEmbed({
             guildId: i.guild?.id,
             type: "success",
-            title: "⏰ Reminder Set",
+            title: "Reminder Set",
             fields: [
                 { name: "Content", value: content.slice(0, 1024), inline: false },
-                { name: "⏱️ When", value: `<t:${Math.floor(remindAt / 1000)}:F>\n(<t:${Math.floor(remindAt / 1000)}:R>)`, inline: true },
-                { name: "🆔 Reminder ID", value: `\`${id}\``, inline: true },
+                { name: "When", value: `<t:${Math.floor(remindAt / 1000)}:F>\n(<t:${Math.floor(remindAt / 1000)}:R>)`, inline: true },
+                { name: "Reminder ID", value: `\`${id}\``, inline: true },
             ],
             showAuthor: true,
             client: i.client,
