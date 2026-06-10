@@ -13,7 +13,7 @@ async function importDatabase() {
 
 const PORT = 3456;
 const AUTH_KEY = 'KozzyX_Internal_API_' + crypto.randomBytes(32).toString('hex');
-const REDIRECT_URI = process.env.DASHBOARD_REDIRECT_URI || 'https://dashboard.kozzyx.org/dashboard';
+const REDIRECT_URI = process.env.DASHBOARD_REDIRECT_URI || 'https://kozzyx.org/dashboard';
 
 const DATA_DIR = path.join(__dirname, '../data');
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
