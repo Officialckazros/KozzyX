@@ -15,6 +15,14 @@ const PORT = 3456;
 const AUTH_KEY = 'KozzyX_Internal_API_' + crypto.randomBytes(32).toString('hex');
 const REDIRECT_URI = process.env.DASHBOARD_REDIRECT_URI || 'https://kozzyx.org/dashboard';
 
+// Only these origins may call the API from a browser. Override with a
+// comma-separated DASHBOARD_ORIGINS env var if the dashboard is hosted elsewhere.
+const ALLOWED_ORIGINS = (process.env.DASHBOARD_ORIGINS || 'https://kozzyx.org,https://www.kozzyx.org')
+    .split(',').map(s => s.trim()).filter(Boolean);
+
+// Dashboard sessions expire after this long, after which the user must log in again.
+const SESSION_TTL_MS = Number(process.env.DASHBOARD_SESSION_TTL_MS) || 7 * 24 * 60 * 60 * 1000;
+
 const DATA_DIR = path.join(__dirname, '../data');
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 
@@ -86,7 +94,11 @@ function json(res, status, data) {
 
 export function initAPI(client) {
     const server = http.createServer(async (req, res) => {
-        res.setHeader('Access-Control-Allow-Origin', '*');
+        const origin = req.headers.origin;
+        if (origin && ALLOWED_ORIGINS.includes(origin)) {
+            res.setHeader('Access-Control-Allow-Origin', origin);
+            res.setHeader('Vary', 'Origin');
+        }
         res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE, PATCH');
         res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-api-key, x-guild-id, Authorization, Origin, Accept');
         res.setHeader('Access-Control-Max-Age', '86400');
@@ -154,7 +166,7 @@ export function initAPI(client) {
                 const isOwner = userData.id === process.env.OWNER_ID;
                 const sessionToken = crypto.randomBytes(32).toString('hex');
 
-                sessions.set(sessionToken, { ...userData, guilds: Array.isArray(userGuilds) ? userGuilds : [], isOwner });
+                sessions.set(sessionToken, { ...userData, guilds: Array.isArray(userGuilds) ? userGuilds : [], isOwner, createdAt: Date.now() });
 
                 addLog('OK', `Login: ${userData.username}`);
                 return json(res, 200, {
@@ -170,6 +182,12 @@ export function initAPI(client) {
         const sessionToken = authHeader ? authHeader.split(' ')[1] : null;
         const apiKey = req.headers['x-api-key'];
         const isInternal = apiKey === AUTH_KEY;
+
+        // Expire stale sessions so a leaked token can't be replayed indefinitely.
+        const existingSession = sessionToken ? sessions.get(sessionToken) : null;
+        if (existingSession && Date.now() - (existingSession.createdAt || 0) > SESSION_TTL_MS) {
+            sessions.delete(sessionToken);
+        }
 
         if (!sessions.has(sessionToken) && !isInternal) {
             return json(res, 401, { error: 'Unauthorized' });
@@ -206,6 +224,15 @@ export function initAPI(client) {
             if (reqPerm && !executorMember.permissions.has(reqPerm)) return false;
             if (targetMember && executorMember.id !== guild.ownerId && executorMember.roles.highest.position <= targetMember.roles.highest.position) return false;
             return true;
+        }
+
+        // True only if the acting user could themselves post in this channel.
+        // Honours per-channel permission overwrites so the bot can't be used to
+        // bypass a channel the user has no access to.
+        function canSendIn(channel) {
+            if (sessionUser.isOwner) return true;
+            if (!executorMember || !channel) return false;
+            return !!channel.permissionsFor(executorMember)?.has('SendMessages');
         }
 
         try {
@@ -275,6 +302,7 @@ export function initAPI(client) {
                 const channel = await client.channels.fetch(channelId);
                 if (!channel) return json(res, 404, { error: 'Channel not found' });
                 if (channel.guild.id !== guild.id) return json(res, 403, { error: 'Channel not in your guild' });
+                if (!canSendIn(channel)) return json(res, 403, { error: 'You cannot send messages in that channel' });
                 await channel.send(content);
                 addLog('OK', `Message sent to #${channel.name}`);
                 return json(res, 200, { success: true });
@@ -301,6 +329,9 @@ export function initAPI(client) {
             }
 
             if (pathname === '/api/terminal' && method === 'POST') {
+                // The terminal can run any prefix command, so restrict it to the
+                // owner or guild administrators rather than anyone with Manage Server.
+                if (!canActOn(null, 'Administrator')) return json(res, 403, { error: 'Administrator permission required to use the command terminal' });
                 const { command: fullCommand, channelId } = await readBody(req);
                 addLog('CMD', `> ${fullCommand}`);
                 const prefix = fullCommand.startsWith(',') ? ',' : fullCommand.startsWith('!') ? '!' : null;
@@ -539,6 +570,7 @@ export function initAPI(client) {
                 const channel = await client.channels.fetch(channelId).catch(() => null);
                 if (!channel) return json(res, 404, { error: 'Channel not found' });
                 if (channel.guild.id !== guild.id) return json(res, 403, { error: 'Channel not in your guild' });
+                if (!canSendIn(channel)) return json(res, 403, { error: 'You cannot send messages in that channel' });
                 const msg = await channel.send(content);
                 addLog('OK', `Sent to #${channel.name}: ${content.slice(0, 60)}`);
                 return json(res, 200, {
