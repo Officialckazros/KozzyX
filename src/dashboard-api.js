@@ -55,6 +55,16 @@ setInterval(() => {
     }
 }, 60 * 60 * 1000).unref?.();
 
+// OAuth CSRF state tokens (state -> issued timestamp); expire after 10 minutes.
+const pendingStates = new Map();
+const STATE_TTL_MS = 10 * 60 * 1000;
+setInterval(() => {
+    const now = Date.now();
+    for (const [s, t] of pendingStates) {
+        if (now - t > STATE_TTL_MS) pendingStates.delete(s);
+    }
+}, 5 * 60 * 1000).unref?.();
+
 let feedEvents = [];
 const MAX_FEED = 120;
 const cooldownHits = new Map();
@@ -131,13 +141,20 @@ export function initAPI(client) {
         }
 
         if (pathname === '/api/auth/login' && method === 'GET') {
-            const url = `https://discord.com/api/oauth2/authorize?client_id=${process.env.CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=identify%20guilds`;
+            const state = crypto.randomBytes(16).toString('hex');
+            pendingStates.set(state, Date.now());
+            const url = `https://discord.com/api/oauth2/authorize?client_id=${process.env.CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=identify%20guilds&state=${state}`;
             return json(res, 200, { url });
         }
 
         if (pathname === '/api/auth/callback' && method === 'POST') {
             try {
-                const { code } = await readBody(req);
+                const { code, state } = await readBody(req);
+                const stateIssuedAt = state ? pendingStates.get(state) : null;
+                if (!stateIssuedAt || Date.now() - stateIssuedAt > STATE_TTL_MS) {
+                    return json(res, 400, { error: 'Invalid or expired OAuth state' });
+                }
+                pendingStates.delete(state);
                 const tokenResponse = await fetch('https://discord.com/api/oauth2/token', {
                     method: 'POST',
                     body: new URLSearchParams({
