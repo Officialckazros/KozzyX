@@ -16,9 +16,9 @@
     "@google/generative-ai": "^0.24.1",
     "discord.js": "^14.17.3",
     "dotenv": "^16.4.7",
-    "nodemailer": "^6.9.3",
-    "pm2": "^7.0.1",
+    "nodemailer": "^8.0.11",
+    "pm2": "^6.0.14",
     "sqlite": "^5.1.1",
-    "sqlite3": "^5.1.7"
+    "sqlite3": "^6.0.1"
   }
 }
