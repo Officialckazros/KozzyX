@@ -19,14 +19,14 @@ const DATA_DIR = path.join(__dirname, '../data');
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 
 function loadJSON(name, fallback) {
-    const p = path.join(DATA_DIR, name);
+    const p = path.join(DATA_DIR, path.basename(name));
     try {
         if (fs.existsSync(p)) return JSON.parse(fs.readFileSync(p, 'utf8'));
     } catch { }
     return fallback;
 }
 function saveJSON(name, data) {
-    const p = path.join(DATA_DIR, name);
+    const p = path.join(DATA_DIR, path.basename(name));
     fs.writeFileSync(p, JSON.stringify(data, null, 2));
 }
 
@@ -825,6 +825,9 @@ export function initAPI(client) {
 
             if (pathname === '/api/plugins' && method === 'POST') {
                 const { plugin, enabled } = await readBody(req);
+                if (typeof plugin !== 'string' || plugin === '__proto__' || plugin === 'constructor' || plugin === 'prototype') {
+                    return json(res, 400, { error: 'Invalid plugin' });
+                }
                 const { getGuildSettings, saveSettings } = await importDatabase();
                 const settings = getGuildSettings(guild.id);
                 if (!settings.plugins) settings.plugins = {};
