@@ -47,6 +47,13 @@ let botStats = {
 };
 
 const sessions = new Map();
+const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000; // sessions expire after 7 days
+setInterval(() => {
+    const now = Date.now();
+    for (const [t, s] of sessions) {
+        if (now - (s.createdAt || 0) > SESSION_TTL_MS) sessions.delete(t);
+    }
+}, 60 * 60 * 1000).unref?.();
 
 let feedEvents = [];
 const MAX_FEED = 120;
@@ -84,9 +91,22 @@ function json(res, status, data) {
     res.end(JSON.stringify(data));
 }
 
+// Constant-time string comparison (avoids leaking length/content via timing).
+function safeEqual(a, b) {
+    if (typeof a !== 'string' || typeof b !== 'string') return false;
+    const ab = Buffer.from(a), bb = Buffer.from(b);
+    if (ab.length !== bb.length) return false;
+    return crypto.timingSafeEqual(ab, bb);
+}
+
 export function initAPI(client) {
     const server = http.createServer(async (req, res) => {
-        res.setHeader('Access-Control-Allow-Origin', '*');
+        const ALLOWED_ORIGINS = ['https://kozzyx.org', 'https://www.kozzyx.org'];
+        const reqOrigin = req.headers.origin;
+        if (reqOrigin && ALLOWED_ORIGINS.includes(reqOrigin)) {
+            res.setHeader('Access-Control-Allow-Origin', reqOrigin);
+            res.setHeader('Vary', 'Origin');
+        }
         res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE, PATCH');
         res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-api-key, x-guild-id, Authorization, Origin, Accept');
         res.setHeader('Access-Control-Max-Age', '86400');
@@ -154,7 +174,7 @@ export function initAPI(client) {
                 const isOwner = userData.id === process.env.OWNER_ID;
                 const sessionToken = crypto.randomBytes(32).toString('hex');
 
-                sessions.set(sessionToken, { ...userData, guilds: Array.isArray(userGuilds) ? userGuilds : [], isOwner });
+                sessions.set(sessionToken, { ...userData, guilds: Array.isArray(userGuilds) ? userGuilds : [], isOwner, createdAt: Date.now() });
 
                 addLog('OK', `Login: ${userData.username}`);
                 return json(res, 200, {
@@ -169,7 +189,12 @@ export function initAPI(client) {
         const authHeader = req.headers['authorization'];
         const sessionToken = authHeader ? authHeader.split(' ')[1] : null;
         const apiKey = req.headers['x-api-key'];
-        const isInternal = apiKey === AUTH_KEY;
+        const isInternal = safeEqual(apiKey, AUTH_KEY);
+
+        const existingSess = sessionToken ? sessions.get(sessionToken) : null;
+        if (existingSess && Date.now() - (existingSess.createdAt || 0) > SESSION_TTL_MS) {
+            sessions.delete(sessionToken);
+        }
 
         if (!sessions.has(sessionToken) && !isInternal) {
             return json(res, 401, { error: 'Unauthorized' });
