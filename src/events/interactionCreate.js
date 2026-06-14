@@ -2,11 +2,10 @@ import { Events, PermissionsBitField, ActionRowBuilder, ButtonBuilder, ButtonSty
 import { safeRespond } from "../utils/helpers.js";
 import { asEmbedPayload, buildCoolEmbed } from "../utils/embeds.js";
 import { getDB } from "../utils/db.js";
-import { isCommandEnabled, checkCooldown, recordCommandRun } from "../dashboard-api.js";
+import { isCommandEnabled, checkCooldown } from "../dashboard-api.js";
 import { helpPages } from "../slashCommands/general/help.js";
 import { modHelpPages, configHelpPages, modRow, configRow } from "../slashCommands/general/modhelp.js";
 import { featureHelpPages } from "../slashCommands/general/features.js";
-import { GLOBALLY_BLOCKED_IDS } from "../utils/constants.js";
 
 async function tryUpdate(interaction, payload) {
     try {
@@ -20,8 +19,6 @@ async function tryUpdate(interaction, payload) {
 export default {
     name: Events.InteractionCreate,
     async execute(interaction, client) {
-        if (GLOBALLY_BLOCKED_IDS.has(interaction.user.id)) return;
-
         if (interaction.isChatInputCommand()) {
             const cmdName = interaction.commandName;
             const command = client.slashCommands.get(cmdName);
@@ -42,7 +39,6 @@ export default {
 
             try {
                 await command.execute(interaction);
-                recordCommandRun({ name: cmdName, type: "slash", user: interaction.user.username, guildId: interaction.guildId });
             } catch (error) {
                 console.error(`[Interaction] Execution failed for '${cmdName}':`, error);
                 await safeRespond(interaction, { content: `Internal error while executing \`${cmdName}\`.`, ephemeral: true });
@@ -99,16 +95,6 @@ export default {
                     new ButtonBuilder().setCustomId(`features_next:${page}`).setLabel("Next ").setStyle(ButtonStyle.Primary).setDisabled(page === featureHelpPages.length - 1)
                 );
                 return tryUpdate(interaction, { embeds: [featureHelpPages[page]], components: [row] });
-            }
-
-            if (id.startsWith("lookup_page:")) {
-                const [, targetUserId, pageStr] = id.split(":");
-                const page = parseInt(pageStr);
-                const lookupCmd = client.slashCommands.get("lookup");
-                if (lookupCmd && lookupCmd.getLookupResponse) {
-                    const payload = await lookupCmd.getLookupResponse(client, interaction.guildId, targetUserId, interaction.user, page);
-                    return tryUpdate(interaction, payload);
-                }
             }
 
             if (id.startsWith("appeal_")) {
