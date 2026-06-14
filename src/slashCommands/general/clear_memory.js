@@ -1,6 +1,6 @@
 import { safeRespond } from "../../utils/helpers.js";
 import { asEmbedPayload } from "../../utils/embeds.js";
-import { getDB } from "../../utils/db.js";
+import { clearConversation } from "../../utils/conversationMemory.js";
 
 export default {
     data: {
@@ -11,13 +11,7 @@ export default {
     },
     async execute(i) {
         const guildId = i.guild?.id ?? "dm";
-        const db = await getDB();
-        const result = await db.run(
-            "DELETE FROM conversation_history WHERE user_id = ? AND guild_id = ?",
-            i.user.id, guildId
-        );
-
-        const cleared = result.changes > 0;
+        const cleared = clearConversation(i.user.id, guildId);
         return safeRespond(i, asEmbedPayload({
             guildId: i.guild?.id,
             type: cleared ? "success" : "info",
