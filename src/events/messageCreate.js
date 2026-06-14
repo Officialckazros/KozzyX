@@ -1,8 +1,7 @@
 import { Events } from "discord.js";
 import { replyEmbed } from "../utils/embeds.js";
 import { checkMassMention } from "../utils/raidProtection.js";
-import { isCommandEnabled, checkCooldown, recordCommandRun } from "../dashboard-api.js";
-import { GLOBALLY_BLOCKED_IDS } from "../utils/constants.js";
+import { isCommandEnabled, checkCooldown } from "../dashboard-api.js";
 import { afkMap, clearAfk } from "../utils/database.js";
 
 const MOD_PREFIX = ",";
@@ -75,7 +74,6 @@ export default {
     async execute(message, client) {
         try {
             if (!message?.content || message.author.bot) return;
-            if (GLOBALLY_BLOCKED_IDS.has(message.author.id)) return;
             if (!message.guild) return;
 
             const blocked = await checkMassMention(message);
@@ -123,7 +121,6 @@ export default {
 
             try {
                 await command.execute(message, args, client);
-                recordCommandRun({ name: command.name, type: "prefix", user: message.author.username, guildId: message.guild.id });
             } catch (error) {
                 console.error("[messageCreate] Command execution error:", error);
                 await replyEmbed(message, {
