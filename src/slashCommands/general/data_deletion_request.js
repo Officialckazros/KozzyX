@@ -1,6 +1,12 @@
-import { PermissionsBitField } from "discord.js";
+import {
+    PermissionsBitField,
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle,
+    MessageFlags,
+} from "discord.js";
 import { safeRespond } from "../../utils/helpers.js";
-import { asEmbedPayload } from "../../utils/embeds.js";
+import { asEmbedPayload, buildCoolEmbed } from "../../utils/embeds.js";
 import { collectGuildDataSummary, purgeGuildData } from "../../utils/guildData.js";
 
 export default {
@@ -13,12 +19,6 @@ export default {
             {
                 name: "reason",
                 description: "Why you're requesting deletion (for your own records).",
-                type: 3,
-                required: true,
-            },
-            {
-                name: "confirm",
-                description: "Type the exact server name to confirm. This cannot be undone.",
                 type: 3,
                 required: true,
             },
@@ -56,58 +56,136 @@ export default {
         }
 
         const reason = interaction.options.getString("reason");
-        const confirm = interaction.options.getString("confirm");
 
-        if (confirm !== guild.name) {
+        // Show exactly what's at stake before asking for confirmation.
+        let summary = [];
+        try { summary = await collectGuildDataSummary(guild); } catch { /* non-fatal */ }
+        const total = summary.reduce((sum, r) => sum + r.count, 0);
+
+        if (total === 0) {
             return safeRespond(interaction, asEmbedPayload({
-                guildId: guild.id, type: "error",
-                title: "Confirmation failed",
-                description: `To confirm, the \`confirm\` option must exactly match this server's name.\n\nYou typed \`${confirm}\` but the server name is \`${guild.name}\`.\n\n**No data was deleted.**`,
+                guildId: guild.id, type: "info",
+                title: "Nothing to Delete",
+                description: "The bot currently holds no data for this server, so there's nothing to erase.",
                 ephemeral: true,
             }));
         }
 
-        await interaction.deferReply({ ephemeral: true });
+        const breakdown = summary
+            .filter(r => r.count > 0)
+            .map(r => `• **${r.label}:** ${r.count}`)
+            .join("\n");
 
-        // Snapshot before-counts so the receipt reflects what was actually held.
-        let before = [];
-        try { before = await collectGuildDataSummary(guild); } catch { /* non-fatal */ }
-        const beforeTotal = before.reduce((sum, r) => sum + r.count, 0);
+        const confirmId = `data_del_confirm_${interaction.user.id}_${Date.now()}`;
+        const cancelId = `data_del_cancel_${interaction.user.id}_${Date.now()}`;
+
+        const row = new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+                .setCustomId(confirmId)
+                .setLabel("Permanently Delete Everything")
+                .setStyle(ButtonStyle.Danger),
+            new ButtonBuilder()
+                .setCustomId(cancelId)
+                .setLabel("Cancel")
+                .setStyle(ButtonStyle.Secondary),
+        );
+
+        const response = await interaction.reply({
+            flags: MessageFlags.Ephemeral,
+            embeds: [buildCoolEmbed({
+                guildId: guild.id,
+                type: "error",
+                title: "⚠ Confirm Permanent Data Deletion",
+                description:
+                    "**This will LITERALLY delete everything the bot has stored about this server.**\n\n" +
+                    "Pressing **Permanently Delete Everything** below will erase all of the records listed here from the database, " +
+                    "every in-memory cache, the anti-raid state, the invite cache, and the dashboard activity feed. " +
+                    "The database is then compacted so the data cannot be recovered.\n\n" +
+                    "**This action is irreversible. There is no backup and no undo.**",
+                fields: [
+                    { name: `Records to be erased — ${total} total`, value: breakdown.slice(0, 1024) },
+                    { name: "Reason", value: reason.slice(0, 1024) },
+                ],
+                showAuthor: false,
+                showFooter: true,
+                footerText: "This cannot be undone. Confirm within 30 seconds.",
+            })],
+            components: [row],
+            withResponse: true,
+        });
+        const reply = response.resource?.message ?? response;
+
+        let btn;
+        try {
+            btn = await reply.awaitMessageComponent({
+                filter: i => i.user.id === interaction.user.id && (i.customId === confirmId || i.customId === cancelId),
+                time: 30_000,
+            });
+        } catch {
+            return interaction.editReply({
+                embeds: [buildCoolEmbed({
+                    guildId: guild.id, type: "info",
+                    title: "Confirmation Expired",
+                    description: "The request timed out — **no data was deleted.** Run the command again if you still want to proceed.",
+                })],
+                components: [],
+            }).catch(() => {});
+        }
+
+        if (btn.customId === cancelId) {
+            return btn.update({
+                embeds: [buildCoolEmbed({
+                    guildId: guild.id, type: "info",
+                    title: "Deletion Cancelled",
+                    description: "Cancelled — **no data was deleted.**",
+                })],
+                components: [],
+            });
+        }
+
+        await btn.update({
+            embeds: [buildCoolEmbed({
+                guildId: guild.id, type: "warning",
+                title: "Deleting…",
+                description: "Erasing all stored data for this server, please wait.",
+            })],
+            components: [],
+        });
 
         let result;
         try {
             result = await purgeGuildData(guild);
         } catch (err) {
             console.error("[data_deletion_request] failed:", err);
-            return safeRespond(interaction, asEmbedPayload({
-                guildId: guild.id, type: "error",
-                title: "Deletion failed",
-                description: "Something went wrong during deletion and it was rolled back. No partial deletion occurred. Please try again.",
-                ephemeral: true,
-            }));
+            return interaction.editReply({
+                embeds: [buildCoolEmbed({
+                    guildId: guild.id, type: "error",
+                    title: "Deletion Failed",
+                    description: "Something went wrong during deletion and it was rolled back. No partial deletion occurred — please try again.",
+                })],
+                components: [],
+            }).catch(() => {});
         }
 
         const deletedLines = Object.entries(result.deleted)
             .filter(([, count]) => count > 0)
             .map(([label, count]) => `• **${label}:** ${count}`);
 
-        const description = result.total === 0
-            ? "There was no stored data for this server. Nothing needed to be deleted."
-            : `Permanently erased **${result.total}** record(s) across all storage (database, in-memory caches, and the dashboard feed). This is irreversible.`;
-
-        return safeRespond(interaction, asEmbedPayload({
-            guildId: guild.id,
-            type: "success",
-            title: "Data Deletion Completed",
-            description,
-            fields: [
-                { name: "Reason", value: reason.slice(0, 1024) },
-                ...(deletedLines.length ? [{ name: "Deleted", value: deletedLines.join("\n").slice(0, 1024) }] : []),
-                ...(result.total === 0 && beforeTotal > 0
-                    ? [{ name: "Note", value: "Records were cleared from caches only." }]
-                    : []),
-            ],
-            ephemeral: true,
-        }));
+        return interaction.editReply({
+            embeds: [buildCoolEmbed({
+                guildId: guild.id,
+                type: "success",
+                title: "Data Deletion Completed",
+                description: `Permanently erased **${result.total}** record(s) across all storage. This is irreversible.`,
+                fields: [
+                    { name: "Reason", value: reason.slice(0, 1024) },
+                    ...(deletedLines.length ? [{ name: "Deleted", value: deletedLines.join("\n").slice(0, 1024) }] : []),
+                ],
+                showAuthor: false,
+                showFooter: true,
+                footerText: "Database compacted — this data is not recoverable.",
+            })],
+            components: [],
+        });
     },
 };
