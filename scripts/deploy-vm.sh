@@ -1,11 +1,13 @@
 #!/bin/bash
 
+cd "$(dirname "$0")/.."
+
 ENV_FILE="config/.env"
 if [ -f "$ENV_FILE" ]; then
     while IFS= read -r line || [ -n "$line" ]; do
         [[ "$line" =~ ^[[:space:]]*# ]] && continue
         [[ "$line" =~ ^[[:space:]]*$ ]] && continue
-        
+
         if [[ "$line" =~ ^[[:space:]]*([^=[:space:]]+)[[:space:]]*=[[:space:]]*(.*)$ ]]; then
             key="${BASH_REMATCH[1]}"
             val="${BASH_REMATCH[2]}"
@@ -18,17 +20,15 @@ if [ -f "$ENV_FILE" ]; then
     done < "$ENV_FILE"
 fi
 
-INSTANCE_NAME="${DEPLOY_INSTANCE_NAME}"
-ZONE="${DEPLOY_ZONE}"
 VM_USER="${DEPLOY_VM_USER}"
 REMOTE_DIR="${DEPLOY_REMOTE_DIR}"
+SSH_HOST="${DEPLOY_SSH_HOST:-$DEPLOY_VM_USER}"
 LAST_DEPLOY_FILE="${DEPLOY_LAST_DEPLOY_FILE:-config/.last-deploy-commit}"
 
 MISSING_VARS=()
-[ -z "$INSTANCE_NAME" ] && MISSING_VARS+=("DEPLOY_INSTANCE_NAME")
-[ -z "$ZONE" ] && MISSING_VARS+=("DEPLOY_ZONE")
 [ -z "$VM_USER" ] && MISSING_VARS+=("DEPLOY_VM_USER")
 [ -z "$REMOTE_DIR" ] && MISSING_VARS+=("DEPLOY_REMOTE_DIR")
+[ -z "$SSH_HOST" ] && MISSING_VARS+=("DEPLOY_SSH_HOST or DEPLOY_VM_USER")
 
 if [ ${#MISSING_VARS[@]} -ne 0 ]; then
     echo "Error: Missing required deployment environment variables:"
@@ -38,6 +38,19 @@ if [ ${#MISSING_VARS[@]} -ne 0 ]; then
     echo "Please define these variables in '$ENV_FILE' or export them in your environment."
     exit 1
 fi
+
+SSH_OPTS=(-o BatchMode=yes -o ConnectTimeout=15)
+if [ -n "$DEPLOY_SSH_KEY" ]; then
+    SSH_OPTS+=(-i "$DEPLOY_SSH_KEY")
+fi
+
+ssh_cmd() {
+    ssh "${SSH_OPTS[@]}" "$SSH_HOST" "$@"
+}
+
+scp_cmd() {
+    scp "${SSH_OPTS[@]}" "$@"
+}
 
 CURRENT_COMMIT=$(git rev-parse HEAD)
 
@@ -50,42 +63,55 @@ else
 fi
 
 DEPLOY_FILES=()
+DELETE_FILES=()
 while IFS= read -r file; do
     [[ -z "$file" ]] && continue
     [[ "$file" == node_modules* || "$file" == data/* || "$file" == *.sqlite* || "$file" == .env* || "$file" == scripts/* || "$file" == .gitignore ]] && continue
-    [[ ! -f "$file" ]] && echo "Skipping deleted: $file" && continue
+    if [[ ! -f "$file" ]]; then
+        echo "Will remove deleted: $file"
+        DELETE_FILES+=("$file")
+        continue
+    fi
     DEPLOY_FILES+=("$file")
 done <<< "$CHANGED_FILES"
 
-if [ ${#DEPLOY_FILES[@]} -eq 0 ]; then
+if [ ${#DEPLOY_FILES[@]} -eq 0 ] && [ ${#DELETE_FILES[@]} -eq 0 ]; then
     echo "Nothing to deploy — no changes since last deploy ($(git rev-parse --short "$LAST_COMMIT"))."
     exit 0
 fi
 
-echo "Deploying ${#DEPLOY_FILES[@]} changed file(s) to $VM_USER@$INSTANCE_NAME..."
+echo "Deploying to $SSH_HOST ($REMOTE_DIR)..."
 
 FAILED=0
 for file in "${DEPLOY_FILES[@]}"; do
     echo "  -> $file"
     remote_dir=$(dirname "$REMOTE_DIR/$file")
-    gcloud compute ssh "$VM_USER@$INSTANCE_NAME" --zone="$ZONE" \
-        --command="mkdir -p $remote_dir" 2>/dev/null
-    gcloud compute scp "$file" "$VM_USER@$INSTANCE_NAME:$REMOTE_DIR/$file" --zone="$ZONE"
+    ssh_cmd "mkdir -p $remote_dir"
+    scp_cmd "$file" "$SSH_HOST:$REMOTE_DIR/$file"
     if [ $? -ne 0 ]; then
         echo "  FAILED: $file"
         FAILED=1
     fi
 done
 
+for file in "${DELETE_FILES[@]}"; do
+    echo "  -x $file"
+    ssh_cmd "rm -f $REMOTE_DIR/$file"
+    if [ $? -ne 0 ]; then
+        echo "  FAILED to delete: $file"
+        FAILED=1
+    fi
+done
+
 if [ $FAILED -eq 1 ]; then
-    echo "Some files failed to copy. Not restarting bot."
+    echo "Some files failed to copy or delete. Not restarting bot."
     exit 1
 fi
 
 echo "$CURRENT_COMMIT" > "$LAST_DEPLOY_FILE"
 
 echo "Restarting bot..."
-gcloud compute ssh "$VM_USER@$INSTANCE_NAME" --zone="$ZONE" --command="pm2 restart KozzyX"
+ssh_cmd "pm2 restart KozzyX"
 
 if [ $? -eq 0 ]; then
     echo "Done. Deployed $(git rev-parse --short "$CURRENT_COMMIT")."
