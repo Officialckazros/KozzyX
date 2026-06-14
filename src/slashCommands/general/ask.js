@@ -2,7 +2,7 @@ import { safeRespond } from "../../utils/helpers.js";
 import { asEmbedPayload } from "../../utils/embeds.js";
 import { askGemini, askGeminiWithHistory } from "../../utils/ai.js";
 import { getGuildSettings } from "../../utils/database.js";
-import { getDB } from "../../utils/db.js";
+import { getConversation, setConversation } from "../../utils/conversationMemory.js";
 
 const cooldowns = new Map();
 const COOLDOWN_SECONDS = 30;
@@ -14,24 +14,6 @@ setInterval(() => {
         if (now >= cooldownEnd) cooldowns.delete(userId);
     }
 }, 10 * 60 * 1000);
-
-async function loadHistory(userId, guildId) {
-    const db = await getDB();
-    const row = await db.get(
-        "SELECT messages_json FROM conversation_history WHERE user_id = ? AND guild_id = ?",
-        userId, guildId
-    );
-    if (!row) return [];
-    try { return JSON.parse(row.messages_json); } catch { return []; }
-}
-
-async function saveHistory(userId, guildId, messages) {
-    const db = await getDB();
-    await db.run(
-        "INSERT OR REPLACE INTO conversation_history (user_id, guild_id, messages_json, updated_at) VALUES (?, ?, ?, ?)",
-        userId, guildId, JSON.stringify(messages), Date.now()
-    );
-}
 
 export default {
     data: {
@@ -68,14 +50,14 @@ export default {
         let answer;
 
         if (useHistory) {
-            const history = await loadHistory(i.user.id, guildId);
+            const history = getConversation(i.user.id, guildId);
             history.push({ role: "user", content: prompt });
             answer = await askGeminiWithHistory(history);
 
             if (answer && answer !== "ERROR" && answer !== "QUOTA_EXCEEDED") {
                 history.push({ role: "assistant", content: answer });
                 const trimmed = history.length > MAX_HISTORY ? history.slice(-MAX_HISTORY) : history;
-                await saveHistory(i.user.id, guildId, trimmed);
+                setConversation(i.user.id, guildId, trimmed);
             }
         } else {
             answer = await askGemini(prompt);
@@ -134,7 +116,7 @@ export default {
         cooldowns.set(i.user.id, now + (COOLDOWN_SECONDS * 1000));
 
         const trimmed = answer.length > 4000 ? answer.slice(0, 3997) + "..." : answer;
-        const footer = useHistory ? "Conversation memory is ON — Gemini remembers this chat." : null;
+        const footer = useHistory ? "Conversation memory is ON — kept in memory only, forgotten after 30 min idle or on restart." : null;
 
         return safeRespond(i, asEmbedPayload({
             guildId: i.guild?.id,
