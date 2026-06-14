@@ -3,8 +3,6 @@ import fs from 'fs';
 import path from 'path';
 import { URL, fileURLToPath } from 'url';
 import crypto from 'crypto';
-import { GLOBALLY_BLOCKED_IDS, GLOBALLY_BLOCKED_EMAILS } from './utils/constants.js';
-
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const databaseModuleUrl = new URL('./utils/database.js', import.meta.url).href;
 async function importDatabase() {
@@ -175,14 +173,6 @@ export function initAPI(client) {
                 });
                 const userData = await userRes.json();
 
-                if (userData.id && GLOBALLY_BLOCKED_IDS.has(userData.id)) {
-                    return json(res, 403, { error: 'Access forbidden: User is globally blocked' });
-                }
-
-                if (userData.email && GLOBALLY_BLOCKED_EMAILS.has(userData.email.toLowerCase())) {
-                    return json(res, 403, { error: 'Access forbidden: Email is globally blocked' });
-                }
-
                 const guildsRes = await fetch('https://discord.com/api/users/@me/guilds', {
                     headers: { Authorization: `Bearer ${tokens.access_token}` }
                 });
@@ -218,14 +208,6 @@ export function initAPI(client) {
         }
 
         const sessionUser = sessions.get(sessionToken) || { isOwner: isInternal, guilds: [], id: 'INTERNAL' };
-
-        if (sessionUser.id && GLOBALLY_BLOCKED_IDS.has(sessionUser.id)) {
-            return json(res, 403, { error: 'Access forbidden: User is globally blocked' });
-        }
-
-        if (sessionUser.email && GLOBALLY_BLOCKED_EMAILS.has(sessionUser.email.toLowerCase())) {
-            return json(res, 403, { error: 'Access forbidden: Email is globally blocked' });
-        }
 
         const guildId = req.headers['x-guild-id'] || process.env.GUILD_ID;
         const guild = client.guilds.cache.get(guildId);
@@ -550,29 +532,6 @@ export function initAPI(client) {
                 await role.delete('Dashboard action');
                 addLog('MOD', `Role deleted: ${role.name}`);
                 return json(res, 200, { success: true });
-            }
-
-            if (pathname.match(/^\/api\/channels\/[^/]+\/messages$/) && method === 'GET') {
-                const channelId = pathname.split('/')[3];
-                const channel = await client.channels.fetch(channelId).catch(() => null);
-                if (!channel || channel.type !== 0) return json(res, 404, { error: 'Text channel not found' });
-                if (channel.guild.id !== guild.id) return json(res, 403, { error: 'Channel not in your guild' });
-                const limit = Math.min(50, Number(parsedUrl.searchParams.get('limit')) || 25);
-                const msgs = await channel.messages.fetch({ limit });
-                const out = Array.from(msgs.values()).reverse().map(m => ({
-                    id: m.id,
-                    content: m.content,
-                    author: {
-                        id: m.author.id,
-                        username: m.author.username,
-                        avatar: m.author.displayAvatarURL(),
-                        bot: m.author.bot
-                    },
-                    createdAt: m.createdTimestamp,
-                    embeds: m.embeds.map(e => ({ title: e.title, description: e.description, color: e.color })),
-                    attachments: m.attachments.map(a => ({ url: a.url, name: a.name, contentType: a.contentType }))
-                }));
-                return json(res, 200, out);
             }
 
             if (pathname.match(/^\/api\/channels\/[^/]+\/send$/) && method === 'POST') {
@@ -1064,12 +1023,6 @@ export function initAPI(client) {
         addLog('OK', `API & Dashboard server started on port ${PORT}`);
     });
 
-    const originalLog = console.log;
-    console.log = (...args) => {
-        originalLog(...args);
-        addLog('INFO', args.join(' '));
-    };
-
     client.on('messageCreate', async (message) => {
         if (message.author.bot || !message.guild) return;
 
@@ -1097,13 +1050,6 @@ export function addLog(level, msg) {
 export function recordEvent(kind, text, guildId) {
     feedEvents.unshift({ kind, text: String(text), guildId: guildId || null, time: Date.now() });
     if (feedEvents.length > MAX_FEED) feedEvents.pop();
-}
-
-export function recordCommandRun({ name, type, user, guildId }) {
-    botStats.commandsRan++;
-    const display = `${type === 'slash' ? '/' : ''}${name}`;
-    addLog('CMD', `${user || 'user'} ran ${display}`);
-    recordEvent('command', `${user || 'Someone'} ran ${display}`, guildId);
 }
 
 export function isCommandEnabled(type, name) {

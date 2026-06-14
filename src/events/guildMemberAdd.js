@@ -1,15 +1,10 @@
 import { Events } from "discord.js";
 import { checkRaid } from "../utils/raidProtection.js";
-import { recordEvent } from "../dashboard-api.js";
 import { getGuildSettings } from "../utils/database.js";
 
 export default {
     name: Events.GuildMemberAdd,
     async execute(member) {
-        try {
-            recordEvent("join", `${member.user?.username || "A new member"} joined the server`, member.guild?.id);
-        } catch {  }
-
         try {
             const s = getGuildSettings(member.guild.id);
             if (s.welcome?.enabled && s.welcome?.channelId) {

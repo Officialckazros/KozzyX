@@ -1,11 +1,3 @@
-export const GLOBALLY_BLOCKED_IDS = new Set([
-    "1121021729649737813",
-]);
-
-export const GLOBALLY_BLOCKED_EMAILS = new Set([
-    "nadhirbenromdhane39@gmail.com",
-]);
-
 export const generalHelpCommands = [
     "/help — Command overview",
     "/modhelp — Moderator help",
