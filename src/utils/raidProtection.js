@@ -159,6 +159,14 @@ export function clearRecentRaiders(guildId) {
     recentRaiders.delete(guildId);
 }
 
+// Wipe all in-memory anti-raid state for a guild (used by data deletion).
+export function purgeGuildRaidState(guildId) {
+    const cleared = joinWindows.has(guildId) || recentRaiders.has(guildId);
+    joinWindows.delete(guildId);
+    recentRaiders.delete(guildId);
+    return cleared;
+}
+
 export function primeSimulation(guildId, count) {
     const now = Date.now();
     const entries = Array.from({ length: count - 1 }, (_, i) => ({

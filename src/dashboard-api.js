@@ -1052,6 +1052,13 @@ export function recordEvent(kind, text, guildId) {
     if (feedEvents.length > MAX_FEED) feedEvents.pop();
 }
 
+// Drop every in-memory dashboard feed event tied to a guild (used by data deletion).
+export function purgeFeedForGuild(guildId) {
+    const before = feedEvents.length;
+    feedEvents = feedEvents.filter(e => e.guildId !== guildId);
+    return before - feedEvents.length;
+}
+
 export function isCommandEnabled(type, name) {
     const o = commandOverrides[`${type}:${name}`];
     return !o || o.enabled !== false;
