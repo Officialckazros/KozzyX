@@ -57,13 +57,6 @@ export async function initDB() {
             manual_title TEXT,
             auto_title TEXT
         );
-        CREATE TABLE IF NOT EXISTS conversation_history (
-            user_id TEXT NOT NULL,
-            guild_id TEXT NOT NULL,
-            messages_json TEXT NOT NULL DEFAULT '[]',
-            updated_at INTEGER NOT NULL,
-            PRIMARY KEY (user_id, guild_id)
-        );
         CREATE TABLE IF NOT EXISTS invite_joins (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             guild_id TEXT NOT NULL,
@@ -148,10 +141,19 @@ export async function initDB() {
             birthday_date TEXT NOT NULL,
             PRIMARY KEY (user_id, guild_id)
         );
-        CREATE TABLE IF NOT EXISTS blocked_lookups (
-            user_id TEXT PRIMARY KEY
-        );
     `);
+
+    // Privacy hardening: destroy any data left over from removed/persisted
+    // features so message content is never readable from the database file.
+    // - conversation_history: /ask memory is now ephemeral and in-memory only.
+    // - blocked_lookups: dead schema from the removed /lookup surveillance feature.
+    await db.exec(`
+        DROP TABLE IF EXISTS conversation_history;
+        DROP TABLE IF EXISTS blocked_lookups;
+    `);
+    // Reclaim the freed pages so wiped content isn't recoverable from slack space.
+    await db.exec("VACUUM;");
+
     console.log("Database initialized");
     return db;
 }
