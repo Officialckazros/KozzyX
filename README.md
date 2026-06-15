@@ -1,4 +1,12 @@
-# KozzyX 
+# KozzyX
+
+[![License](https://img.shields.io/github/license/Officialckazros/KozzyX?style=flat-square&color=blue)](LICENSE)
+![Node.js](https://img.shields.io/badge/Node.js-18%2B-339933?style=flat-square&logo=node.js&logoColor=white)
+![discord.js](https://img.shields.io/badge/discord.js-v14-5865F2?style=flat-square&logo=discord&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black)
+[![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat-square)](CONTRIBUTING.md)
+[![Website](https://img.shields.io/website?url=https%3A%2F%2Fkozzyx.org&style=flat-square&up_message=online&down_message=offline)](https://kozzyx.org)
+
 Hey! This is **KozzyX**, a Discord bot I built and have been pouring a *lot* of
 features into. It started as a moderation helper and kind of grew from there —
 now it handles anti-raid protection, tickets, invite tracking, reminders, booster
