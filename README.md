@@ -87,12 +87,10 @@ WATCHDOG_URL=
 WATCHDOG_INTERVAL_MS=
 WATCHDOG_FAIL_THRESHOLD=
 
-# VM deployment (optional, used by scripts/deploy-vm.sh)
-DEPLOY_INSTANCE_NAME=
-DEPLOY_ZONE=
-DEPLOY_VM_USER=
-DEPLOY_REMOTE_DIR=
-```
+# Deployment (via Railway)
+# Set your environment variables directly in the Railway dashboard (TOKEN, CLIENT_ID, etc.).
+# No local .env file is needed on Railway.
+# Connect your GitHub repo to Railway for automatic deploys on push.
 
 The `config/.env` file is excluded via `.gitignore` and must never be committed.
 
@@ -111,14 +109,14 @@ npm run deploy
 ## Running the Bot
 
 ```bash
-# Standard run
+# Standard run (Railway uses this; env vars come from Railway dashboard)
 npm start
 
-# Development mode (automatic restart on file changes)
+# Development mode (automatic restart on file changes, uses local .env)
 npm run dev
 ```
 
-A [PM2](https://pm2.keymetrics.io/) configuration is included for continuous operation:
+PM2 is included for local use only (not needed on Railway):
 
 ```bash
 pm2 start config/ecosystem.config.cjs
@@ -151,7 +149,7 @@ scripts/                Maintenance and deployment helpers
 | `npm run dev` | Start with `--watch` auto-reload |
 | `npm run deploy` | Register slash commands globally |
 | `npm run sync` | Synchronize commands via `scripts/sync_commands.js` |
-| `npm run deploy-all` | Commit, push, and deploy to the configured VM |
+| `npm run deploy-all` | Commit + push (Railway auto-deploys on push) |
 
 ## Contributing
 

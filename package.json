@@ -6,7 +6,7 @@
   "type": "module",
   "license": "MIT",
   "scripts": {
-    "start": "node --env-file=config/.env src/index.js",
+    "start": "node src/index.js",
     "dev": "node --env-file=config/.env --watch src/index.js",
     "deploy": "node --env-file=config/.env src/deploy.js",
     "deploy-all": "./scripts/deploy-everywhere.sh",
