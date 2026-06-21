@@ -11,6 +11,7 @@ export const generalHelpCommands = [
     "/translate — Translate text",
     "/define — Look up a word",
     "/ask — Ask the AI a question",
+    "/slavic-response — Toggle auto human-like replies to Slavic (Russian, Ukrainian, Polish...) messages",
     "/summarize — Summarize a URL or text",
     "/imagine — Generate an image with AI",
     "/generate_rules — Generate server rules with AI",
@@ -43,6 +44,7 @@ export const featureList = [
     { name: "Appeals System", value: "• `/appeal` to submit a ban appeal\n• `,appeals_channel` to set case feed\n• Cases posted as embeds" },
     { name: "AI Tools", value: "• `/ask` – Chat with Gemini AI\n• `/imagine` – Generate images\n• `/translate`, `/summarize`, `/decide`\n• `/generate_rules` for server rules" },
     { name: "Plugins System", value: "• `/plugins` to toggle optional features\n• Enable audit log, extra tools, and more\n• Per-server configuration" },
+    { name: "Slavic Auto-Response", value: "• Auto-detects Russian, Ukrainian, Polish, Czech, etc.\n• `/slavic-response enable/disable/status`\n• Replies with short, natural human-like text in the same language (even to rude messages)" },
 ];
 
 export const roastLines = [

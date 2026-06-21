@@ -57,9 +57,9 @@ export default {
 
         const reason = interaction.options.getString("reason");
 
-        // Show exactly what's at stake before asking for confirmation.
+        
         let summary = [];
-        try { summary = await collectGuildDataSummary(guild); } catch { /* non-fatal */ }
+        try { summary = await collectGuildDataSummary(guild); } catch {  }
         const total = summary.reduce((sum, r) => sum + r.count, 0);
 
         if (total === 0) {
