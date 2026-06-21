@@ -20,8 +20,8 @@ function getAllFiles(dirPath, arrayOfFiles = []) {
     return arrayOfFiles;
 }
 
-export default async function (client) {
-    console.log("[CommandHandler] Starting to load commands...");
+export default async function (client, { silent = false } = {}) {
+    if (!silent) console.log("[CommandHandler] Starting to load commands...");
 
     client.slashCommands.clear();
     client.slashData = [];
@@ -30,7 +30,7 @@ export default async function (client) {
     const prefixPath = join(__dirname, "../prefixCommands");
 
     const slashFiles = getAllFiles(slashPath);
-    console.log(`[CommandHandler] Found ${slashFiles.length} slash command files.`);
+    if (!silent) console.log(`[CommandHandler] Found ${slashFiles.length} slash command files.`);
 
     for (const file of slashFiles) {
         try {
@@ -39,17 +39,19 @@ export default async function (client) {
             if (command?.data?.name) {
                 client.slashCommands.set(command.data.name, command);
                 client.slashData.push(command.data);
-                console.log(`[CommandHandler] Loaded Slash: ${command.data.name}`);
+                if (!silent) console.log(`[CommandHandler] Loaded Slash: ${command.data.name}`);
             } else {
-                console.warn(`[CommandHandler] Skipped ${file} - Missing data.name`);
+                if (!silent) console.warn(`[CommandHandler] Skipped ${file} - Missing data.name`);
             }
         } catch (e) {
             console.error(`[CommandHandler] Error loading slash command ${file}:`, e);
         }
     }
 
-    console.log(`[CommandHandler] Total Slash Commands Loaded: ${client.slashCommands.size}`);
-    console.log(`[CommandHandler] Keys: ${[...client.slashCommands.keys()].join(", ")}`);
+    if (!silent) {
+        console.log(`[CommandHandler] Total Slash Commands Loaded: ${client.slashCommands.size}`);
+        console.log(`[CommandHandler] Keys: ${[...client.slashCommands.keys()].join(", ")}`);
+    }
 
     const prefixFiles = getAllFiles(prefixPath);
     for (const file of prefixFiles) {

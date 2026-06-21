@@ -21,7 +21,22 @@ export default {
     async execute(interaction, client) {
         if (interaction.isChatInputCommand()) {
             const cmdName = interaction.commandName;
-            const command = client.slashCommands.get(cmdName);
+            let command = client.slashCommands.get(cmdName);
+
+            if (!command) {
+                console.warn(`[Interaction] Command '${cmdName}' not found in cache, reloading handlers...`);
+                const now = Date.now();
+                if (!client._lastCmdReload || now - client._lastCmdReload > 30000) {
+                    client._lastCmdReload = now;
+                    try {
+                        const { default: loadCommands } = await import("../handlers/commandHandler.js");
+                        await loadCommands(client, { silent: true });
+                        command = client.slashCommands.get(cmdName);
+                    } catch (e) {
+                        console.error(`[Interaction] Reload failed for '${cmdName}':`, e);
+                    }
+                }
+            }
 
             if (!command) {
                 console.error(`[Interaction] Command '${cmdName}' not found.`);
