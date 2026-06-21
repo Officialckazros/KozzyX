@@ -14,10 +14,10 @@ WORKDIR /app
 # Copy package files first for better caching
 COPY package*.json ./
 
-# Install deps (omit dev for prod), then force rebuild sqlite3 from source
-# so the native binary matches the container's GLIBC version
+# Install production deps and **force** sqlite3 to be built from source
+# against this container's glibc (avoids GLIBC_2.38 mismatch with prebuilts)
 RUN npm ci --omit=dev \
-    && npm rebuild sqlite3 --build-from-source
+ && npm rebuild sqlite3 --build-from-source --verbose
 
 # Copy the rest of the app
 COPY . .
