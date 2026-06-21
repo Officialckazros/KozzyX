@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
 
 let googleAI;
 
@@ -64,17 +64,21 @@ function detectJailbreak(text) {
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-async function callGemini(prompt, history = [], systemInstruction = SAFETY_SYSTEM_PROMPT) {
+async function callGemini(prompt, history = [], systemInstruction = SAFETY_SYSTEM_PROMPT, safetySettings = null) {
     const maxAttempts = 3;
     let delay = 1000;
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         try {
             const genAI = getGoogleAI();
-            const model = genAI.getGenerativeModel({
+            const modelConfig = {
                 model: "gemini-2.5-flash",
                 systemInstruction: systemInstruction,
-            });
+            };
+            if (safetySettings) {
+                modelConfig.safetySettings = safetySettings;
+            }
+            const model = genAI.getGenerativeModel(modelConfig);
 
             let result;
             if (history.length > 0) {
@@ -177,4 +181,36 @@ export async function generateServerRules(serverInfo) {
     return callGemini(
         `Generate a complete, professional set of Discord server rules for a server named "${name}" with ~${memberCount} members.\n\nChannels: ${channelNames.join(", ")}\nRoles: ${roleNames.join(", ")}\n\nFormat as a numbered list. Be firm but friendly. Include rules about: respect, spam, NSFW, self-promo, and anything implied by the channel names. Return ONLY the rules text, no intro paragraph.`
     );
+}
+
+const SLAVIC_SYSTEM_PROMPT = `You are a regular human chatting casually on Discord. You are fluent in Slavic languages and reply like a real person would in DMs or group chat — short, natural, conversational, sometimes blunt or playful. Never sound robotic, formal, or like customer service. Match the sender's energy and language exactly. If the message is not Slavic, you must reply with the exact string NOT_SLAVIC and nothing else. Never add explanations, prefixes, or quotes.`;
+
+export async function generateSlavicReply(messageContent) {
+    if (typeof messageContent !== "string" || !messageContent.trim()) return null;
+
+    // Quick heuristic for Slavic content (Cyrillic or common diacritics / swear patterns)
+    const hasCyrillic = /[\u0400-\u04FF]/.test(messageContent);
+    const hasExtendedLatin = /[ąčęėįłńóšūųžćđšž]/i.test(messageContent);
+    const hasCommonSlavic = /\b(иди|нахуй|бля|сука|kurwa|pierdol|kur|blyat|иди|на|хуй|сука|блядь)\b/i.test(messageContent);
+
+    // If no obvious Slavic markers at all, let the AI still decide but bias toward NOT_SLAVIC
+    const prompt = `Message from user: ${messageContent}`
+
+Rules:
+- If the message contains NO text in any Slavic language (Russian, Ukrainian, Polish, Czech, etc. — including swear words), reply EXACTLY with NOT_SLAVIC and nothing else.
+- If it contains ANY Slavic text (even mixed with English or other), reply with ONLY a short, casual, human-sounding response in the Slavic language that was used. Match the sender's tone and energy exactly (rude messages can get blunt/playful/rude replies). Max ~20 words. Same script. No English, no disclaimers, no quotes.`;
+
+    const result = await callGemini(prompt, [], SLAVIC_SYSTEM_PROMPT, [
+      { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
+      { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
+      { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
+      { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE },
+    ]);
+
+    if (!result || typeof result !== "string") return null;
+    const cleaned = result.replace(/```[\s\S]*?```/g, "").trim();
+    if (!cleaned || cleaned.toUpperCase() === "NOT_SLAVIC" || ["ERROR", "QUOTA_EXCEEDED", "INVALID_API_KEY", "MISSING_API_KEY", "BLOCKED"].includes(cleaned)) {
+        return null;
+    }
+    return cleaned;
 }
