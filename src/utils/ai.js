@@ -188,13 +188,7 @@ const SLAVIC_SYSTEM_PROMPT = `You are a regular human chatting casually on Disco
 export async function generateSlavicReply(messageContent) {
     if (typeof messageContent !== "string" || !messageContent.trim()) return null;
 
-    // Quick heuristic for Slavic content (Cyrillic or common diacritics / swear patterns)
-    const hasCyrillic = /[\u0400-\u04FF]/.test(messageContent);
-    const hasExtendedLatin = /[ąčęėįłńóšūųžćđšž]/i.test(messageContent);
-    const hasCommonSlavic = /\b(иди|нахуй|бля|сука|kurwa|pierdol|kur|blyat|иди|на|хуй|сука|блядь)\b/i.test(messageContent);
-
-    // If no obvious Slavic markers at all, let the AI still decide but bias toward NOT_SLAVIC
-    const prompt = `Message from user: ${messageContent}`
+    const prompt = `Message from user: ${messageContent}
 
 Rules:
 - If the message contains NO text in any Slavic language (Russian, Ukrainian, Polish, Czech, etc. — including swear words), reply EXACTLY with NOT_SLAVIC and nothing else.
