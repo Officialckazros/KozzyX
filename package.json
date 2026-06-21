@@ -10,7 +10,8 @@
     "dev": "node --env-file=config/.env --watch src/index.js",
     "deploy": "node --env-file=config/.env src/deploy.js",
     "deploy-all": "./scripts/deploy-everywhere.sh",
-    "sync": "node scripts/sync_commands.js"
+    "sync": "node scripts/sync_commands.js",
+    "postinstall": "npm rebuild sqlite3 --build-from-source || true"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
