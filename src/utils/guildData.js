@@ -22,6 +22,8 @@ const GUILD_TABLES = [
     { table: "automations", label: "Automations" },
     { table: "giveaways", label: "Giveaways" },
     { table: "birthdays", label: "Birthdays" },
+    { table: "temp_bans", label: "Temporary bans" },
+    { table: "self_role_menus", label: "Self-role menus" },
 ];
 
 function chunkPlaceholders(ids) {
@@ -45,6 +47,19 @@ export async function collectGuildDataSummary(guild) {
         const r = await db.get(`SELECT COUNT(*) AS c FROM ${table} WHERE guild_id = ?`, guildId);
         rows.push({ label, count: r?.c ?? 0 });
     }
+
+
+    const sroRow = await db.get(
+        "SELECT COUNT(*) AS c FROM self_role_options WHERE menu_id IN (SELECT id FROM self_role_menus WHERE guild_id = ?)",
+        guildId
+    );
+    rows.push({ label: "Self-role buttons", count: sroRow?.c ?? 0 });
+
+    const gweRow = await db.get(
+        "SELECT COUNT(*) AS c FROM giveaway_entries WHERE giveaway_id IN (SELECT id FROM giveaways WHERE guild_id = ?)",
+        guildId
+    );
+    rows.push({ label: "Giveaway entries", count: gweRow?.c ?? 0 });
 
     
     
@@ -90,6 +105,19 @@ export async function purgeGuildData(guild) {
 
     await db.run("BEGIN");
     try {
+
+        const sro = await db.run(
+            "DELETE FROM self_role_options WHERE menu_id IN (SELECT id FROM self_role_menus WHERE guild_id = ?)",
+            guildId
+        );
+        record("Self-role buttons", sro?.changes ?? 0);
+
+        const gwe = await db.run(
+            "DELETE FROM giveaway_entries WHERE giveaway_id IN (SELECT id FROM giveaways WHERE guild_id = ?)",
+            guildId
+        );
+        record("Giveaway entries", gwe?.changes ?? 0);
+
         for (const { table, label } of GUILD_TABLES) {
             const r = await db.run(`DELETE FROM ${table} WHERE guild_id = ?`, guildId);
             record(label, r?.changes ?? 0);

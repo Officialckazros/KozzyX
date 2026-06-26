@@ -146,10 +146,64 @@ export async function initDB() {
             birthday_date TEXT NOT NULL,
             PRIMARY KEY (user_id, guild_id)
         );
+        CREATE TABLE IF NOT EXISTS temp_bans (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            guild_id TEXT NOT NULL,
+            user_id TEXT NOT NULL,
+            unban_at INTEGER NOT NULL,
+            reason TEXT,
+            executor_id TEXT,
+            created_at INTEGER NOT NULL
+        );
+        CREATE INDEX IF NOT EXISTS idx_temp_bans_due ON temp_bans (unban_at);
+        CREATE INDEX IF NOT EXISTS idx_temp_bans_guild ON temp_bans (guild_id, user_id);
+        CREATE TABLE IF NOT EXISTS self_role_menus (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            guild_id TEXT NOT NULL,
+            channel_id TEXT NOT NULL,
+            message_id TEXT,
+            title TEXT NOT NULL DEFAULT 'Self Roles',
+            description TEXT,
+            mode TEXT NOT NULL DEFAULT 'multiple',
+            created_at INTEGER NOT NULL
+        );
+        CREATE INDEX IF NOT EXISTS idx_self_role_menus_guild ON self_role_menus (guild_id);
+        CREATE INDEX IF NOT EXISTS idx_self_role_menus_message ON self_role_menus (message_id);
+        CREATE TABLE IF NOT EXISTS self_role_options (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            menu_id INTEGER NOT NULL,
+            role_id TEXT NOT NULL,
+            label TEXT NOT NULL,
+            emoji TEXT,
+            style TEXT NOT NULL DEFAULT 'Secondary',
+            position INTEGER NOT NULL DEFAULT 0
+        );
+        CREATE INDEX IF NOT EXISTS idx_self_role_options_menu ON self_role_options (menu_id);
+        CREATE TABLE IF NOT EXISTS giveaway_entries (
+            giveaway_id INTEGER NOT NULL,
+            user_id TEXT NOT NULL,
+            entered_at INTEGER NOT NULL,
+            PRIMARY KEY (giveaway_id, user_id)
+        );
+        CREATE INDEX IF NOT EXISTS idx_giveaway_entries_gw ON giveaway_entries (giveaway_id);
     `);
+
+    await addColumnIfMissing("giveaways", "host_id", "TEXT");
+    await addColumnIfMissing("giveaways", "required_role_id", "TEXT");
+    await addColumnIfMissing("giveaways", "winner_ids", "TEXT");
 
     console.log("Database initialized");
     return db;
+}
+
+async function addColumnIfMissing(table, column, definition) {
+    try {
+        const cols = await db.all(`PRAGMA table_info(${table})`);
+        if (cols.some((c) => c.name === column)) return;
+        await db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+    } catch (err) {
+        console.error(`[db] addColumnIfMissing(${table}.${column}) failed:`, err?.message || err);
+    }
 }
 
 export async function getDB() {

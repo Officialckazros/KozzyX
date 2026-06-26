@@ -2,7 +2,11 @@ import { Events, PermissionsBitField, ActionRowBuilder, ButtonBuilder, ButtonSty
 import { safeRespond } from "../utils/helpers.js";
 import { asEmbedPayload, buildCoolEmbed } from "../utils/embeds.js";
 import { getDB } from "../utils/db.js";
+import { getGuildSettings } from "../utils/database.js";
 import { runSlashGuards } from "../utils/commandGuards.js";
+import { toggleRole } from "../utils/selfRoles.js";
+import { handleVerify } from "../utils/verification.js";
+import { addEntry, entryCount, giveawayRow } from "../utils/giveaways.js";
 import { buildGeneratedHelpPages, helpRow } from "../slashCommands/general/help.js";
 import { buildModHelpPages, modRow, configRow } from "../slashCommands/general/modhelp.js";
 import { featureHelpPages } from "../slashCommands/general/features.js";
@@ -61,6 +65,10 @@ export default {
 
         if (interaction.isButton()) {
             const id = interaction.customId;
+
+            if (id.startsWith("sr:")) return handleSelfRole(interaction, id);
+            if (id === "verify:gate") return handleVerifyButton(interaction);
+            if (id.startsWith("gw:enter:")) return handleGiveawayEntry(interaction, id);
 
             if (id.startsWith("help_prev:") || id.startsWith("help_next:")) {
                 const [action, category, pageStr] = id.split(":");
@@ -122,6 +130,61 @@ export default {
         }
     }
 };
+
+async function handleSelfRole(interaction, id) {
+    if (!interaction.guild) return;
+    const [, menuIdStr, roleId] = id.split(":");
+    const res = await toggleRole(interaction, Number(menuIdStr), roleId);
+    if (!res.ok) {
+        return safeRespond(interaction, asEmbedPayload({ guildId: interaction.guildId, type: "error", title: "Couldn't update roles", description: res.reason, ephemeral: true }));
+    }
+    return safeRespond(interaction, asEmbedPayload({
+        guildId: interaction.guildId,
+        type: res.added ? "success" : "info",
+        title: res.added ? "Role Added" : "Role Removed",
+        description: res.added ? `You now have ${res.role}.` : `Removed ${res.role}.`,
+        ephemeral: true,
+    }));
+}
+
+async function handleVerifyButton(interaction) {
+    if (!interaction.guild) return;
+    const res = await handleVerify(interaction);
+    const type = res.ok ? "success" : (res.already ? "info" : "error");
+    return safeRespond(interaction, asEmbedPayload({
+        guildId: interaction.guildId,
+        type,
+        title: res.ok ? "Verified" : "Verification",
+        description: res.ok ? res.message : res.reason,
+        ephemeral: true,
+    }));
+}
+
+async function handleGiveawayEntry(interaction, id) {
+    if (!interaction.guild) return;
+    const giveawayId = Number(id.split(":")[2]);
+    const res = await addEntry(giveawayId, interaction.user.id);
+
+    if (!res.ok) {
+        const desc = res.reason === "already" ? "You're already entered in this giveaway." : "This giveaway has ended.";
+        return safeRespond(interaction, asEmbedPayload({ guildId: interaction.guildId, type: "info", title: "Giveaway", description: desc, ephemeral: true }));
+    }
+
+    const gw = res.giveaway;
+    if (gw?.required_role_id && !interaction.member.roles.cache.has(gw.required_role_id)) {
+        const db = await getDB();
+        await db.run("DELETE FROM giveaway_entries WHERE giveaway_id = ? AND user_id = ?", giveawayId, interaction.user.id);
+        return safeRespond(interaction, asEmbedPayload({ guildId: interaction.guildId, type: "error", title: "Not Eligible", description: `You need <@&${gw.required_role_id}> to enter this giveaway.`, ephemeral: true }));
+    }
+
+    try {
+        const count = await entryCount(giveawayId);
+        const settings = getGuildSettings(interaction.guildId);
+        await interaction.message.edit({ components: [giveawayRow(giveawayId, count, settings)] });
+    } catch {  }
+
+    return safeRespond(interaction, asEmbedPayload({ guildId: interaction.guildId, type: "success", title: "Entered", description: `You're in! Good luck. 🎉`, ephemeral: true }));
+}
 
 async function handleAppealButton(interaction) {
     if (!interaction.guild) return;

@@ -35,15 +35,24 @@ for (const file of slashFiles) {
 
 const rest = new REST({ version: "10" }).setToken(token);
 
+// Force every command to be server-install only (no user-install duplicates) and guild-context.
+const normalized = commands.map(({ dm_permission, ...rest }) => ({
+    ...rest,
+    integration_types: [0],
+    contexts: [0],
+}));
+
 try {
-    console.log(`Started refreshing ${commands.length} application (/) commands.`);
+    console.log(`Started refreshing ${normalized.length} application (/) commands.`);
 
     await rest.put(
         Routes.applicationCommands(clientId),
-        { body: commands },
+        { body: normalized },
     );
 
     console.log(`Successfully reloaded ${commands.length} application (/) commands.`);
+    process.exit(0);
 } catch (error) {
     console.error(error);
+    process.exit(1);
 }
