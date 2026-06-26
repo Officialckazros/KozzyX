@@ -50,7 +50,7 @@ const CATEGORY_BLUEPRINTS = {
         name: "INFORMATION",
         channels: [
             { type: "text", name: "welcome",         topic: "Welcome to the server!",         readOnly: true },
-            { type: "text", name: "rules",           topic: "Server rules — please read!",    readOnly: true },
+            { type: "text", name: "rules",           topic: "Server rules - please read!",    readOnly: true },
             { type: "text", name: "announcements",   topic: "Important server updates.",      readOnly: true },
             { type: "text", name: "server-updates",  topic: "Changelog and feature updates.", readOnly: true },
         ],
@@ -96,7 +96,7 @@ const CATEGORY_BLUEPRINTS = {
         channels: [
             { type: "text",  name: "staff-chat",  topic: "Staff only chat.",              staffOnly: true },
             { type: "text",  name: "mod-log",     topic: "Moderation action log.",         staffOnly: true },
-            { type: "text",  name: "cases",       topic: "Case feed — for the bot.",       staffOnly: true },
+            { type: "text",  name: "cases",       topic: "Case feed - for the bot.",       staffOnly: true },
             { type: "voice", name: "Staff VC", staffOnly: true },
         ],
     },
@@ -130,7 +130,7 @@ const PRESETS = {
     },
     minimal: {
         label: "Minimal / Private Server",
-        description: "Bare-bones setup — light roles, one category, one voice.",
+        description: "Bare-bones setup - light roles, one category, one voice.",
         roleGroups: ["staff", "base"],
         categories: ["information", "community", "voice"],
     },
@@ -344,7 +344,7 @@ export default {
                     const modLogEmbed = new EmbedBuilder()
                         .setColor(0xFEE75C)
                         .setTitle("Mod Log Active")
-                        .setDescription("Staff actions will be logged here.\n\nUse `,warn`, `,kick`, `,ban`, `,damage` and other mod commands — they'll appear here automatically.")
+                        .setDescription("Staff actions will be logged here.\n\nUse `,warn`, `,kick`, `,ban`, `,damage` and other mod commands - they'll appear here automatically.")
                         .setTimestamp();
                     await modLogCh.send({ embeds: [modLogEmbed] }).catch(() => {});
                     log.add("", `Posted mod log notice in <#${modLogCh.id}>.`);
@@ -448,8 +448,8 @@ export default {
         }
 
         const title = dryRun
-            ? `Dry Run — ${preset.label}`
-            : `Setup Complete — ${preset.label}`;
+            ? `Dry Run - ${preset.label}`
+            : `Setup Complete - ${preset.label}`;
         const description = dryRun
             ? "No changes were made. Here's what **would** happen:"
             : `Your server has been provisioned with the **${preset.label}** preset.`;
@@ -508,7 +508,7 @@ async function provisionRole({ guild, bp, dryRun, skipExisting, log, createdRole
     const existing = guild.roles.cache.find((r) => r.name === bp.name);
     if (existing && skipExisting) {
         createdRoles.set(bp.name, existing);
-        log.add("", `Role **${bp.name}** already exists — skipped.`);
+        log.add("", `Role **${bp.name}** already exists - skipped.`);
         return;
     }
     if (dryRun) {
@@ -563,7 +563,7 @@ async function provisionCategory({
             }
         }
     } else {
-        log.add("", `Category **${cat.name}** already exists — reusing.`);
+        log.add("", `Category **${cat.name}** already exists - reusing.`);
     }
 
     for (const ch of cat.channels) {
@@ -572,7 +572,7 @@ async function provisionCategory({
         );
         if (existing && skipExisting) {
             createdChannels.set(ch.name, existing);
-            log.add("", `Channel **#${ch.name}** already exists — skipped.`);
+            log.add("", `Channel **#${ch.name}** already exists - skipped.`);
             continue;
         }
         if (dryRun) {
@@ -639,14 +639,14 @@ async function postWelcomeEmbed(channel, guild, { rulesCh, supportCh, generalCh 
 async function postRulesEmbed(channel, guild) {
     const embed = new EmbedBuilder()
         .setColor(0xED4245)
-        .setTitle(`${guild.name} — Server Rules`)
+        .setTitle(`${guild.name} - Server Rules`)
         .setDescription(
             "By being in this server, you agree to follow these rules:"
         )
         .addFields(
             { name: "Be respectful",       value: "No harassment, hate speech, discrimination, or personal attacks." },
             { name: "No spam",              value: "Don't flood chat, post in the wrong channel, or mass-ping." },
-            { name: "Keep it SFW",          value: "No NSFW, gore, or suggestive content — anywhere." },
+            { name: "Keep it SFW",          value: "No NSFW, gore, or suggestive content - anywhere." },
             { name: "No advertising",       value: "No self-promo, invite links, or DM advertising without staff approval." },
             { name: "Follow Discord ToS",   value: "Obey Discord's [Terms of Service](https://discord.com/terms) and [Community Guidelines](https://discord.com/guidelines)." },
             { name: "Staff has final say",  value: "Moderators can enforce rules and make judgment calls as needed." },
@@ -677,7 +677,7 @@ async function addMemeEmojis(guild, log) {
     const animSlots      = maxAnim   - existingAnim.size;
 
     if (staticSlots <= 0 && animSlots <= 0) {
-        log.add("", `Emoji slots full — skipped emoji upload.`);
+        log.add("", `Emoji slots full - skipped emoji upload.`);
         return;
     }
 
@@ -689,7 +689,7 @@ async function addMemeEmojis(guild, log) {
             .filter((e) => e.category === EMOJI_GG_MEME_CAT && e.image)
             .sort((a, b) => (b.faves ?? 0) - (a.faves ?? 0));
     } catch (e) {
-        log.add("", `emoji.gg fetch failed: \`${e.message}\` — skipping emojis.`);
+        log.add("", `emoji.gg fetch failed: \`${e.message}\` - skipping emojis.`);
         return;
     }
 
@@ -707,7 +707,7 @@ async function addMemeEmojis(guild, log) {
             await guild.emojis.create({
                 attachment: item.image,
                 name,
-                reason: "server_setup — emoji.gg meme pack",
+                reason: "server_setup - emoji.gg meme pack",
             });
             existingNames.add(name);
             isGif ? addedAnim++ : addedStatic++;
@@ -726,7 +726,7 @@ async function addMemeStickers(guild, log) {
     const slots          = maxStickers - guild.stickers.cache.size;
 
     if (slots <= 0) {
-        log.add("", `Sticker slots full (${guild.stickers.cache.size}/${maxStickers}) — skipped.`);
+        log.add("", `Sticker slots full (${guild.stickers.cache.size}/${maxStickers}) - skipped.`);
         return;
     }
 
@@ -739,7 +739,7 @@ async function addMemeStickers(guild, log) {
             .sort((a, b) => (b.faves ?? 0) - (a.faves ?? 0))
             .slice(0, slots);
     } catch (e) {
-        log.add("", `emoji.gg sticker fetch failed: \`${e.message}\` — skipping stickers.`);
+        log.add("", `emoji.gg sticker fetch failed: \`${e.message}\` - skipping stickers.`);
         return;
     }
 
@@ -753,7 +753,7 @@ async function addMemeStickers(guild, log) {
                 name,
                 tags:        "",
                 description: item.title,
-                reason:      "server_setup — emoji.gg meme sticker pack",
+                reason:      "server_setup - emoji.gg meme sticker pack",
             });
             existingNames.add(name);
             added++;
@@ -765,11 +765,11 @@ async function addMemeStickers(guild, log) {
 
 async function enableCommunity(guild, { rulesCh, updateCh }, log) {
     if (!rulesCh || !updateCh) {
-        log.add("", `Community mode skipped — need both #rules and #announcements channels.`);
+        log.add("", `Community mode skipped - need both #rules and #announcements channels.`);
         return;
     }
     if (guild.features.includes("COMMUNITY")) {
-        log.add("", `Community mode already enabled — skipped.`);
+        log.add("", `Community mode already enabled - skipped.`);
         return;
     }
     try {
@@ -780,11 +780,11 @@ async function enableCommunity(guild, { rulesCh, updateCh }, log) {
             preferredLocale: "en-US",
             explicitContentFilter: 2,
             verificationLevel: guild.verificationLevel < 1 ? 1 : guild.verificationLevel,
-            reason: "server_setup — enabling Community mode",
+            reason: "server_setup - enabling Community mode",
         });
         log.add("", `Enabled **Community mode** (rules: <#${rulesCh.id}>, updates: <#${updateCh.id}>).`);
     } catch (e) {
-        log.add("", `Community mode failed: \`${e.message}\` — enable it manually in Server Settings.`);
+        log.add("", `Community mode failed: \`${e.message}\` - enable it manually in Server Settings.`);
     }
 }
 
@@ -797,7 +797,7 @@ function makeSnowflake() {
 
 async function enableOnboarding(guild, { createdChannels, createdRoles }, log) {
     if (!guild.features.includes("COMMUNITY")) {
-        log.add("", `Onboarding skipped — Community mode must be enabled first.`);
+        log.add("", `Onboarding skipped - Community mode must be enabled first.`);
         return;
     }
 
@@ -921,7 +921,7 @@ async function enableOnboarding(guild, { createdChannels, createdRoles }, log) {
     }
 
     if (prompts.length === 0) {
-        log.add("", `Onboarding skipped — not enough channels/roles to build prompts.`);
+        log.add("", `Onboarding skipped - not enough channels/roles to build prompts.`);
         return;
     }
 

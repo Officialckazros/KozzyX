@@ -73,7 +73,7 @@ async function handleAfkReturn(message, isSettingAfk) {
     await replyEmbed(message, {
         type: "afk",
         title: "Welcome back!",
-        description: `Glad to see you again, ${message.author}. I removed your AFK status — you were away for **${formatAfkDuration(Date.now() - entry.since)}**.`,
+        description: `Glad to see you again, ${message.author}. I removed your AFK status - you were away for **${formatAfkDuration(Date.now() - entry.since)}**.`,
         allowedMentions: { repliedUser: false, parse: [] },
     });
 }

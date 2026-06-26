@@ -106,7 +106,7 @@ export async function slashSoftban(interaction, user, reason) {
             await trySendModDM({ user, guild: interaction.guild, type: "mod", title: "You were softbanned", description: "You were temporarily banned to purge your recent messages. You can rejoin with a new invite.", moderatorTag: interaction.user.tag, reason, caseNumber });
         }
         await interaction.guild.members.ban(user.id, { deleteMessageSeconds: 7 * 24 * 60 * 60, reason: `${interaction.user.tag}: ${reason}` });
-        await interaction.guild.members.unban(user.id, "Softban — auto unban");
+        await interaction.guild.members.unban(user.id, "Softban - auto unban");
 
         const embed = buildModEmbed({
             guild: interaction.guild, type: "mod", title: "Member Softbanned",

@@ -49,8 +49,8 @@ export default {
                 type: on ? "success" : "info",
                 title: "Slavic Response",
                 description: on
-                    ? "✅ **Enabled** — the bot will auto-reply with casual, human-like messages when it detects Slavic languages (ru, uk, pl, etc)."
-                    : "❌ **Disabled** — use `/slavic-response enable` to turn it on.",
+                    ? "**Enabled** - the bot will auto-reply with casual, human-like messages when it detects Slavic languages (ru, uk, pl, etc)."
+                    : "**Disabled** - use `/slavic-response enable` to turn it on.",
                 ephemeral: true,
             }));
         }

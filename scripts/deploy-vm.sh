@@ -61,7 +61,7 @@ if [ -f "$LAST_DEPLOY_FILE" ]; then
     LAST_COMMIT=$(cat "$LAST_DEPLOY_FILE")
     CHANGED_FILES=$(git diff --name-only "$LAST_COMMIT" "$CURRENT_COMMIT" 2>/dev/null)
 else
-    echo "No previous deploy found — doing full deploy..."
+    echo "No previous deploy found - doing full deploy..."
     CHANGED_FILES=$(git ls-files -- src website package.json config/)
 fi
 
@@ -79,7 +79,7 @@ while IFS= read -r file; do
 done <<< "$CHANGED_FILES"
 
 if [ ${#DEPLOY_FILES[@]} -eq 0 ] && [ ${#DELETE_FILES[@]} -eq 0 ]; then
-    echo "Nothing to deploy — no changes since last deploy ($(git rev-parse --short "$LAST_COMMIT"))."
+    echo "Nothing to deploy - no changes since last deploy ($(git rev-parse --short "$LAST_COMMIT"))."
     exit 0
 fi
 

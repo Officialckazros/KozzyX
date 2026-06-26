@@ -9,7 +9,7 @@ for (let i = 0; i < featureList.length; i += 3) {
         new EmbedBuilder()
             .setTitle(`Bot Features (${featureHelpPages.length + 1}/${Math.ceil(featureList.length / 3)})`)
             .setColor(0xed4245)
-            .setDescription("Here are the bot’s background systems and automatic features:")
+            .setDescription("Here are the bot's background systems and automatic features:")
             .addFields(slice.map((f) => ({ name: f.name, value: f.value })))
     );
 }

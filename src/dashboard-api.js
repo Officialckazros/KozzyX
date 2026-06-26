@@ -46,7 +46,7 @@ let botStats = {
 };
 
 const sessions = new Map();
-const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000; 
+const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 setInterval(() => {
     const now = Date.now();
     for (const [t, s] of sessions) {
@@ -723,7 +723,7 @@ export function initAPI(client) {
                         unbanned = true;
                         addModLog('UNBAN', appeal.user_id, moderator, `Appeal #${appealId} accepted`);
                     } catch (e) {
-                        
+
                     }
                 }
                 const newStatus = decision === 'accept' ? 'accepted' : 'rejected';

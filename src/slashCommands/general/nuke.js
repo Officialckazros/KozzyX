@@ -30,7 +30,7 @@ export default {
         options: [
             {
                 name: "amount",
-                description: "Number of messages to delete (1–1000). Omit to delete ALL.",
+                description: "Number of messages to delete (1-1000). Omit to delete ALL.",
                 type: 4,
                 required: false,
                 min_value: 1,
@@ -98,7 +98,7 @@ export default {
                         embeds: [buildCoolEmbed({
                             guildId: interaction.guildId, type: "info",
                             title: "Cancelled",
-                            description: "Nuke cancelled — no messages were deleted.",
+                            description: "Nuke cancelled - no messages were deleted.",
                         })],
                         components: [],
                     });
@@ -134,7 +134,7 @@ export default {
                     embeds: [buildCoolEmbed({
                         guildId: interaction.guildId, type: "info",
                         title: "Timed Out",
-                        description: "Confirmation expired — no messages were deleted.",
+                        description: "Confirmation expired - no messages were deleted.",
                     })],
                     components: [],
                 }).catch(() => {});

@@ -6,7 +6,7 @@ import { getGuildSettings } from "./database.js";
 const MAX_TIMEOUT = 2147483647;
 
 export function giveawayRow(id, entryCount = 0, settings = null) {
-    const emoji = settings?.giveaway?.emoji || "🎉";
+    const emoji = settings?.giveaway?.emoji || "";
     return new ActionRowBuilder().addComponents(
         new ButtonBuilder()
             .setCustomId(`gw:enter:${id}`)
@@ -29,7 +29,7 @@ export function buildGiveawayEmbed({ guildId, prize, winners, endTime, hostId, r
         lines.push("");
         lines.push(winnerIds.length
             ? `**Winner${winnerIds.length === 1 ? "" : "s"}:** ${winnerIds.map((id) => `<@${id}>`).join(", ")}`
-            : "**No valid entries — no winner drawn.**");
+            : "**No valid entries - no winner drawn.**");
         lines.push(`Ended <t:${Math.floor(endTime / 1000)}:R>`);
     } else {
         lines.push("");
@@ -42,7 +42,7 @@ export function buildGiveawayEmbed({ guildId, prize, winners, endTime, hostId, r
     return buildCoolEmbed({
         guildId,
         type: ended ? "warning" : "success",
-        title: ended ? "🎉 Giveaway Ended" : (settings.giveaway?.embedTitle || "🎉 Giveaway 🎉"),
+        title: ended ? "Giveaway Ended" : (settings.giveaway?.embedTitle || "Giveaway"),
         description: lines.join("\n"),
         footerText: ended ? "Giveaway ended" : "Good luck!",
     });
@@ -147,8 +147,8 @@ export async function endGiveaway(client, giveawayId, { reroll = false } = {}) {
         }
 
         const announce = winnerIds.length
-            ? `${reroll ? "🔁 New winner" : "🎉 Congratulations"} ${winnerIds.map((id) => `<@${id}>`).join(", ")} — you won **${gw.prize}**!`
-            : `No valid entries for **${gw.prize}** — no winner could be drawn.`;
+            ? `${reroll ? "New winner" : "Congratulations"} ${winnerIds.map((id) => `<@${id}>`).join(", ")} - you won **${gw.prize}**!`
+            : `No valid entries for **${gw.prize}** - no winner could be drawn.`;
         await channel.send({
             content: announce,
             reply: gw.message_id ? { messageReference: gw.message_id, failIfNotExists: false } : undefined,

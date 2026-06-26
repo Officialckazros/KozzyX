@@ -31,7 +31,7 @@ export default {
         const invitedBy = await getInvitedBy(interaction.guildId, target.id);
 
         const recentLines = stats.recent.length
-            ? stats.recent.slice(0, 8).map(r => `• <@${r.user_id}> — <t:${Math.floor(r.joined_at / 1000)}:R>`).join("\n")
+            ? stats.recent.slice(0, 8).map(r => `• <@${r.user_id}> - <t:${Math.floor(r.joined_at / 1000)}:R>`).join("\n")
             : "_No recent invites._";
 
         const fields = [
@@ -46,7 +46,7 @@ export default {
         const embed = buildCoolEmbed({
             guildId: interaction.guildId,
             type: "info",
-            title: `Invites — ${target.username}`,
+            title: `Invites - ${target.username}`,
             fields,
             showAuthor: true,
             client: interaction.client,

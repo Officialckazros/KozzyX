@@ -1,7 +1,7 @@
 
 
-const TTL_MS = 30 * 60 * 1000; 
-const SWEEP_MS = 5 * 60 * 1000; 
+const TTL_MS = 30 * 60 * 1000;
+const SWEEP_MS = 5 * 60 * 1000;
 
 const store = new Map();
 
@@ -16,7 +16,7 @@ export function getConversation(userId, guildId) {
         store.delete(keyFor(userId, guildId));
         return [];
     }
-    
+
     return entry.messages.map(m => ({ ...m }));
 }
 

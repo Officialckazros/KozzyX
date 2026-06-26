@@ -61,7 +61,7 @@ export default {
         if (sub === "list") {
             const cats = settings.ticket.categories || [];
             if (!cats.length) return replyEmbed(message, { type: "info", title: "Ticket Categories", description: "No ticket categories set." });
-            const lines = cats.map((c) => `• **${c.id}** — ${c.label} (${c.style})`);
+            const lines = cats.map((c) => `• **${c.id}** - ${c.label} (${c.style})`);
             return replyEmbed(message, { type: "ticket", title: "Ticket Categories", description: lines.join("\n") });
         }
 

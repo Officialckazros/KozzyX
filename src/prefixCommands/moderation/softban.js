@@ -20,7 +20,7 @@ export default {
             return replyEmbed(message, {
                 type: "error",
                 title: "Usage",
-                description: "`,softban @user [reason]`\n*Bans, deletes 7 days of messages, then unbans — user can rejoin via invite.*",
+                description: "`,softban @user [reason]`\n*Bans, deletes 7 days of messages, then unbans - user can rejoin via invite.*",
             });
         }
 

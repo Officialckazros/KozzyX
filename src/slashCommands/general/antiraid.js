@@ -59,7 +59,7 @@ export default {
             return safeRespond(interaction, asEmbedPayload({
                 guildId: interaction.guildId, type: "warning",
                 title: "Simulation Fired",
-                description: `Simulated **${count}** fake accounts joining — raid detection should have triggered.`,
+                description: `Simulated **${count}** fake accounts joining - raid detection should have triggered.`,
                 fields: [
                     { name: "Configured Action", value: `\`${action.toUpperCase()}\``, inline: true },
                     { name: "Threshold", value: `${threshold} joins`, inline: true },

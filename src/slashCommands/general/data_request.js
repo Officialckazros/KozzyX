@@ -70,7 +70,7 @@ export default {
             description,
             fields: total > 0 ? [{
                 name: "​",
-                value: "This is a count of what's stored — not the raw contents. To erase all of it permanently, use `/data_deletion_request`.",
+                value: "This is a count of what's stored - not the raw contents. To erase all of it permanently, use `/data_deletion_request`.",
             }] : [],
             ephemeral: true,
         }));

@@ -88,7 +88,7 @@ export default {
             const lines = [];
             for (const m of menus) {
                 const opts = await getMenuOptions(m.id);
-                lines.push(`**${m.title}** — <#${m.channel_id}> · \`${m.message_id}\` · ${opts.length} role(s)`);
+                lines.push(`**${m.title}** - <#${m.channel_id}> · \`${m.message_id}\` · ${opts.length} role(s)`);
             }
             return replyEmbed(message, { type: "info", title: "Self-Role Menus", description: lines.join("\n").slice(0, 4000) });
         }

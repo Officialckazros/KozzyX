@@ -11,7 +11,7 @@
 - [ ] The code is at least as tidy as I found it (no take-backsies)
 
 ## Anything else?
-<!-- Screenshots, gifs, confessions, a haiku — whatever helps me get it. -->
+<!-- Screenshots, gifs, confessions, a haiku - whatever helps me get it. -->
 
 ---
 Thank you for contributing!! You're lovely and I appreciate you.

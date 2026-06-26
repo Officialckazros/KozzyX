@@ -21,7 +21,7 @@ export default {
                     { name: "user_limit", description: "Default user limit (0 = unlimited).", type: 4, required: false, min_value: 0, max_value: 99 },
                 ],
             },
-            { name: "lock",   description: "Lock your VC — only you can invite others.",  type: 1 },
+            { name: "lock",   description: "Lock your VC - only you can invite others.",  type: 1 },
             { name: "unlock", description: "Unlock your VC.",                              type: 1 },
             {
                 name: "rename",
@@ -33,7 +33,7 @@ export default {
                 name: "limit",
                 description: "Set a user limit on your VC (0 = unlimited).",
                 type: 1,
-                options: [{ name: "number", description: "Max users (0–99).", type: 4, required: true, min_value: 0, max_value: 99 }],
+                options: [{ name: "number", description: "Max users (0-99).", type: 4, required: true, min_value: 0, max_value: 99 }],
             },
         ],
     },

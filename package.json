@@ -1,7 +1,7 @@
 {
   "name": "mod-bot",
   "version": "1.0.0",
-  "description": "Moderation-only Discord bot — bans, kicks, warns, anti-raid, audit log, appeals.",
+  "description": "Moderation-only Discord bot - bans, kicks, warns, anti-raid, audit log, appeals.",
   "main": "src/index.js",
   "type": "module",
   "license": "MIT",

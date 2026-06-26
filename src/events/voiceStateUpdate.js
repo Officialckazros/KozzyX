@@ -27,7 +27,7 @@ export default {
                     type: ChannelType.GuildVoice,
                     parent: categoryId,
                     userLimit,
-                    reason: "Dynamic VC — created on join",
+                    reason: "Dynamic VC - created on join",
                 });
 
                 await db.run(
@@ -46,7 +46,7 @@ export default {
             if (row) {
                 const ch = guild.channels.cache.get(oldState.channelId);
                 if (ch && ch.members.size === 0) {
-                    await ch.delete("Dynamic VC — empty").catch(() => null);
+                    await ch.delete("Dynamic VC - empty").catch(() => null);
                     await db.run("DELETE FROM dynamic_vcs WHERE channel_id = ?", oldState.channelId);
                 }
             }

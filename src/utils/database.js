@@ -118,7 +118,7 @@ function defaultVerificationConfig() {
         roleId: null,
         minAccountAgeMs: 0,
         buttonLabel: "Verify",
-        buttonEmoji: "✅",
+        buttonEmoji: "",
         buttonStyle: "Success",
         title: "Verification Required",
         description: "Click the button below to verify yourself and gain access to the server.",
@@ -131,8 +131,8 @@ function defaultGiveawayConfig() {
         defaultWinners: 1,
         requiredRoleId: null,
         hostMention: true,
-        emoji: "🎉",
-        embedTitle: "🎉 Giveaway 🎉",
+        emoji: "",
+        embedTitle: "Giveaway",
     };
 }
 

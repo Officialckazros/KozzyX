@@ -31,7 +31,7 @@ export function validateModAction({ executor, target, action = "moderate", requi
         }
         const me = guild.members.me;
         if (me && me.roles.highest.position <= targetMember.roles.highest.position) {
-            return { ok: false, reason: `I cannot ${action} this user — their highest role is above mine.` };
+            return { ok: false, reason: `I cannot ${action} this user - their highest role is above mine.` };
         }
     }
 
@@ -235,7 +235,7 @@ export async function doSoftban(message, target, reason) {
             caseNumber,
         });
         await message.guild.members.ban(target.id, { deleteMessageSeconds: 7 * 24 * 60 * 60, reason: `${message.author.tag}: ${reason}` });
-        await message.guild.members.unban(target.id, "Softban — auto unban");
+        await message.guild.members.unban(target.id, "Softban - auto unban");
 
         const embed = buildModEmbed({
             guild: message.guild, type: "mod", title: "Member Softbanned",

@@ -7,42 +7,28 @@
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat-square)](CONTRIBUTING.md)
 [![Website](https://img.shields.io/website?url=https%3A%2F%2Fkozzyx.org&style=flat-square&up_message=online&down_message=offline)](https://kozzyx.org)
 
-KozzyX is a comprehensive, self-hostable Discord bot that unifies moderation, community management, and AI-assisted utilities within a single application. It supports both slash and prefix commands and includes a web dashboard for browser-based administration.
-
-## Table of Contents
-
-- [Overview](#overview)
-- [Features](#features)
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [Configuration](#configuration)
-- [Registering Slash Commands](#registering-slash-commands)
-- [Running the Bot](#running-the-bot)
-- [Project Structure](#project-structure)
-- [Scripts](#scripts)
-- [Contributing](#contributing)
-- [License](#license)
+A self-hostable Discord bot for actually running a server: moderation, community management, anti-raid, tickets, and a pile of AI-powered commands, all in one place. It does both slash and prefix commands, and there's a web dashboard if you'd rather click than type.
 
 ## Overview
 
-KozzyX began as a moderation utility and has since grown into a complete server-management platform. It provides anti-raid protection, a ticketing system, invite tracking, scheduled reminders, booster role management, autoresponders, and a range of AI-powered commands. The source code is open for reuse. Credentials and API keys are not distributed with the project and must be supplied by the operator.
+It started life as a moderation utility and kept growing until it turned into a full server-management platform: anti-raid, ticketing, invite tracking, scheduled reminders, booster roles, autoresponders, and a bunch of AI commands. The code's open for reuse. No credentials or API keys ship with it, so you bring your own.
 
 ## Features
 
-- **Moderation** — ban, kick, warn (with configurable thresholds), softban, message purge, slowmode, channel lock and unlock, nickname management and nickname locking, audit logging, and persistent case tracking. Available as both prefix commands and native slash commands (`/ban`, `/kick`, `/timeout`, `/untimeout`, `/warn`, `/softban`, `/purge`, `/slowmode`, `/lock`, `/unlock`) with permission gating and ephemeral feedback.
-- **Temporary bans** — `/ban` accepts an optional `duration` (e.g. `7d`); the user is automatically unbanned when it expires, and the schedule survives restarts.
-- **Verification gate** — `/verification setup` posts a one-click verify panel that grants a configured role, with an optional minimum account-age check to block brand-new accounts.
-- **Self-assignable roles** — `/selfroles` builds button-based role menus (multiple- or single-choice) that members use to pick their own roles.
-- **Giveaways** — `/giveaway start|end|reroll|list` runs button-entry giveaways with winner counts, required-role gating, and automatic drawing on expiry.
-- **Polls** — `/poll` creates native Discord polls with up to eight answers, a custom duration, and optional multi-select.
-- **Anti-raid** — raid detection, mass-ban response, raid watchlists, server lockdown, and recovery tooling.
-- **Tickets** — configurable ticket channels, role notifications, and close and edit workflows.
-- **Server management** — guided setup wizard, server information, user, avatar, and banner lookups, and statistics.
-- **AI utilities** — `/ask`, `/summarize`, `/translate`, `/define`, `/imagine`, `/generate_rules`, `/roast`, and `/decide`.
-- **Community tools** — AFK status, booster roles, autoresponders, invite tracking, reminders, to-do lists, welcome and goodbye messages, and additional utility commands.
-- **Full customization** — `/config` exposes per-server settings for welcome/goodbye messages, moderation behavior (DM-on-action, required reasons, mod-log channel, default ban-delete days), giveaway defaults, and embed colors, with `/config view` to review the current configuration.
-- **Web dashboard** — a backend API for managing the bot from the browser.
-- **Command flexibility** — full support for both slash and prefix commands.
+- **Moderation** - ban, kick, warn (with configurable thresholds), softban, message purge, slowmode, channel lock and unlock, nickname management and nickname locking, audit logging, and persistent case tracking. Available as both prefix commands and native slash commands (`/ban`, `/kick`, `/timeout`, `/untimeout`, `/warn`, `/softban`, `/purge`, `/slowmode`, `/lock`, `/unlock`) with permission gating and ephemeral feedback.
+- **Temporary bans** - `/ban` accepts an optional `duration` (e.g. `7d`); the user is automatically unbanned when it expires, and the schedule survives restarts.
+- **Verification gate** - `/verification setup` posts a one-click verify panel that grants a configured role, with an optional minimum account-age check to block brand-new accounts.
+- **Self-assignable roles** - `/selfroles` builds button-based role menus (multiple- or single-choice) that members use to pick their own roles.
+- **Giveaways** - `/giveaway start|end|reroll|list` runs button-entry giveaways with winner counts, required-role gating, and automatic drawing on expiry.
+- **Polls** - `/poll` creates native Discord polls with up to eight answers, a custom duration, and optional multi-select.
+- **Anti-raid** - raid detection, mass-ban response, raid watchlists, server lockdown, and recovery tooling.
+- **Tickets** - configurable ticket channels, role notifications, and close and edit workflows.
+- **Server management** - guided setup wizard, server information, user, avatar, and banner lookups, and statistics.
+- **AI utilities** - `/ask`, `/summarize`, `/translate`, `/define`, `/imagine`, `/generate_rules`, `/roast`, and `/decide`.
+- **Community tools** - AFK status, booster roles, autoresponders, invite tracking, reminders, to-do lists, welcome and goodbye messages, and additional utility commands.
+- **Full customization** - `/config` exposes per-server settings for welcome/goodbye messages, moderation behavior (DM-on-action, required reasons, mod-log channel, default ban-delete days), giveaway defaults, and embed colors, with `/config view` to review the current configuration.
+- **Web dashboard** - a backend API for managing the bot from the browser.
+- **Command flexibility** - full support for both slash and prefix commands.
 
 ## Requirements
 

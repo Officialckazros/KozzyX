@@ -25,7 +25,7 @@ export default {
         const lines = ids.slice(0, 30).map((id, idx) => {
             const member = message.guild.members.cache.get(id);
             const tag = member?.user.tag ?? "_unknown_";
-            return `**${idx + 1}.** \`${id}\` — ${tag}`;
+            return `**${idx + 1}.** \`${id}\` - ${tag}`;
         });
 
         const embed = buildCoolEmbed({
@@ -34,7 +34,7 @@ export default {
             title: `Tracked Raiders [${raiders.size}]`,
             description: lines.join("\n").slice(0, 4000) + (raiders.size > 30 ? `\n\n*+${raiders.size - 30} more not shown*` : ""),
             fields: [
-                { name: "Actions", value: "`,banraid [reason]` — ban all\n`,kick @user` — kick individual", inline: false },
+                { name: "Actions", value: "`,banraid [reason]` - ban all\n`,kick @user` - kick individual", inline: false },
             ],
             showAuthor: true,
             showFooter: true,

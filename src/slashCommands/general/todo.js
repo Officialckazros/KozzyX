@@ -75,7 +75,7 @@ export default {
 
             const embed = buildCoolEmbed({
                 guildId: i.guild?.id, type: "info",
-                title: `To-Do List — ${i.user.username}`,
+                title: `To-Do List - ${i.user.username}`,
                 description: list,
                 showAuthor: true,
                 client: i.client,

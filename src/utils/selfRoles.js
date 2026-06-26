@@ -56,7 +56,7 @@ export async function buildMenuEmbed(menu) {
     if (options.length) {
         lines.push("");
         for (const opt of options) {
-            lines.push(`${opt.emoji ? `${opt.emoji} ` : ""}**${opt.label}** — <@&${opt.role_id}>`);
+            lines.push(`${opt.emoji ? `${opt.emoji} ` : ""}**${opt.label}** - <@&${opt.role_id}>`);
         }
     } else {
         lines.push("");
@@ -98,7 +98,7 @@ export async function toggleRole(interaction, menuId, roleId) {
 
     const me = interaction.guild.members.me;
     if (!me?.permissions?.has("ManageRoles")) return { ok: false, reason: "I'm missing the **Manage Roles** permission." };
-    if (me.roles.highest.position <= role.position) return { ok: false, reason: `I can't assign **${role.name}** — it's above my highest role.` };
+    if (me.roles.highest.position <= role.position) return { ok: false, reason: `I can't assign **${role.name}** - it's above my highest role.` };
 
     const member = interaction.member;
     const has = member.roles.cache.has(roleId);

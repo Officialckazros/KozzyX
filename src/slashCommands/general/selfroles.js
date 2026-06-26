@@ -139,7 +139,7 @@ export default {
             const lines = [];
             for (const m of menus) {
                 const opts = await getMenuOptions(m.id);
-                lines.push(`**${m.title}** — <#${m.channel_id}> · \`${m.message_id}\` · ${opts.length} role(s) · ${m.mode}`);
+                lines.push(`**${m.title}** - <#${m.channel_id}> · \`${m.message_id}\` · ${opts.length} role(s) · ${m.mode}`);
             }
             return safeRespond(i, asEmbedPayload({ guildId: i.guildId, type: "info", title: "Self-Role Menus", description: lines.join("\n").slice(0, 4000), ephemeral: true }));
         }

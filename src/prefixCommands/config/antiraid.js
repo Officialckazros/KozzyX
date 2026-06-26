@@ -30,13 +30,13 @@ function showConfig(message, cfg, settings) {
             `\`mentiontime\` → **${fmtMs(cfg.massMentionTimeoutMs)}**\n` +
             `\`alertchannel\` → **${cfg.alertChannelId ? `<#${cfg.alertChannelId}>` : "not set"}**\n\n` +
             `**Subcommands:**\n` +
-            "`,antiraid threshold <number>` – Joins to trigger\n" +
-            "`,antiraid window <duration>` – Detection window (e.g. 30s, 1m)\n" +
-            "`,antiraid action <lockdown|kick|ban>` – Action on raid\n" +
-            "`,antiraid minage <duration|off>` – Min account age (e.g. 7d)\n" +
-            "`,antiraid mention <number|off>` – Mass-mention threshold\n" +
-            "`,antiraid mentiontime <duration>` – Mass-mention timeout\n" +
-            "`,antiraid alertchannel <#channel|off>` – Alert channel",
+            "`,antiraid threshold <number>` - Joins to trigger\n" +
+            "`,antiraid window <duration>` - Detection window (e.g. 30s, 1m)\n" +
+            "`,antiraid action <lockdown|kick|ban>` - Action on raid\n" +
+            "`,antiraid minage <duration|off>` - Min account age (e.g. 7d)\n" +
+            "`,antiraid mention <number|off>` - Mass-mention threshold\n" +
+            "`,antiraid mentiontime <duration>` - Mass-mention timeout\n" +
+            "`,antiraid alertchannel <#channel|off>` - Alert channel",
     });
 }
 

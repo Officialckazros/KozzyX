@@ -29,9 +29,9 @@ export default {
                     { name: "Verification", value: `${oo(s.verification.enabled)} · ${s.verification.roleId ? `<@&${s.verification.roleId}>` : "no role"}`, inline: true },
                     { name: "Mod DMs", value: oo(s.moderation.dmOnAction), inline: true },
                     { name: "Require Reason", value: oo(s.moderation.requireReason), inline: true },
-                    { name: "Mod Log", value: s.moderation.logChannelId ? `<#${s.moderation.logChannelId}>` : "—", inline: true },
+                    { name: "Mod Log", value: s.moderation.logChannelId ? `<#${s.moderation.logChannelId}>` : "-", inline: true },
                     { name: "Giveaway Winners", value: String(s.giveaway.defaultWinners), inline: true },
-                    { name: "Giveaway Role", value: s.giveaway.requiredRoleId ? `<@&${s.giveaway.requiredRoleId}>` : "—", inline: true },
+                    { name: "Giveaway Role", value: s.giveaway.requiredRoleId ? `<@&${s.giveaway.requiredRoleId}>` : "-", inline: true },
                 ],
                 showFooter: true, footerText: message.guild.name,
             });
@@ -55,7 +55,7 @@ export default {
             if (channel) block.channelId = channel.id;
             if (text) block.message = text.slice(0, 2000);
             await saveSettings();
-            return replyEmbed(message, { type: "success", title: `${sub === "welcome" ? "Welcome" : "Goodbye"} Updated`, description: `Enabled: **${block.enabled ? "Yes" : "No"}**\nChannel: ${block.channelId ? `<#${block.channelId}>` : "—"}\nMessage: ${block.message}` });
+            return replyEmbed(message, { type: "success", title: `${sub === "welcome" ? "Welcome" : "Goodbye"} Updated`, description: `Enabled: **${block.enabled ? "Yes" : "No"}**\nChannel: ${block.channelId ? `<#${block.channelId}>` : "-"}\nMessage: ${block.message}` });
         }
 
         if (sub === "color" || sub === "colour") {
@@ -90,7 +90,7 @@ export default {
                 return replyEmbed(message, { type: "error", title: "Usage", description: "`,config mod dm <on|off>`\n`,config mod reason <on|off>`\n`,config mod log #channel`" });
             }
             await saveSettings();
-            return replyEmbed(message, { type: "success", title: "Moderation Updated", description: `DM on action: **${m.dmOnAction ? "Yes" : "No"}**\nRequire reason: **${m.requireReason ? "Yes" : "No"}**\nMod log: ${m.logChannelId ? `<#${m.logChannelId}>` : "—"}` });
+            return replyEmbed(message, { type: "success", title: "Moderation Updated", description: `DM on action: **${m.dmOnAction ? "Yes" : "No"}**\nRequire reason: **${m.requireReason ? "Yes" : "No"}**\nMod log: ${m.logChannelId ? `<#${m.logChannelId}>` : "-"}` });
         }
 
         if (sub === "giveaway") {
@@ -111,7 +111,7 @@ export default {
                 return replyEmbed(message, { type: "error", title: "Usage", description: "`,config giveaway winners <n>`\n`,config giveaway role @role`\n`,config giveaway emoji <emoji>`" });
             }
             await saveSettings();
-            return replyEmbed(message, { type: "success", title: "Giveaway Defaults Updated", description: `Winners: **${g.defaultWinners}**\nRequired role: ${g.requiredRoleId ? `<@&${g.requiredRoleId}>` : "—"}\nEmoji: ${g.emoji}` });
+            return replyEmbed(message, { type: "success", title: "Giveaway Defaults Updated", description: `Winners: **${g.defaultWinners}**\nRequired role: ${g.requiredRoleId ? `<@&${g.requiredRoleId}>` : "-"}\nEmoji: ${g.emoji}` });
         }
 
         return replyEmbed(message, {

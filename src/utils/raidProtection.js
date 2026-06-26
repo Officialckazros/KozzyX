@@ -57,7 +57,7 @@ export async function checkRaid(member) {
 
     if (window.length < threshold) return false;
 
-    console.warn(`[antiRaid] Raid detected in ${guild.name} — ${window.length} joins in ${windowMs / 1000}s`);
+    console.warn(`[antiRaid] Raid detected in ${guild.name} - ${window.length} joins in ${windowMs / 1000}s`);
 
     const raiders = window.map(j => ({ id: j.id, tag: j.tag, accountAge: j.accountAge }));
     recentRaiders.set(guild.id, new Set(raiders.map(r => r.id)));

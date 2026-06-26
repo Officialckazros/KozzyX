@@ -17,7 +17,7 @@ export default {
         contexts: [0],
         default_member_permissions: PermissionsBitField.Flags.ManageMessages.toString(),
         options: [
-            { name: "amount", description: "How many messages (1–100)", type: 4, required: true, min_value: 1, max_value: 100 },
+            { name: "amount", description: "How many messages (1-100)", type: 4, required: true, min_value: 1, max_value: 100 },
             { name: "user", description: "Only delete messages from this user", type: 6, required: false },
         ],
     },

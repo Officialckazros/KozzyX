@@ -23,7 +23,7 @@ export default {
             if (!list.length) {
                 return replyEmbed(message, {
                     type: "info", title: "Bad Words Filter",
-                    description: "No words in the filter yet.\n\n**Usage:**\n`,badwords add <word>` – add a word\n`,badwords remove <word>` – remove a word\n`,badwords clear` – clear all",
+                    description: "No words in the filter yet.\n\n**Usage:**\n`,badwords add <word>` - add a word\n`,badwords remove <word>` - remove a word\n`,badwords clear` - clear all",
                 });
             }
             const chunks = [];

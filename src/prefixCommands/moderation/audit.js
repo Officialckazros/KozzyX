@@ -92,7 +92,7 @@ export default {
                 const label = MOD_CASE_LABELS[r.action] ?? `\`${r.action}\``;
                 const ts = `<t:${Math.floor(r.created_at / 1000)}:R>`;
                 const by = r.executor_id ? `<@${r.executor_id}>` : "_unknown_";
-                const reason = r.reason ? ` — ${String(r.reason).slice(0, 50)}` : "";
+                const reason = r.reason ? ` - ${String(r.reason).slice(0, 50)}` : "";
                 return `**\`#${r.case_number}\`** ${label} by ${by} ${ts}${reason}`;
             });
             fields.push({
@@ -107,7 +107,7 @@ export default {
                 const label = ACTION_LABELS[Number(r.action)] ?? `Action \`${r.action}\``;
                 const by = r.executor_id ? `<@${r.executor_id}>` : "_unknown_";
                 const ts = `<t:${Math.floor(r.created_at / 1000)}:R>`;
-                const reason = r.reason ? ` — ${String(r.reason).slice(0, 50)}` : "";
+                const reason = r.reason ? ` - ${String(r.reason).slice(0, 50)}` : "";
                 return `${label} by ${by} ${ts}${reason}`;
             });
             fields.push({
@@ -120,7 +120,7 @@ export default {
         const embed = buildCoolEmbed({
             guildId: message.guild.id,
             type: "info",
-            title: `Audit — ${target.tag}`,
+            title: `Audit - ${target.tag}`,
             description: `User ID: \`${target.id}\``,
             fields,
             showAuthor: true,

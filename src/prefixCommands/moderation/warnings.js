@@ -27,14 +27,14 @@ export default {
         const lines = recent.map((h, idx) => {
             const ts = `<t:${Math.floor(h.at / 1000)}:R>`;
             const by = h.by ? `<@${h.by}>` : "_unknown_";
-            const reason = h.reason ? ` — ${String(h.reason).slice(0, 80)}` : "";
+            const reason = h.reason ? ` - ${String(h.reason).slice(0, 80)}` : "";
             return `**${idx + 1}.** ${ts} by ${by}${reason}`;
         });
 
         const embed = buildCoolEmbed({
             guildId: message.guild.id,
             type: "warning",
-            title: `Warnings — ${target.user.tag}`,
+            title: `Warnings - ${target.user.tag}`,
             description: `**Active Warnings:** \`${data.count}\``,
             fields: lines.length
                 ? [{ name: `Recent History (last ${lines.length})`, value: lines.join("\n").slice(0, 1024), inline: false }]

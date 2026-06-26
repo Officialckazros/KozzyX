@@ -107,7 +107,7 @@ export default {
             const lines = [];
             for (const gw of rows) {
                 const c = await db.get("SELECT COUNT(*) AS c FROM giveaway_entries WHERE giveaway_id = ?", gw.id);
-                lines.push(`**#${gw.id}** — ${gw.prize} · ${gw.winners} winner(s) · ${c?.c ?? 0} entries · ends <t:${Math.floor(gw.end_time / 1000)}:R> · <#${gw.channel_id}>`);
+                lines.push(`**#${gw.id}** - ${gw.prize} · ${gw.winners} winner(s) · ${c?.c ?? 0} entries · ends <t:${Math.floor(gw.end_time / 1000)}:R> · <#${gw.channel_id}>`);
             }
             return safeRespond(i, asEmbedPayload({ guildId: i.guildId, type: "info", title: "Active Giveaways", description: lines.join("\n").slice(0, 4000), ephemeral: true }));
         }

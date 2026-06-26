@@ -22,8 +22,8 @@ export default {
                 type: "info", title: "Verification",
                 description: [
                     `**Enabled:** ${v.enabled ? "Yes" : "No"}`,
-                    `**Role:** ${v.roleId ? `<@&${v.roleId}>` : "—"}`,
-                    `**Channel:** ${v.channelId ? `<#${v.channelId}>` : "—"}`,
+                    `**Role:** ${v.roleId ? `<@&${v.roleId}>` : "-"}`,
+                    `**Channel:** ${v.channelId ? `<#${v.channelId}>` : "-"}`,
                     `**Min account age:** ${v.minAccountAgeMs > 0 ? formatDuration(v.minAccountAgeMs) : "None"}`,
                 ].join("\n"),
             });

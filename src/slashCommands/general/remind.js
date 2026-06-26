@@ -7,7 +7,7 @@ const MAX_REMIND_MS = 365 * 24 * 60 * 60 * 1000;
 export default {
     data: {
         name: "remind",
-        description: "Set a reminder — DM you (or post in channel) when time is up",
+        description: "Set a reminder - DM you (or post in channel) when time is up",
         integration_types: [0, 1],
         contexts: [0, 1, 2],
         options: [

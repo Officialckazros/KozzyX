@@ -116,7 +116,7 @@ export default {
         cooldowns.set(i.user.id, now + (COOLDOWN_SECONDS * 1000));
 
         const trimmed = answer.length > 4000 ? answer.slice(0, 3997) + "..." : answer;
-        const footer = useHistory ? "Conversation memory is ON — kept in memory only, forgotten after 30 min idle or on restart." : null;
+        const footer = useHistory ? "Conversation memory is ON - kept in memory only, forgotten after 30 min idle or on restart." : null;
 
         return safeRespond(i, asEmbedPayload({
             guildId: i.guild?.id,

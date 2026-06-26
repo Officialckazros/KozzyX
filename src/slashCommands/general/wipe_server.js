@@ -67,7 +67,7 @@ export default {
             return safeRespond(interaction, asEmbedPayload({
                 guildId: guild.id, type: "error",
                 title: "Wrong Server Name",
-                description: `You typed \`${confirmName}\` but the server name is \`${guild.name}\`.\n\nType it exactly — including capitals and spaces.`,
+                description: `You typed \`${confirmName}\` but the server name is \`${guild.name}\`.\n\nType it exactly - including capitals and spaces.`,
                 ephemeral: true,
             }));
         }
@@ -107,7 +107,7 @@ export default {
             return safeRespond(interaction, asEmbedPayload({
                 guildId: guild.id,
                 type: "warning",
-                title: "Dry Run — Wipe Preview",
+                title: "Dry Run - Wipe Preview",
                 description: `**No changes were made.** Re-run without \`dry_run\` to execute.\n\n${lines.join("\n")}`,
                 ephemeral: true,
             }));
@@ -170,7 +170,7 @@ export default {
             responseChannel = await guild.channels.create({
                 name: "bot",
                 type: ChannelType.GuildText,
-                reason: "wipe_server — created for response",
+                reason: "wipe_server - created for response",
             });
         } catch {  }
 

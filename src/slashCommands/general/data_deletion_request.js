@@ -57,7 +57,7 @@ export default {
 
         const reason = interaction.options.getString("reason");
 
-        
+
         let summary = [];
         try { summary = await collectGuildDataSummary(guild); } catch {  }
         const total = summary.reduce((sum, r) => sum + r.count, 0);
@@ -95,7 +95,7 @@ export default {
             embeds: [buildCoolEmbed({
                 guildId: guild.id,
                 type: "error",
-                title: "⚠ Confirm Permanent Data Deletion",
+                title: "Confirm Permanent Data Deletion",
                 description:
                     "**This will LITERALLY delete everything the bot has stored about this server.**\n\n" +
                     "Pressing **Permanently Delete Everything** below will erase all of the records listed here from the database, " +
@@ -103,7 +103,7 @@ export default {
                     "The database is then compacted so the data cannot be recovered.\n\n" +
                     "**This action is irreversible. There is no backup and no undo.**",
                 fields: [
-                    { name: `Records to be erased — ${total} total`, value: breakdown.slice(0, 1024) },
+                    { name: `Records to be erased - ${total} total`, value: breakdown.slice(0, 1024) },
                     { name: "Reason", value: reason.slice(0, 1024) },
                 ],
                 showAuthor: false,
@@ -126,7 +126,7 @@ export default {
                 embeds: [buildCoolEmbed({
                     guildId: guild.id, type: "info",
                     title: "Confirmation Expired",
-                    description: "The request timed out — **no data was deleted.** Run the command again if you still want to proceed.",
+                    description: "The request timed out - **no data was deleted.** Run the command again if you still want to proceed.",
                 })],
                 components: [],
             }).catch(() => {});
@@ -137,7 +137,7 @@ export default {
                 embeds: [buildCoolEmbed({
                     guildId: guild.id, type: "info",
                     title: "Deletion Cancelled",
-                    description: "Cancelled — **no data was deleted.**",
+                    description: "Cancelled - **no data was deleted.**",
                 })],
                 components: [],
             });
@@ -146,7 +146,7 @@ export default {
         await btn.update({
             embeds: [buildCoolEmbed({
                 guildId: guild.id, type: "warning",
-                title: "Deleting…",
+                title: "Deleting...",
                 description: "Erasing all stored data for this server, please wait.",
             })],
             components: [],
@@ -161,7 +161,7 @@ export default {
                 embeds: [buildCoolEmbed({
                     guildId: guild.id, type: "error",
                     title: "Deletion Failed",
-                    description: "Something went wrong during deletion and it was rolled back. No partial deletion occurred — please try again.",
+                    description: "Something went wrong during deletion and it was rolled back. No partial deletion occurred - please try again.",
                 })],
                 components: [],
             }).catch(() => {});
@@ -183,7 +183,7 @@ export default {
                 ],
                 showAuthor: false,
                 showFooter: true,
-                footerText: "Database compacted — this data is not recoverable.",
+                footerText: "Database compacted - this data is not recoverable.",
             })],
             components: [],
         });

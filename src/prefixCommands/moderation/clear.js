@@ -20,7 +20,7 @@ export default {
         if (!Number.isFinite(amount) || amount < 1 || amount > 100) {
             return replyEmbed(message, {
                 type: "error", title: "Usage",
-                description: "`,clear <amount>` (1–100)\n`,clear <amount> @user` to filter by author",
+                description: "`,clear <amount>` (1-100)\n`,clear <amount> @user` to filter by author",
             });
         }
 

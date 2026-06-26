@@ -61,15 +61,15 @@ export async function collectGuildDataSummary(guild) {
     );
     rows.push({ label: "Giveaway entries", count: gweRow?.c ?? 0 });
 
-    
-    
+
+
     const warnRow = await db.get(
         "SELECT COUNT(*) AS c FROM guild_warnings WHERE warning_key LIKE ?",
         `${guildId}-%`
     );
     rows.push({ label: "Member warnings", count: warnRow?.c ?? 0 });
 
-    
+
     const channelIds = guildChannelIds(guild);
     if (channelIds.length) {
         const remRow = await db.get(
@@ -79,7 +79,7 @@ export async function collectGuildDataSummary(guild) {
         rows.push({ label: "Reminders set in this server", count: remRow?.c ?? 0 });
     }
 
-    
+
     const roleIds = guildRoleIds(guild);
     if (roleIds.length) {
         const boostRow = await db.get(
@@ -153,10 +153,10 @@ export async function purgeGuildData(guild) {
         throw err;
     }
 
-    
+
     await db.exec("VACUUM;").catch(() => {});
 
-    
+
     serverSettings.delete(guildId);
     guildAutoresponders.delete(guildId);
     for (const key of [...warnings.keys()]) {
@@ -165,7 +165,7 @@ export async function purgeGuildData(guild) {
     purgeGuildRaidState(guildId);
     inviteCache.delete(guildId);
 
-    
+
     const feedCleared = purgeFeedForGuild(guildId);
     if (feedCleared) record("Dashboard activity-feed entries", feedCleared);
 

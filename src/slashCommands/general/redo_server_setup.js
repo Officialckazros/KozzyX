@@ -47,7 +47,7 @@ export default {
         options: [
             {
                 name: "confirm",
-                description: "Must be True — confirms you want to wipe all setup roles and channels.",
+                description: "Must be True - confirms you want to wipe all setup roles and channels.",
                 type: 5,
                 required: true,
             },
@@ -147,7 +147,7 @@ export default {
                 if (!SETUP_ROLE_NAMES.has(role.name)) continue;
                 if (role.managed || role.id === guild.id) continue;
                 if (botRole && role.position >= botRole.position) {
-                    log.push(`Skipped **${role.name}** (higher than my role — drag me above it).`);
+                    log.push(`Skipped **${role.name}** (higher than my role - drag me above it).`);
                     continue;
                 }
                 try {

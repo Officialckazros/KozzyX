@@ -44,7 +44,7 @@ export default {
                         { name: "dm_on_action", description: "DM users when they're punished", type: 5, required: false },
                         { name: "require_reason", description: "Require a reason on mod commands", type: 5, required: false },
                         { name: "log_channel", description: "Extra channel to log mod actions", type: 7, required: false, channel_types: [0, 5] },
-                        { name: "default_ban_delete_days", description: "Default days of messages to delete on ban (0–7)", type: 4, required: false, min_value: 0, max_value: 7 },
+                        { name: "default_ban_delete_days", description: "Default days of messages to delete on ban (0-7)", type: 4, required: false, min_value: 0, max_value: 7 },
                         { name: "default_reason", description: "Default reason text", type: 3, required: false },
                     ],
                 }],
@@ -87,10 +87,10 @@ export default {
                     { name: "Verification", value: `${onOff(s.verification.enabled)} · ${s.verification.roleId ? `<@&${s.verification.roleId}>` : "no role"}`, inline: true },
                     { name: "Mod DMs", value: onOff(s.moderation.dmOnAction), inline: true },
                     { name: "Require Reason", value: onOff(s.moderation.requireReason), inline: true },
-                    { name: "Mod Log", value: s.moderation.logChannelId ? `<#${s.moderation.logChannelId}>` : "—", inline: true },
-                    { name: "Case Channel", value: s.caseChannelId ? `<#${s.caseChannelId}>` : "—", inline: true },
+                    { name: "Mod Log", value: s.moderation.logChannelId ? `<#${s.moderation.logChannelId}>` : "-", inline: true },
+                    { name: "Case Channel", value: s.caseChannelId ? `<#${s.caseChannelId}>` : "-", inline: true },
                     { name: "Giveaway Winners", value: String(s.giveaway.defaultWinners), inline: true },
-                    { name: "Giveaway Role", value: s.giveaway.requiredRoleId ? `<@&${s.giveaway.requiredRoleId}>` : "—", inline: true },
+                    { name: "Giveaway Role", value: s.giveaway.requiredRoleId ? `<@&${s.giveaway.requiredRoleId}>` : "-", inline: true },
                 ],
                 showFooter: true, footerText: i.guild.name,
             });
@@ -107,7 +107,7 @@ export default {
             if (channel) block.channelId = channel.id;
             if (message) block.message = message.slice(0, 2000);
             await saveSettings();
-            return ok(i, `${group === "welcome" ? "Welcome" : "Goodbye"} Updated`, `Enabled: **${block.enabled ? "Yes" : "No"}**\nChannel: ${block.channelId ? `<#${block.channelId}>` : "—"}\nMessage: ${block.message}`);
+            return ok(i, `${group === "welcome" ? "Welcome" : "Goodbye"} Updated`, `Enabled: **${block.enabled ? "Yes" : "No"}**\nChannel: ${block.channelId ? `<#${block.channelId}>` : "-"}\nMessage: ${block.message}`);
         }
 
         if (group === "moderation") {
@@ -123,7 +123,7 @@ export default {
             if (days !== null) m.defaultBanDeleteDays = days;
             if (reason) m.defaultReason = reason.slice(0, 400);
             await saveSettings();
-            return ok(i, "Moderation Updated", `DM on action: **${m.dmOnAction ? "Yes" : "No"}**\nRequire reason: **${m.requireReason ? "Yes" : "No"}**\nMod log: ${m.logChannelId ? `<#${m.logChannelId}>` : "—"}\nBan delete days: **${m.defaultBanDeleteDays}**`);
+            return ok(i, "Moderation Updated", `DM on action: **${m.dmOnAction ? "Yes" : "No"}**\nRequire reason: **${m.requireReason ? "Yes" : "No"}**\nMod log: ${m.logChannelId ? `<#${m.logChannelId}>` : "-"}\nBan delete days: **${m.defaultBanDeleteDays}**`);
         }
 
         if (group === "giveaway") {
@@ -137,7 +137,7 @@ export default {
             if (emoji) g.emoji = emoji.slice(0, 64);
             if (hostMention !== null) g.hostMention = hostMention;
             await saveSettings();
-            return ok(i, "Giveaway Defaults Updated", `Winners: **${g.defaultWinners}**\nRequired role: ${g.requiredRoleId ? `<@&${g.requiredRoleId}>` : "—"}\nEmoji: ${g.emoji}\nShow host: **${g.hostMention ? "Yes" : "No"}**`);
+            return ok(i, "Giveaway Defaults Updated", `Winners: **${g.defaultWinners}**\nRequired role: ${g.requiredRoleId ? `<@&${g.requiredRoleId}>` : "-"}\nEmoji: ${g.emoji}\nShow host: **${g.hostMention ? "Yes" : "No"}**`);
         }
 
         if (group === "colors") {

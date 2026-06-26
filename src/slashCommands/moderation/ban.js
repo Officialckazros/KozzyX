@@ -23,7 +23,7 @@ export default {
             { name: "reason", description: "Reason for the ban", type: 3, required: false },
             { name: "duration", description: "Temp-ban length (e.g. 1h, 7d). Leave empty for permanent.", type: 3, required: false },
             {
-                name: "delete_days", description: "Days of their messages to delete (0–7)", type: 4, required: false,
+                name: "delete_days", description: "Days of their messages to delete (0-7)", type: 4, required: false,
                 choices: [0, 1, 2, 3, 4, 5, 6, 7].map((n) => ({ name: String(n), value: n })),
             },
         ],

@@ -183,7 +183,7 @@ async function handleGiveawayEntry(interaction, id) {
         await interaction.message.edit({ components: [giveawayRow(giveawayId, count, settings)] });
     } catch {  }
 
-    return safeRespond(interaction, asEmbedPayload({ guildId: interaction.guildId, type: "success", title: "Entered", description: `You're in! Good luck. 🎉`, ephemeral: true }));
+    return safeRespond(interaction, asEmbedPayload({ guildId: interaction.guildId, type: "success", title: "Entered", description: `You're in! Good luck.`, ephemeral: true }));
 }
 
 async function handleAppealButton(interaction) {

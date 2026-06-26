@@ -46,7 +46,7 @@ export default {
             return replyEmbed(message, {
                 type: "settings",
                 title: "Embed Colors",
-                description: lines + "\n\n**Usage:**\n`,color set <type> <#hex>` — set a color\n`,color reset [type]` — reset to default",
+                description: lines + "\n\n**Usage:**\n`,color set <type> <#hex>` - set a color\n`,color reset [type]` - reset to default",
             });
         }
 

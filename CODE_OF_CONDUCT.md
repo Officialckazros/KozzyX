@@ -10,7 +10,7 @@ Still here? Cool, here's the director's cut, because someone always asks "well w
 
 ### Certified cool behavior
 - Be kind, patient, and generally pleasant to share a server with
-- Help people out — even when it's the 400th "why doesn't it work" of the day
+- Help people out - even when it's the 400th "why doesn't it work" of the day
 - Respect everyone, no matter who they are, what they look like, how they identify, or how many semicolons they forget
 
 ### Goblin behavior (please no)

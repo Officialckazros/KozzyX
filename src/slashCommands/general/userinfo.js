@@ -13,7 +13,7 @@ const FLAG_BADGES = {
     PremiumEarlySupporter: "Early Supporter",
     VerifiedDeveloper: "Early Verified Bot Developer",
     CertifiedModerator: "Certified Moderator",
-    ActiveDeveloper: "‍Active Developer",
+    ActiveDeveloper: "Active Developer",
     VerifiedBot: "Verified Bot",
 };
 
