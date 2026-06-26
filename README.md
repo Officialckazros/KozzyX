@@ -29,12 +29,18 @@ KozzyX began as a moderation utility and has since grown into a complete server-
 
 ## Features
 
-- **Moderation** — ban, kick, warn (with configurable thresholds), softban, message purge, slowmode, channel lock and unlock, nickname management and nickname locking, audit logging, and persistent case tracking.
+- **Moderation** — ban, kick, warn (with configurable thresholds), softban, message purge, slowmode, channel lock and unlock, nickname management and nickname locking, audit logging, and persistent case tracking. Available as both prefix commands and native slash commands (`/ban`, `/kick`, `/timeout`, `/untimeout`, `/warn`, `/softban`, `/purge`, `/slowmode`, `/lock`, `/unlock`) with permission gating and ephemeral feedback.
+- **Temporary bans** — `/ban` accepts an optional `duration` (e.g. `7d`); the user is automatically unbanned when it expires, and the schedule survives restarts.
+- **Verification gate** — `/verification setup` posts a one-click verify panel that grants a configured role, with an optional minimum account-age check to block brand-new accounts.
+- **Self-assignable roles** — `/selfroles` builds button-based role menus (multiple- or single-choice) that members use to pick their own roles.
+- **Giveaways** — `/giveaway start|end|reroll|list` runs button-entry giveaways with winner counts, required-role gating, and automatic drawing on expiry.
+- **Polls** — `/poll` creates native Discord polls with up to eight answers, a custom duration, and optional multi-select.
 - **Anti-raid** — raid detection, mass-ban response, raid watchlists, server lockdown, and recovery tooling.
 - **Tickets** — configurable ticket channels, role notifications, and close and edit workflows.
 - **Server management** — guided setup wizard, server information, user, avatar, and banner lookups, and statistics.
 - **AI utilities** — `/ask`, `/summarize`, `/translate`, `/define`, `/imagine`, `/generate_rules`, `/roast`, and `/decide`.
-- **Community tools** — AFK status, booster roles, autoresponders, invite tracking, reminders, to-do lists, and additional utility commands.
+- **Community tools** — AFK status, booster roles, autoresponders, invite tracking, reminders, to-do lists, welcome and goodbye messages, and additional utility commands.
+- **Full customization** — `/config` exposes per-server settings for welcome/goodbye messages, moderation behavior (DM-on-action, required reasons, mod-log channel, default ban-delete days), giveaway defaults, and embed colors, with `/config view` to review the current configuration.
 - **Web dashboard** — a backend API for managing the bot from the browser.
 - **Command flexibility** — full support for both slash and prefix commands.
 

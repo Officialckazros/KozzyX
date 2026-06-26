@@ -7,6 +7,8 @@ import {
     loadAfk,
     loadCosmetics
 } from "../utils/database.js";
+import { initTempBans } from "../utils/tempbans.js";
+import { initGiveaways } from "../utils/giveaways.js";
 
 export default {
     name: Events.ClientReady,
@@ -19,6 +21,8 @@ export default {
         await loadBoosterRoles();
         await loadAfk();
         await loadCosmetics();
+        await initTempBans(client);
+        await initGiveaways(client);
 
         if (process.env.DEPLOY_SLASH_ON_READY === "true") {
             const guildId = process.env.DEPLOY_SLASH_GUILD_ID || null;

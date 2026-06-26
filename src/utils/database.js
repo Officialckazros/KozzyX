@@ -99,6 +99,57 @@ function defaultDynamicVcConfig() {
     return { triggerChannelId: null, categoryId: null, userLimit: 0 };
 }
 
+function defaultModerationConfig() {
+    return {
+        dmOnAction: true,
+        requireReason: false,
+        defaultReason: "No reason provided.",
+        defaultPurge: 100,
+        defaultBanDeleteDays: 0,
+        logChannelId: null,
+    };
+}
+
+function defaultVerificationConfig() {
+    return {
+        enabled: false,
+        channelId: null,
+        messageId: null,
+        roleId: null,
+        minAccountAgeMs: 0,
+        buttonLabel: "Verify",
+        buttonEmoji: "✅",
+        buttonStyle: "Success",
+        title: "Verification Required",
+        description: "Click the button below to verify yourself and gain access to the server.",
+        successMessage: "You're verified! Welcome aboard.",
+    };
+}
+
+function defaultGiveawayConfig() {
+    return {
+        defaultWinners: 1,
+        requiredRoleId: null,
+        hostMention: true,
+        emoji: "🎉",
+        embedTitle: "🎉 Giveaway 🎉",
+    };
+}
+
+function defaultSelfRolesConfig() {
+    return { maxPerMenu: 25 };
+}
+
+function mergeDefaults(settings, key, defaults) {
+    if (!settings[key] || typeof settings[key] !== "object") {
+        settings[key] = defaults;
+        return;
+    }
+    for (const [k, v] of Object.entries(defaults)) {
+        if (typeof settings[key][k] === "undefined") settings[key][k] = v;
+    }
+}
+
 export function getGuildSettings(guildId) {
     let s = serverSettings.get(guildId);
     if (!s) {
@@ -117,6 +168,10 @@ export function getGuildSettings(guildId) {
             plugins: defaultPlugins(),
             antiRaid: defaultAntiRaidConfig(),
             dynamicVc: defaultDynamicVcConfig(),
+            moderation: defaultModerationConfig(),
+            verification: defaultVerificationConfig(),
+            giveaway: defaultGiveawayConfig(),
+            selfRoles: defaultSelfRolesConfig(),
             appealsChannelId: null,
             slavicResponseEnabled: false,
         };
@@ -141,6 +196,10 @@ export function getGuildSettings(guildId) {
     }
     if (!s.antiRaid || typeof s.antiRaid !== "object") s.antiRaid = defaultAntiRaidConfig();
     if (!s.dynamicVc || typeof s.dynamicVc !== "object") s.dynamicVc = defaultDynamicVcConfig();
+    mergeDefaults(s, "moderation", defaultModerationConfig());
+    mergeDefaults(s, "verification", defaultVerificationConfig());
+    mergeDefaults(s, "giveaway", defaultGiveawayConfig());
+    mergeDefaults(s, "selfRoles", defaultSelfRolesConfig());
     if (typeof s.appealsChannelId === "undefined") s.appealsChannelId = null;
     if (typeof s.slavicResponseEnabled !== "boolean") s.slavicResponseEnabled = false;
 
