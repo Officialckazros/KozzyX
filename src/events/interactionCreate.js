@@ -2,9 +2,9 @@ import { Events, PermissionsBitField, ActionRowBuilder, ButtonBuilder, ButtonSty
 import { safeRespond } from "../utils/helpers.js";
 import { asEmbedPayload, buildCoolEmbed } from "../utils/embeds.js";
 import { getDB } from "../utils/db.js";
-import { isCommandEnabled, checkCooldown } from "../dashboard-api.js";
-import { helpPages } from "../slashCommands/general/help.js";
-import { modHelpPages, configHelpPages, modRow, configRow } from "../slashCommands/general/modhelp.js";
+import { runSlashGuards } from "../utils/commandGuards.js";
+import { buildGeneratedHelpPages, helpRow } from "../slashCommands/general/help.js";
+import { buildModHelpPages, modRow, configRow } from "../slashCommands/general/modhelp.js";
 import { featureHelpPages } from "../slashCommands/general/features.js";
 
 async function tryUpdate(interaction, payload) {
@@ -14,6 +14,11 @@ async function tryUpdate(interaction, payload) {
         if (e?.code === 10062 || e?.code === 40060) return;
         throw e;
     }
+}
+
+function clampPage(page, total) {
+    if (!Number.isFinite(page)) return 0;
+    return Math.max(0, Math.min(page, Math.max(0, total - 1)));
 }
 
 export default {
@@ -43,14 +48,7 @@ export default {
                 return safeRespond(interaction, { content: `Command \`${cmdName}\` not found.`, ephemeral: true });
             }
 
-            if (!isCommandEnabled("slash", cmdName)) {
-                return safeRespond(interaction, { content: `The \`/${cmdName}\` command is currently disabled.`, ephemeral: true });
-            }
-
-            const cd = checkCooldown("slash", cmdName, interaction.user.id);
-            if (!cd.ok) {
-                return safeRespond(interaction, { content: `Please wait **${cd.remaining}s** before using \`/${cmdName}\` again.`, ephemeral: true });
-            }
+            if (!await runSlashGuards(interaction, command)) return;
 
             try {
                 await command.execute(interaction);
@@ -68,36 +66,41 @@ export default {
                 const [action, category, pageStr] = id.split(":");
                 let page = parseInt(pageStr);
                 page = action === "help_next" ? page + 1 : page - 1;
-                const pages = helpPages[category];
-                if (!pages) return;
-                const row = new ActionRowBuilder().addComponents(
-                    new ButtonBuilder().setCustomId(`help_prev:${category}:${page}`).setLabel("Previous").setStyle(ButtonStyle.Secondary).setDisabled(page === 0),
-                    new ButtonBuilder().setCustomId(`help_next:${category}:${page}`).setLabel("Next ").setStyle(ButtonStyle.Primary).setDisabled(page === pages.length - 1)
-                );
-                return tryUpdate(interaction, { embeds: [pages[page]], components: [row] });
+                const safeCategory = category || "all";
+                const pages = buildGeneratedHelpPages(interaction.client, safeCategory);
+                const safePage = clampPage(page, pages.length);
+                return tryUpdate(interaction, { embeds: [pages[safePage]], components: [helpRow(safeCategory, safePage, pages.length)] });
             }
 
             if (id.startsWith("modhelp_prev:") || id.startsWith("modhelp_next:")) {
                 const [action, pageStr] = id.split(":");
                 let page = parseInt(pageStr);
                 page = action === "modhelp_next" ? page + 1 : page - 1;
-                return tryUpdate(interaction, { embeds: [modHelpPages[page]], components: [modRow(page)] });
+                const pages = buildModHelpPages(interaction.client, "mod");
+                const safePage = clampPage(page, pages.length);
+                return tryUpdate(interaction, { embeds: [pages[safePage]], components: [modRow(safePage, pages.length)] });
             }
 
             if (id.startsWith("cfghelp_prev:") || id.startsWith("cfghelp_next:")) {
                 const [action, pageStr] = id.split(":");
                 let page = parseInt(pageStr);
                 page = action === "cfghelp_next" ? page + 1 : page - 1;
-                return tryUpdate(interaction, { embeds: [configHelpPages[page]], components: [configRow(page)] });
+                const pages = buildModHelpPages(interaction.client, "config");
+                const safePage = clampPage(page, pages.length);
+                return tryUpdate(interaction, { embeds: [pages[safePage]], components: [configRow(safePage, pages.length)] });
             }
 
             if (id.startsWith("modhelp_switch:")) {
                 const [, mode, pageStr] = id.split(":");
                 const page = parseInt(pageStr);
                 if (mode === "config") {
-                    return tryUpdate(interaction, { embeds: [configHelpPages[page]], components: [configRow(page)] });
+                    const pages = buildModHelpPages(interaction.client, "config");
+                    const safePage = clampPage(page, pages.length);
+                    return tryUpdate(interaction, { embeds: [pages[safePage]], components: [configRow(safePage, pages.length)] });
                 } else {
-                    return tryUpdate(interaction, { embeds: [modHelpPages[page]], components: [modRow(page)] });
+                    const pages = buildModHelpPages(interaction.client, "mod");
+                    const safePage = clampPage(page, pages.length);
+                    return tryUpdate(interaction, { embeds: [pages[safePage]], components: [modRow(safePage, pages.length)] });
                 }
             }
 
@@ -105,6 +108,7 @@ export default {
                 const [action, pageStr] = id.split(":");
                 let page = parseInt(pageStr);
                 page = action === "features_next" ? page + 1 : page - 1;
+                page = clampPage(page, featureHelpPages.length);
                 const row = new ActionRowBuilder().addComponents(
                     new ButtonBuilder().setCustomId(`features_prev:${page}`).setLabel("Previous").setStyle(ButtonStyle.Secondary).setDisabled(page === 0),
                     new ButtonBuilder().setCustomId(`features_next:${page}`).setLabel("Next ").setStyle(ButtonStyle.Primary).setDisabled(page === featureHelpPages.length - 1)

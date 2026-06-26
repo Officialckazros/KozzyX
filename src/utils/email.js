@@ -60,7 +60,7 @@ export async function sendEmail({ to = OWNER_EMAIL, subject, text, html }) {
 
 export async function sendBotOfflineAlert(reason = 'offline', details = '') {
     const subject = `[KozzyxBot] Offline — ${reason}`;
-    const text = `KozzyxBot reported offline at ${new Date().toISOString()}\\n\\nReason: ${reason}\\n\\nDetails:\\n${details || '(none)'}\\n\\nProcess: ${process.pid}`;
+    const text = `KozzyxBot reported offline at ${new Date().toISOString()}\n\nReason: ${reason}\n\nDetails:\n${details || '(none)'}\n\nProcess: ${process.pid}`;
     try {
         await sendEmail({ subject, text });
         console.log('[email] Offline alert sent to', OWNER_EMAIL);

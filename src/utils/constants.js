@@ -1,36 +1,3 @@
-export const generalHelpCommands = [
-    "/help — Command overview",
-    "/modhelp — Moderator help",
-    "/features — Bot feature list",
-    "/afk — Set your AFK status",
-    "/userinfo — View user info",
-    "/serverinfo — View server info",
-    "/avatar — View a user's avatar",
-    "/banner — View a user's banner",
-    "/remind — Set a reminder",
-    "/translate — Translate text",
-    "/define — Look up a word",
-    "/ask — Ask the AI a question",
-    "/slavic-response — Toggle auto human-like replies to Slavic (Russian, Ukrainian, Polish...) messages",
-    "/summarize — Summarize a URL or text",
-    "/imagine — Generate an image with AI",
-    "/generate_rules — Generate server rules with AI",
-    "/decide — Let the bot decide for you",
-    "/todo — Manage your to-do list",
-    "/invites — View invite leaderboard",
-    "/stats — View bot stats",
-    "/appeal — Submit a ban appeal",
-    "/vc — Voice channel controls",
-];
-
-export const funHelpCommands = [
-    "/hug — Send a hug to someone",
-    "/roast — Roast someone",
-    "/topic — Get a conversation topic",
-    "/coinflip — Flip a coin",
-    "/random — Get a random number",
-];
-
 export const featureList = [
     { name: "AFK System", value: "• `,afk` to set AFK\n• Alerts others when pinged\n• Auto-remove on message" },
     { name: "Autoresponders", value: "• Per-guild trigger → response\n• `,autoresponder` commands\n• Filter toggle per guild" },

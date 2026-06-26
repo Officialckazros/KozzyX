@@ -1,12 +1,17 @@
 import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
+import { mkdir } from 'fs/promises';
+import { dirname } from 'path';
 
 let db;
+const DB_FILE = process.env.DATABASE_PATH || './data/database.sqlite';
 
 export async function initDB() {
     if (db) return db;
+    await mkdir(dirname(DB_FILE), { recursive: true });
+
     db = await open({
-        filename: './data/database.sqlite',
+        filename: DB_FILE,
         driver: sqlite3.Database
     });
 
@@ -142,17 +147,6 @@ export async function initDB() {
             PRIMARY KEY (user_id, guild_id)
         );
     `);
-
-    
-    
-    
-    
-    await db.exec(`
-        DROP TABLE IF EXISTS conversation_history;
-        DROP TABLE IF EXISTS blocked_lookups;
-    `);
-    
-    await db.exec("VACUUM;");
 
     console.log("Database initialized");
     return db;

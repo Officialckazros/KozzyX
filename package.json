@@ -11,7 +11,11 @@
     "deploy": "node --env-file=config/.env src/deploy.js",
     "deploy-all": "./scripts/deploy-everywhere.sh",
     "sync": "node scripts/sync_commands.js",
+    "check": "node scripts/check_commands.js",
     "postinstall": "npm rebuild sqlite3 --build-from-source || true"
+  },
+  "engines": {
+    "node": ">=22 <23"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

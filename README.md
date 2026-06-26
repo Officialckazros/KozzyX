@@ -1,7 +1,7 @@
 # KozzyX
 
 [![License](https://img.shields.io/github/license/Officialckazros/KozzyX?style=flat-square&color=blue)](LICENSE)
-![Node.js](https://img.shields.io/badge/Node.js-18%2B-339933?style=flat-square&logo=node.js&logoColor=white)
+![Node.js](https://img.shields.io/badge/Node.js-22%20LTS-339933?style=flat-square&logo=node.js&logoColor=white)
 ![discord.js](https://img.shields.io/badge/discord.js-v14-5865F2?style=flat-square&logo=discord&logoColor=white)
 ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat-square)](CONTRIBUTING.md)
@@ -40,7 +40,7 @@ KozzyX began as a moderation utility and has since grown into a complete server-
 
 ## Requirements
 
-- [Node.js](https://nodejs.org/) version 18 or newer (developed and tested on v24)
+- [Node.js](https://nodejs.org/) version 22 LTS. The SQLite native dependency is pinned to this runtime; Node 24 is not supported for local validation.
 - A registered [Discord application and bot](https://discord.com/developers/applications)
 - API keys for any optional integrations you intend to enable (AI, image generation, email)
 
@@ -87,10 +87,15 @@ WATCHDOG_URL=
 WATCHDOG_INTERVAL_MS=
 WATCHDOG_FAIL_THRESHOLD=
 
+# Slash command deployment (optional; normal startup does not deploy)
+DEPLOY_SLASH_ON_READY=false
+DEPLOY_SLASH_GUILD_ID=
+
 # Deployment (via Railway)
 # Set your environment variables directly in the Railway dashboard (TOKEN, CLIENT_ID, etc.).
 # No local .env file is needed on Railway.
 # Connect your GitHub repo to Railway for automatic deploys on push.
+```
 
 The `config/.env` file is excluded via `.gitignore` and must never be committed.
 
@@ -105,6 +110,8 @@ node --env-file=config/.env src/deploy-guild.js
 # Global (may take up to one hour to propagate)
 npm run deploy
 ```
+
+The bot no longer deploys slash commands on every restart. Use the scripts above when command definitions change, or set `DEPLOY_SLASH_ON_READY=true` for a controlled environment where startup deployment is desired.
 
 ## Running the Bot
 
@@ -149,6 +156,7 @@ scripts/                Maintenance and deployment helpers
 | `npm run dev` | Start with `--watch` auto-reload |
 | `npm run deploy` | Register slash commands globally |
 | `npm run sync` | Synchronize commands via `scripts/sync_commands.js` |
+| `npm run check` | Validate runtime, syntax, command exports, duplicate names, and aliases |
 | `npm run deploy-all` | Commit + push (Railway auto-deploys on push) |
 
 ## Contributing

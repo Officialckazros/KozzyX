@@ -1,9 +1,9 @@
 import { Events } from "discord.js";
 import { replyEmbed } from "../utils/embeds.js";
 import { checkMassMention } from "../utils/raidProtection.js";
-import { isCommandEnabled, checkCooldown } from "../dashboard-api.js";
 import { afkMap, clearAfk, getGuildSettings } from "../utils/database.js";
 import { generateSlavicReply } from "../utils/ai.js";
+import { runPrefixGuards } from "../utils/commandGuards.js";
 
 const MOD_PREFIX = ",";
 const CONFIG_PREFIX = "!";
@@ -139,22 +139,7 @@ export default {
             if (isConfig && !command.config) return;
             if (isMod && command.config) return;
 
-            if (!isCommandEnabled("prefix", command.name)) {
-                return replyEmbed(message, {
-                    type: "error",
-                    title: "Command Disabled",
-                    description: `The \`${command.name}\` command is currently disabled from the dashboard.`,
-                });
-            }
-
-            const cd = checkCooldown("prefix", command.name, message.author.id);
-            if (!cd.ok) {
-                return replyEmbed(message, {
-                    type: "warning",
-                    title: "Slow Down",
-                    description: `Wait **${cd.remaining}s** before using \`${command.name}\` again.`,
-                });
-            }
+            if (!await runPrefixGuards(message, command)) return;
 
             try {
                 await command.execute(message, args, client);

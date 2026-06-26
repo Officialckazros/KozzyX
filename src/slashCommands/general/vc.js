@@ -5,6 +5,7 @@ import { getGuildSettings, saveSettings } from "../../utils/database.js";
 import { getDB } from "../../utils/db.js";
 
 export default {
+    meta: { category: "moderation" },
     data: {
         name: "vc",
         description: "Manage your dynamic voice channel.",
