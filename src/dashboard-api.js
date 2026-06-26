@@ -12,6 +12,7 @@ async function importDatabase() {
 const PORT = 3456;
 const AUTH_KEY = 'KozzyX_Internal_API_' + crypto.randomBytes(32).toString('hex');
 const REDIRECT_URI = process.env.DASHBOARD_REDIRECT_URI || 'https://kozzyx.org/dashboard';
+const MAX_BODY_BYTES = Number(process.env.DASHBOARD_MAX_BODY_BYTES || 1_048_576);
 
 const DATA_DIR = path.join(__dirname, '../data');
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -45,7 +46,7 @@ let botStats = {
 };
 
 const sessions = new Map();
-const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000; // sessions expire after 7 days
+const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000; 
 setInterval(() => {
     const now = Date.now();
     for (const [t, s] of sessions) {
@@ -53,7 +54,6 @@ setInterval(() => {
     }
 }, 60 * 60 * 1000).unref?.();
 
-// OAuth CSRF state tokens (state -> issued timestamp); expire after 10 minutes.
 const pendingStates = new Map();
 const STATE_TTL_MS = 10 * 60 * 1000;
 setInterval(() => {
@@ -70,8 +70,22 @@ const cooldownHits = new Map();
 function readBody(req) {
     return new Promise((resolve, reject) => {
         let body = '';
-        req.on('data', c => body += c);
+        let bytes = 0;
+        let rejected = false;
+        req.on('data', c => {
+            if (rejected) return;
+            bytes += c.length;
+            if (bytes > MAX_BODY_BYTES) {
+                const err = new Error('Request body too large');
+                err.statusCode = 413;
+                rejected = true;
+                reject(err);
+                return;
+            }
+            body += c;
+        });
         req.on('end', () => {
+            if (rejected) return;
             try { resolve(body ? JSON.parse(body) : {}); }
             catch (e) { reject(e); }
         });
@@ -99,7 +113,6 @@ function json(res, status, data) {
     res.end(JSON.stringify(data));
 }
 
-// Constant-time string comparison (avoids leaking length/content via timing).
 function safeEqual(a, b) {
     if (typeof a !== 'string' || typeof b !== 'string') return false;
     const ab = Buffer.from(a), bb = Buffer.from(b);
@@ -710,7 +723,7 @@ export function initAPI(client) {
                         unbanned = true;
                         addModLog('UNBAN', appeal.user_id, moderator, `Appeal #${appealId} accepted`);
                     } catch (e) {
-                        // User may no longer be banned — still resolve the appeal.
+                        
                     }
                 }
                 const newStatus = decision === 'accept' ? 'accepted' : 'rejected';
@@ -1014,7 +1027,7 @@ export function initAPI(client) {
             return json(res, 404, { error: 'Backend route not found', path: pathname, method });
         } catch (err) {
             addLog('ERR', `${pathname}: ${err.message}`);
-            return json(res, 500, { error: err.message });
+            return json(res, err.statusCode || 500, { error: err.message });
         }
     });
 
@@ -1052,7 +1065,6 @@ export function recordEvent(kind, text, guildId) {
     if (feedEvents.length > MAX_FEED) feedEvents.pop();
 }
 
-// Drop every in-memory dashboard feed event tied to a guild (used by data deletion).
 export function purgeFeedForGuild(guildId) {
     const before = feedEvents.length;
     feedEvents = feedEvents.filter(e => e.guildId !== guildId);

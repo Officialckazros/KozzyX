@@ -1,12 +1,17 @@
 import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
+import { mkdir } from 'fs/promises';
+import { dirname } from 'path';
 
 let db;
+const DB_FILE = process.env.DATABASE_PATH || './data/database.sqlite';
 
 export async function initDB() {
     if (db) return db;
+    await mkdir(dirname(DB_FILE), { recursive: true });
+
     db = await open({
-        filename: './data/database.sqlite',
+        filename: DB_FILE,
         driver: sqlite3.Database
     });
 
@@ -142,17 +147,6 @@ export async function initDB() {
             PRIMARY KEY (user_id, guild_id)
         );
     `);
-
-    // Privacy hardening: destroy any data left over from removed/persisted
-    // features so message content is never readable from the database file.
-    // - conversation_history: /ask memory is now ephemeral and in-memory only.
-    // - blocked_lookups: dead schema from the removed /lookup surveillance feature.
-    await db.exec(`
-        DROP TABLE IF EXISTS conversation_history;
-        DROP TABLE IF EXISTS blocked_lookups;
-    `);
-    // Reclaim the freed pages so wiped content isn't recoverable from slack space.
-    await db.exec("VACUUM;");
 
     console.log("Database initialized");
     return db;

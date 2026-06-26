@@ -1,7 +1,4 @@
-// Central inventory + eraser for everything the bot stores about a single guild.
-//
-// Used by /data_request (summary) and /data_deletion_request (full wipe). Keep
-// this in sync with any new per-guild storage so deletions stay complete.
+
 
 import { getDB } from "./db.js";
 import {
@@ -13,8 +10,6 @@ import { purgeGuildRaidState } from "./raidProtection.js";
 import { inviteCache } from "./inviteTracker.js";
 import { purgeFeedForGuild } from "../dashboard-api.js";
 
-// SQLite tables with a literal `guild_id` column. Table names are hardcoded
-// (never interpolated from user input) so the SQL is injection-safe.
 const GUILD_TABLES = [
     { table: "guild_settings", label: "Server settings & configuration" },
     { table: "guild_autoresponders", label: "Autoresponders" },
@@ -41,7 +36,6 @@ function guildRoleIds(guild) {
     return [...guild.roles.cache.keys()];
 }
 
-// Returns a list of { label, count } describing everything stored for the guild.
 export async function collectGuildDataSummary(guild) {
     const db = await getDB();
     const guildId = guild.id;
@@ -52,15 +46,15 @@ export async function collectGuildDataSummary(guild) {
         rows.push({ label, count: r?.c ?? 0 });
     }
 
-    // Warnings are keyed `${guildId}-${userId}` (guild IDs are digits only, so
-    // the `${guildId}-%` prefix is unambiguous).
+    
+    
     const warnRow = await db.get(
         "SELECT COUNT(*) AS c FROM guild_warnings WHERE warning_key LIKE ?",
         `${guildId}-%`
     );
     rows.push({ label: "Member warnings", count: warnRow?.c ?? 0 });
 
-    // Reminders are channel-scoped; count the ones tied to this guild's channels.
+    
     const channelIds = guildChannelIds(guild);
     if (channelIds.length) {
         const remRow = await db.get(
@@ -70,7 +64,7 @@ export async function collectGuildDataSummary(guild) {
         rows.push({ label: "Reminders set in this server", count: remRow?.c ?? 0 });
     }
 
-    // Booster roles map a user to a role that lives in this guild.
+    
     const roleIds = guildRoleIds(guild);
     if (roleIds.length) {
         const boostRow = await db.get(
@@ -83,8 +77,6 @@ export async function collectGuildDataSummary(guild) {
     return rows;
 }
 
-// Permanently deletes every stored record for the guild across SQLite and all
-// in-memory caches. Returns { deleted: {label: count}, total }.
 export async function purgeGuildData(guild) {
     const db = await getDB();
     const guildId = guild.id;
@@ -133,10 +125,10 @@ export async function purgeGuildData(guild) {
         throw err;
     }
 
-    // Reclaim freed pages so deleted content isn't recoverable from the file.
+    
     await db.exec("VACUUM;").catch(() => {});
 
-    // In-memory caches kept in sync with the now-deleted rows.
+    
     serverSettings.delete(guildId);
     guildAutoresponders.delete(guildId);
     for (const key of [...warnings.keys()]) {
@@ -145,7 +137,7 @@ export async function purgeGuildData(guild) {
     purgeGuildRaidState(guildId);
     inviteCache.delete(guildId);
 
-    // Dashboard activity feed entries for this guild.
+    
     const feedCleared = purgeFeedForGuild(guildId);
     if (feedCleared) record("Dashboard activity-feed entries", feedCleared);
 

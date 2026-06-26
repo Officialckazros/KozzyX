@@ -21,6 +21,7 @@ async function nukeChannel(channel, target) {
 }
 
 export default {
+    meta: { category: "moderation" },
     data: {
         name: "nuke",
         description: "Bulk-delete messages from this channel",

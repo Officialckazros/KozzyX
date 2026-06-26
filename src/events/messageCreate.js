@@ -1,8 +1,9 @@
 import { Events } from "discord.js";
 import { replyEmbed } from "../utils/embeds.js";
 import { checkMassMention } from "../utils/raidProtection.js";
-import { isCommandEnabled, checkCooldown } from "../dashboard-api.js";
-import { afkMap, clearAfk } from "../utils/database.js";
+import { afkMap, clearAfk, getGuildSettings } from "../utils/database.js";
+import { generateSlavicReply } from "../utils/ai.js";
+import { runPrefixGuards } from "../utils/commandGuards.js";
 
 const MOD_PREFIX = ",";
 const CONFIG_PREFIX = "!";
@@ -10,12 +11,46 @@ const CONFIG_PREFIX = "!";
 const AFK_PING_NOTIFY_COOLDOWN_MS = 30_000;
 const afkPingNotifiedAt = new Map();
 
+const SLAVIC_COOLDOWN_MS = 20_000;
+const slavicCooldown = new Map();
+
 setInterval(() => {
     const cutoff = Date.now() - AFK_PING_NOTIFY_COOLDOWN_MS;
     for (const [key, ts] of afkPingNotifiedAt) {
         if (ts < cutoff) afkPingNotifiedAt.delete(key);
     }
 }, 5 * 60_000);
+
+setInterval(() => {
+    const cutoff = Date.now() - SLAVIC_COOLDOWN_MS * 10;
+    for (const [key, ts] of slavicCooldown) {
+        if (ts < cutoff) slavicCooldown.delete(key);
+    }
+}, 10 * 60_000);
+
+async function handleSlavicAutoResponse(message) {
+    if (!message?.guild || message.author?.bot) return;
+
+    const settings = getGuildSettings(message.guild.id);
+    if (!settings.slavicResponseEnabled) return;
+
+    const content = (message.content || "").trim();
+    if (!content || content.length < 3) return;
+
+    const now = Date.now();
+    const last = slavicCooldown.get(message.author.id) || 0;
+    if (now - last < SLAVIC_COOLDOWN_MS) return;
+    slavicCooldown.set(message.author.id, now);
+
+    const replyText = await generateSlavicReply(content);
+    if (!replyText) return;
+
+    try {
+        await message.reply({ content: replyText, allowedMentions: { repliedUser: false } });
+    } catch (err) {
+        console.error("[slavic-response] Failed to reply:", err?.message || err);
+    }
+}
 
 function formatAfkDuration(ms) {
     const totalMinutes = Math.floor(ms / 60_000);
@@ -79,6 +114,8 @@ export default {
             const blocked = await checkMassMention(message);
             if (blocked) return;
 
+            handleSlavicAutoResponse(message).catch(err => console.error("[slavic] handler error:", err));
+
             const raw = message.content;
             const isConfig = raw.startsWith(CONFIG_PREFIX);
             const isMod = raw.startsWith(MOD_PREFIX);
@@ -102,22 +139,7 @@ export default {
             if (isConfig && !command.config) return;
             if (isMod && command.config) return;
 
-            if (!isCommandEnabled("prefix", command.name)) {
-                return replyEmbed(message, {
-                    type: "error",
-                    title: "Command Disabled",
-                    description: `The \`${command.name}\` command is currently disabled from the dashboard.`,
-                });
-            }
-
-            const cd = checkCooldown("prefix", command.name, message.author.id);
-            if (!cd.ok) {
-                return replyEmbed(message, {
-                    type: "warning",
-                    title: "Slow Down",
-                    description: `Wait **${cd.remaining}s** before using \`${command.name}\` again.`,
-                });
-            }
+            if (!await runPrefixGuards(message, command)) return;
 
             try {
                 await command.execute(message, args, client);

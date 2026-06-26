@@ -5,6 +5,7 @@ import { getGuildSettings } from "../../utils/database.js";
 import { checkRaid, primeSimulation, makeFakeMember } from "../../utils/raidProtection.js";
 
 export default {
+    meta: { category: "moderation" },
     data: {
         name: "antiraid",
         description: "Anti-raid tools and simulation",

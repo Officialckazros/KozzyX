@@ -31,5 +31,5 @@ if [ $? -ne 0 ]; then
 fi
 echo "Successfully pushed to GitHub ($CURRENT_BRANCH)."
 
-echo "Deploying to VM..."
-./scripts/deploy-vm.sh
+echo "Railway will automatically deploy the new commit."
+echo "If you need to manually trigger a deploy, use the Railway dashboard or CLI."

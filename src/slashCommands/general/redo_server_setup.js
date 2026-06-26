@@ -38,6 +38,7 @@ const PRESET_CHOICES = [
 ];
 
 export default {
+    meta: { category: "moderation" },
     data: {
         name: "redo_server_setup",
         description: "Delete everything server_setup created and optionally redo it.",

@@ -15,11 +15,19 @@ import { sendBotOfflineAlert } from "./utils/email.js";
 
 const client = new ExtendedClient();
 
+function validateRequiredEnv() {
+    const missing = ["TOKEN", "CLIENT_ID"].filter((key) => !process.env[key]);
+    if (missing.length) {
+        throw new Error(`Missing required environment variable(s): ${missing.join(", ")}`);
+    }
+}
+
 async function init() {
     console.log("-----------------------------------------");
     console.log("[bot] BEGINNING INITIALIZATION");
     console.log("-----------------------------------------");
 
+    validateRequiredEnv();
     await initDB();
     await loadCommands(client);
     initAPI(client);

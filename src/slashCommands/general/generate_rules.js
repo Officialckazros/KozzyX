@@ -4,6 +4,7 @@ import { asEmbedPayload, buildCoolEmbed } from "../../utils/embeds.js";
 import { generateServerRules } from "../../utils/ai.js";
 
 export default {
+    meta: { category: "moderation" },
     data: {
         name: "generate_rules",
         description: "Use AI to generate a custom rules embed for this server",

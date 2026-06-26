@@ -118,6 +118,7 @@ export function getGuildSettings(guildId) {
             antiRaid: defaultAntiRaidConfig(),
             dynamicVc: defaultDynamicVcConfig(),
             appealsChannelId: null,
+            slavicResponseEnabled: false,
         };
         serverSettings.set(guildId, s);
     }
@@ -141,6 +142,7 @@ export function getGuildSettings(guildId) {
     if (!s.antiRaid || typeof s.antiRaid !== "object") s.antiRaid = defaultAntiRaidConfig();
     if (!s.dynamicVc || typeof s.dynamicVc !== "object") s.dynamicVc = defaultDynamicVcConfig();
     if (typeof s.appealsChannelId === "undefined") s.appealsChannelId = null;
+    if (typeof s.slavicResponseEnabled !== "boolean") s.slavicResponseEnabled = false;
 
     if (!s.welcome || typeof s.welcome !== "object") s.welcome = { enabled: false, channelId: null, message: "Welcome {user} to the server!" };
     if (!s.goodbye || typeof s.goodbye !== "object") s.goodbye = { enabled: false, channelId: null, message: "{user} left the server." };

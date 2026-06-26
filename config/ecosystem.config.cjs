@@ -4,7 +4,7 @@ module.exports = {
       name: "mod-bot",
       script: "./src/index.js",
       node_args: "--env-file=config/.env",
-      // Disabled watch for production to avoid restart loops from editor/file changes
+      
       watch: false,
       ignore_watch: ["node_modules", "data", "website", "*.json"],
       env: {

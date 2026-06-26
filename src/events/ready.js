@@ -19,7 +19,14 @@ export default {
         await loadBoosterRoles();
         await loadAfk();
         await loadCosmetics();
-        await client.deploySlashCommands();
+
+        if (process.env.DEPLOY_SLASH_ON_READY === "true") {
+            const guildId = process.env.DEPLOY_SLASH_GUILD_ID || null;
+            await client.deploySlashCommands(guildId);
+        } else {
+            console.log("Slash command auto-deploy skipped. Run npm run deploy or set DEPLOY_SLASH_ON_READY=true.");
+        }
+
         console.log("Bot systems fully loaded & online.");
     }
 };

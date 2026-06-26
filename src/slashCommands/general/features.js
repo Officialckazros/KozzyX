@@ -14,19 +14,25 @@ for (let i = 0; i < featureList.length; i += 3) {
     );
 }
 
+function clampPage(page, total) {
+    if (!Number.isFinite(page)) return 0;
+    return Math.max(0, Math.min(page, Math.max(0, total - 1)));
+}
+
 async function sendFeatureHelpPage(interaction, page = 0) {
-    const embed = featureHelpPages[page];
+    const safePage = clampPage(page, featureHelpPages.length);
+    const embed = featureHelpPages[safePage];
     const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
-            .setCustomId(`features_prev:${page}`)
+            .setCustomId(`features_prev:${safePage}`)
             .setLabel("Previous")
             .setStyle(ButtonStyle.Secondary)
-            .setDisabled(page === 0),
+            .setDisabled(safePage === 0),
         new ButtonBuilder()
-            .setCustomId(`features_next:${page}`)
-            .setLabel("Next ")
+            .setCustomId(`features_next:${safePage}`)
+            .setLabel("Next")
             .setStyle(ButtonStyle.Primary)
-            .setDisabled(page === featureHelpPages.length - 1)
+            .setDisabled(safePage === featureHelpPages.length - 1)
     );
     return safeRespond(interaction, { embeds: [embed], components: [row] });
 }

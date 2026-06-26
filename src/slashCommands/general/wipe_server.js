@@ -9,6 +9,7 @@ import { buildCoolEmbed, asEmbedPayload } from "../../utils/embeds.js";
 import { getGuildSettings, saveSettings } from "../../utils/database.js";
 
 export default {
+    meta: { category: "moderation" },
     data: {
         name: "wipe_server",
         description: "DANGER: Delete ALL channels and roles. Server owner only.",

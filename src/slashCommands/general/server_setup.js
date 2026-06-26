@@ -143,6 +143,7 @@ const PRESETS = {
 };
 
 export default {
+    meta: { category: "moderation" },
     data: {
         name: "server_setup",
         description: "Provision roles, channels, and settings in one command.",
