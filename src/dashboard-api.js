@@ -867,7 +867,7 @@ export function initAPI(client) {
 
                 if (req.headers['x-deploy-panel'] === 'true' && settings.ticketPanelChannelId) {
                     const channel = await client.channels.fetch(settings.ticketPanelChannelId).catch(() => null);
-                    if (channel) {
+                    if (channel && channel.guild?.id === guild.id) {
                         const embed = {
                             title: settings.ticket.panelTitle,
                             description: settings.ticket.panelText,
@@ -947,11 +947,15 @@ export function initAPI(client) {
                 return json(res, 200, rows);
             }
             if (pathname === '/api/giveaways' && method === 'POST') {
+                if (!guild) return json(res, 404, { error: 'Guild not found' });
                 const { channel_id, prize, winners, end_time } = await readBody(req);
                 const { getDB } = await import('./utils/db.js');
                 const db = await getDB();
 
                 const channel = await client.channels.fetch(channel_id).catch(() => null);
+                if (channel && channel.guild?.id !== guild.id) {
+                    return json(res, 403, { error: 'Channel not in your guild' });
+                }
                 let message_id = null;
                 if (channel) {
                     const msg = await channel.send({ embeds: [{ title: 'GIVEAWAY ', description: `Prize: **${prize}**\nWinners: ${winners}\nEnds: <t:${Math.floor(end_time / 1000)}:R>\nReact with to enter!`, color: 0x9b87f5 }] });
