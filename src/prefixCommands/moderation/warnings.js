@@ -1,9 +1,18 @@
+import { PermissionsBitField } from "discord.js";
 import { getWarningData } from "../../utils/database.js";
-import { buildCoolEmbed } from "../../utils/embeds.js";
+import { buildCoolEmbed, replyEmbed } from "../../utils/embeds.js";
 
 export default {
     name: "warnings",
     async execute(message, args) {
+        if (!message.member.permissions.has(PermissionsBitField.Flags.ModerateMembers)) {
+            return replyEmbed(message, {
+                type: "error",
+                title: "Permission Needed",
+                description: "You need the **Moderate Members** permission to view warnings.",
+            });
+        }
+
         const target = message.mentions.members.first() || message.member;
         const data = getWarningData(message.guild.id, target.id);
 

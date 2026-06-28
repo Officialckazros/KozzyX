@@ -41,6 +41,7 @@ const PREFIX_PERMISSION_OVERRIDES = {
     unlock: [PermissionsBitField.Flags.ManageChannels],
     unraid: [PermissionsBitField.Flags.Administrator],
     warn: [PermissionsBitField.Flags.ModerateMembers],
+    warnings: [PermissionsBitField.Flags.ModerateMembers],
     warnthreshold: [PermissionsBitField.Flags.ModerateMembers],
     autoresponder: [PermissionsBitField.Flags.ManageMessages],
 };
