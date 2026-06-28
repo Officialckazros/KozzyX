@@ -59,7 +59,6 @@ export default {
             return safeRespond(i, asEmbedPayload({ guildId: i.guildId, type: "success", title: "Verification Disabled", description: "The verify button will no longer grant roles. Existing panels stay until deleted.", ephemeral: true }));
         }
 
-        // setup
         const channel = i.options.getChannel("channel");
         const role = i.options.getRole("role");
         if (!channel?.isTextBased?.()) return err(i, "Invalid Channel", "Pick a text channel.");

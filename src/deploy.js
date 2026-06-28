@@ -35,7 +35,6 @@ for (const file of slashFiles) {
 
 const rest = new REST({ version: "10" }).setToken(token);
 
-// Force every command to be server-install only (no user-install duplicates) and guild-context.
 const normalized = commands.map(({ dm_permission, ...rest }) => ({
     ...rest,
     integration_types: [0],

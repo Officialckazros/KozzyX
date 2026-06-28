@@ -1,7 +1,7 @@
 import { safeRespond } from "../../utils/helpers.js";
 import { asEmbedPayload } from "../../utils/embeds.js";
 
-const MAX_POLL_HOURS = 768; // Discord max: 32 days
+const MAX_POLL_HOURS = 768;
 
 export default {
     meta: { category: "general" },
