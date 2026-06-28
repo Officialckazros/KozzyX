@@ -1,7 +1,4 @@
 #!/bin/bash
-# Legacy script for old VM/Google Cloud deploys.
-# Project is now fully on Railway. Use deploy-everywhere.sh or just git push.
-# Railway auto-deploys on push to the connected repo.
 
 cd "$(dirname "$0")/.."
 

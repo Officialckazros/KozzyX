@@ -48,7 +48,6 @@ function extractCommands() {
 
 function updateHtmlFiles(commands) {
     let jsArray = "const COMMANDS = " + JSON.stringify(commands, null, 12) + ";";
-    jsArray = jsArray.replace('const COMMANDS = [', 'const COMMANDS = [\n            // Automatically Synced Commands');
 
     const markerBegin = '/*COMMANDS-DATA-BEGIN*/';
     const markerEnd = '/*COMMANDS-DATA-END*/';

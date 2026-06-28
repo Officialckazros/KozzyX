@@ -56,12 +56,9 @@ export function buildGeneratedHelpPages(client, category = "all") {
         : `${helpCategories.find((c) => c.value === category)?.name || "Command"} Help`;
     const description = "Commands are generated from the live command registry.";
 
-    // Pack fields into pages bounded by BOTH a field count and Discord's 6000-char
-    // per-embed total (kept under budget for headroom), so a large registry or long
-    // descriptions can never overflow a single embed.
     const MAX_FIELDS = 6;
     const CHAR_BUDGET = 5500;
-    const baseChars = title.length + description.length + 8; // " (n/m)" slack
+    const baseChars = title.length + description.length + 8;
     const groups = [];
     let current = [];
     let chars = baseChars;

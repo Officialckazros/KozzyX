@@ -49,23 +49,19 @@ npm install
 Create a file at `config/.env` containing the values below. Only `TOKEN`, `CLIENT_ID`, and `GUILD_ID` are required to start the bot; the remaining variables enable optional features.
 
 ```env
-# Required
 TOKEN=your-discord-bot-token
 CLIENT_ID=your-application-client-id
 GUILD_ID=your-development-guild-id
 OWNER_ID=your-discord-user-id
 
-# Dashboard authentication (optional)
 CLIENT_SECRET=your-oauth-client-secret
 
-# AI and image generation (optional)
 GOOGLE_GENERATIVE_AI_API_KEY=
 IMAGE_API_KEY=
 NANO_BANANA_API_KEY=
 XAI_API_KEY=
 DEEPSEEK_API_KEY=
 
-# Email / SMTP (optional, used for ban appeals)
 SMTP_HOST=
 SMTP_PORT=
 SMTP_SECURE=
@@ -74,19 +70,12 @@ SMTP_PASS=
 EMAIL_FROM=
 SMTP_DOMAIN=
 
-# Uptime watchdog (optional)
 WATCHDOG_URL=
 WATCHDOG_INTERVAL_MS=
 WATCHDOG_FAIL_THRESHOLD=
 
-# Slash command deployment (optional; normal startup does not deploy)
 DEPLOY_SLASH_ON_READY=false
 DEPLOY_SLASH_GUILD_ID=
-
-# Deployment (via Railway)
-# Set your environment variables directly in the Railway dashboard (TOKEN, CLIENT_ID, etc.).
-# No local .env file is needed on Railway.
-# Connect your GitHub repo to Railway for automatic deploys on push.
 ```
 
 The `config/.env` file is excluded via `.gitignore` and must never be committed.
@@ -96,10 +85,8 @@ The `config/.env` file is excluded via `.gitignore` and must never be committed.
 Register commands to a single guild for immediate availability during development, or globally for production:
 
 ```bash
-# Single guild (recommended during development; updates immediately)
 node --env-file=config/.env src/deploy-guild.js
 
-# Global (may take up to one hour to propagate)
 npm run deploy
 ```
 
@@ -108,10 +95,7 @@ The bot no longer deploys slash commands on every restart. Use the scripts above
 ## Running the Bot
 
 ```bash
-# Standard run (Railway uses this; env vars come from Railway dashboard)
 npm start
-
-# Development mode (automatic restart on file changes, uses local .env)
 npm run dev
 ```
 
