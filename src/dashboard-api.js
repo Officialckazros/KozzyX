@@ -14,6 +14,55 @@ const AUTH_KEY = 'KozzyX_Internal_API_' + crypto.randomBytes(32).toString('hex')
 const REDIRECT_URI = process.env.DASHBOARD_REDIRECT_URI || 'https://kozzyx.org/dashboard';
 const MAX_BODY_BYTES = Number(process.env.DASHBOARD_MAX_BODY_BYTES || 1_048_576);
 
+// --- Secret admin panel (standalone, server-side auth; secret lives in env only) ---
+const SECRET_USER = process.env.SECRET_PANEL_USER || '';
+const SECRET_PASS = process.env.SECRET_PANEL_PASS || ''; // format: "scryptSalt:scryptHash"
+const secretSessions = new Map();                         // token -> { createdAt }
+const SECRET_TTL_MS = 30 * 24 * 60 * 60 * 1000;           // 30-day persistent login
+const secretFails = new Map();                            // ip -> { count, until }
+const SECRET_MAX_FAILS = 5;
+const SECRET_LOCK_MS = 15 * 60 * 1000;
+setInterval(() => {
+    const now = Date.now();
+    for (const [t, s] of secretSessions) if (now - (s.createdAt || 0) > SECRET_TTL_MS) secretSessions.delete(t);
+    for (const [ip, f] of secretFails) if ((f.until || 0) < now && !f.count) secretFails.delete(ip);
+}, 60 * 60 * 1000).unref?.();
+
+function secretClientIp(req) {
+    const xff = req.headers['x-forwarded-for'];
+    if (xff) return String(xff).split(',')[0].trim();
+    return req.socket?.remoteAddress || 'unknown';
+}
+function verifySecretPassword(input) {
+    if (!SECRET_PASS || typeof input !== 'string') return false;
+    const [salt, hash] = SECRET_PASS.split(':');
+    if (!salt || !hash) return false;
+    try {
+        const test = crypto.scryptSync(input, salt, 64);
+        const want = Buffer.from(hash, 'hex');
+        return test.length === want.length && crypto.timingSafeEqual(test, want);
+    } catch { return false; }
+}
+function parseCookies(req) {
+    const out = {};
+    const raw = req.headers.cookie;
+    if (!raw) return out;
+    for (const part of raw.split(';')) {
+        const i = part.indexOf('=');
+        if (i < 0) continue;
+        out[part.slice(0, i).trim()] = part.slice(i + 1).trim();
+    }
+    return out;
+}
+function secretAuthToken(req) {
+    const token = parseCookies(req)['kxsecret'];
+    if (!token) return null;
+    const s = secretSessions.get(token);
+    if (!s) return null;
+    if (Date.now() - (s.createdAt || 0) > SECRET_TTL_MS) { secretSessions.delete(token); return null; }
+    return token;
+}
+
 const DATA_DIR = path.join(__dirname, '../data');
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 
@@ -230,6 +279,93 @@ export function initAPI(client) {
             }
         }
 
+        // ===================== SECRET ADMIN PANEL =====================
+        // Fully standalone, server-side auth. Password never reaches the client;
+        // session is an httpOnly + Secure + SameSite=Strict cookie. Rate-limited.
+        if (pathname === '/api/secret/login' && method === 'POST') {
+            const ip = secretClientIp(req);
+            const lock = secretFails.get(ip);
+            if (lock && (lock.until || 0) > Date.now()) {
+                return json(res, 429, { error: 'Too many attempts — locked. Try again later.' });
+            }
+            if (!SECRET_USER || !SECRET_PASS) return json(res, 503, { error: 'Secret panel not configured' });
+            const { username, password } = await readBody(req);
+            const userOk = typeof username === 'string' && username.length === SECRET_USER.length &&
+                crypto.timingSafeEqual(Buffer.from(username), Buffer.from(SECRET_USER));
+            const passOk = verifySecretPassword(password);
+            if (!userOk || !passOk) {
+                const f = secretFails.get(ip) || { count: 0, until: 0 };
+                f.count++;
+                if (f.count >= SECRET_MAX_FAILS) { f.until = Date.now() + SECRET_LOCK_MS; f.count = 0; }
+                secretFails.set(ip, f);
+                addLog('WARN', `Secret panel: failed login from ${ip}`);
+                return json(res, 401, { error: 'Invalid credentials' });
+            }
+            secretFails.delete(ip);
+            const token = crypto.randomBytes(32).toString('hex');
+            secretSessions.set(token, { createdAt: Date.now() });
+            addLog('OK', `Secret panel: login from ${ip}`);
+            res.setHeader('Set-Cookie', `kxsecret=${token}; HttpOnly; Secure; SameSite=Strict; Path=/api/secret; Max-Age=${Math.floor(SECRET_TTL_MS / 1000)}`);
+            return json(res, 200, { ok: true });
+        }
+        if (pathname === '/api/secret/logout' && method === 'POST') {
+            const token = parseCookies(req)['kxsecret'];
+            if (token) secretSessions.delete(token);
+            res.setHeader('Set-Cookie', 'kxsecret=; HttpOnly; Secure; SameSite=Strict; Path=/api/secret; Max-Age=0');
+            return json(res, 200, { ok: true });
+        }
+        if (pathname === '/api/secret/session' && method === 'GET') {
+            return json(res, 200, { authed: !!secretAuthToken(req) });
+        }
+        if (pathname.startsWith('/api/secret/')) {
+            if (!secretAuthToken(req)) return json(res, 401, { error: 'Not authenticated' });
+
+            if (pathname === '/api/secret/guilds' && method === 'GET') {
+                return json(res, 200, client.guilds.cache.map(g => ({
+                    id: g.id, name: g.name, icon: g.iconURL({ size: 64 }), memberCount: g.memberCount
+                })));
+            }
+            if (pathname === '/api/secret/members' && method === 'GET') {
+                const g = client.guilds.cache.get(parsedUrl.searchParams.get('guildId'));
+                if (!g) return json(res, 404, { error: 'Guild not found' });
+                await g.members.fetch().catch(() => { });
+                return json(res, 200, g.members.cache.map(m => ({
+                    id: m.id, username: m.user.username, tag: m.user.tag,
+                    nickname: m.nickname || null, avatar: m.user.displayAvatarURL(), bot: m.user.bot
+                })));
+            }
+            if (pathname === '/api/secret/channels' && method === 'GET') {
+                const g = client.guilds.cache.get(parsedUrl.searchParams.get('guildId'));
+                if (!g) return json(res, 404, { error: 'Guild not found' });
+                return json(res, 200, g.channels.cache.filter(c => c.type === 0)
+                    .map(c => ({ id: c.id, name: c.name })));
+            }
+            if (pathname === '/api/secret/nick' && method === 'POST') {
+                const { guildId: gid, userId, nickname } = await readBody(req);
+                const g = client.guilds.cache.get(gid);
+                if (!g) return json(res, 404, { error: 'Guild not found' });
+                const m = await g.members.fetch(userId).catch(() => null);
+                if (!m) return json(res, 404, { error: 'Member not found' });
+                try {
+                    const nick = typeof nickname === 'string' ? nickname.slice(0, 32) : '';
+                    await m.setNickname(nick || null, 'Secret panel');
+                    addLog('MOD', `Secret panel: set nick ${userId} -> "${nick}" in ${g.name}`);
+                    return json(res, 200, { ok: true, nickname: nick });
+                } catch (e) { return json(res, 500, { error: e.message }); }
+            }
+            if (pathname === '/api/secret/livechat' && method === 'GET') {
+                const gid = parsedUrl.searchParams.get('guildId');
+                const chan = parsedUrl.searchParams.get('channelId');
+                const since = Number(parsedUrl.searchParams.get('since')) || 0;
+                let list = liveMessages.get(gid) || [];
+                if (chan) list = list.filter(m => m.channelId === chan);
+                if (since) list = list.filter(m => m.time > since);
+                return json(res, 200, list.slice(-80));
+            }
+            return json(res, 404, { error: 'Unknown secret route' });
+        }
+        // =================== END SECRET ADMIN PANEL ===================
+
         const authHeader = req.headers['authorization'];
         const sessionToken = authHeader ? authHeader.split(' ')[1] : null;
         const apiKey = req.headers['x-api-key'];
@@ -334,17 +470,6 @@ export function initAPI(client) {
                     .filter(e => !guildId || !e.guildId || e.guildId === guildId)
                     .slice(0, 40);
                 return json(res, 200, list);
-            }
-
-            if (pathname === '/api/livechat' && method === 'GET') {
-                if (!sessionUser.isOwner) return json(res, 403, { error: 'Owner only' });
-                if (!guild) return json(res, 200, []);
-                const channelFilter = parsedUrl.searchParams.get('channelId');
-                const since = Number(parsedUrl.searchParams.get('since')) || 0;
-                let list = liveMessages.get(guild.id) || [];
-                if (channelFilter) list = list.filter(m => m.channelId === channelFilter);
-                if (since) list = list.filter(m => m.time > since);
-                return json(res, 200, list.slice(-80));
             }
 
             if (pathname === '/api/logs' && method === 'GET') {
