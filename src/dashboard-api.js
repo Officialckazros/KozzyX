@@ -247,6 +247,16 @@ export function initAPI(client) {
 
         try {
 
+            if (pathname === '/api/auth/me' && method === 'GET') {
+                return json(res, 200, {
+                    id: sessionUser.id,
+                    username: sessionUser.username,
+                    global_name: sessionUser.global_name || null,
+                    avatar: sessionUser.avatar || null,
+                    isOwner: !!sessionUser.isOwner
+                });
+            }
+
             if (pathname === '/api/auth/guilds' && method === 'GET') {
                 const userGuilds = sessionUser.guilds || [];
                 const accessibleGuilds = client.guilds.cache.filter(g => {

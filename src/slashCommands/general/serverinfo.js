@@ -75,61 +75,61 @@ export default {
         const features = (g.features ?? []).map(f => `\`${f.toLowerCase().replace(/_/g, " ")}\``).join(", ") || "None";
 
         const fields = [
-            { name: "Owner", value: owner ? `${owner.user.tag}\n\`${owner.id}\`` : "Unknown", inline: true },
-            { name: "Server ID", value: `\`${g.id}\``, inline: true },
-            { name: "Created", value: created, inline: false },
+            { name: "👑 Owner", value: owner ? `${owner.user.tag}\n\`${owner.id}\`` : "Unknown", inline: true },
+            { name: "🆔 Server ID", value: `\`${g.id}\``, inline: true },
+            { name: "📅 Created", value: created, inline: false },
             {
-                name: `Members [${memberCount}]`,
+                name: `👥 Members [${memberCount}]`,
                 value: `Humans: **${humanCount}**\nBots: **${botCount}**`,
                 inline: true,
             },
             {
-                name: `Channels [${textCount + voiceCount + stageCount + forumCount}]`,
+                name: `💬 Channels [${textCount + voiceCount + stageCount + forumCount}]`,
                 value: `Text: **${textCount}**\nVoice: **${voiceCount}**\nStage: **${stageCount}**\nCategories: **${categoryCount}**${forumCount ? `\nForums: **${forumCount}**` : ""}${threadCount ? `\nThreads: **${threadCount}**` : ""}`,
                 inline: true,
             },
             {
-                name: `Roles [${roleCount}]`,
+                name: `🎭 Roles [${roleCount}]`,
                 value: topRoles + (roleCount > 5 ? `\n*+${roleCount - 5} more*` : ""),
                 inline: false,
             },
             {
-                name: `Emojis [${emojiCount}]`,
+                name: `😀 Emojis [${emojiCount}]`,
                 value: `Static: **${emojiCount - animatedEmojis}**\nAnimated: **${animatedEmojis}**${stickerCount ? `\nStickers: **${stickerCount}**` : ""}`,
                 inline: true,
             },
             {
-                name: "Boost Status",
+                name: "🚀 Boost Status",
                 value: `Tier: **${BOOST_TIERS[g.premiumTier] ?? "None"}**\nBoosts: **${g.premiumSubscriptionCount ?? 0}**`,
                 inline: true,
             },
             {
-                name: "Security",
+                name: "🔒 Security",
                 value: `Verification: ${VERIFICATION_LEVELS[g.verificationLevel] ?? "Unknown"}\nContent Filter: ${CONTENT_FILTER[g.explicitContentFilter] ?? "Unknown"}`,
                 inline: false,
             },
         ];
 
         if (g.vanityURLCode) {
-            fields.push({ name: "Vanity URL", value: `discord.gg/${g.vanityURLCode}`, inline: true });
+            fields.push({ name: "🔗 Vanity URL", value: `discord.gg/${g.vanityURLCode}`, inline: true });
         }
         if (g.preferredLocale) {
-            fields.push({ name: "Locale", value: `\`${g.preferredLocale}\``, inline: true });
+            fields.push({ name: "🌍 Locale", value: `\`${g.preferredLocale}\``, inline: true });
         }
         if (g.nsfwLevel != null) {
-            fields.push({ name: "NSFW Level", value: NSFW_LEVEL[g.nsfwLevel] ?? "Unknown", inline: true });
+            fields.push({ name: "🔞 NSFW Level", value: NSFW_LEVEL[g.nsfwLevel] ?? "Unknown", inline: true });
         }
         if (g.description) {
-            fields.push({ name: "Description", value: g.description.slice(0, 1024), inline: false });
+            fields.push({ name: "📝 Description", value: g.description.slice(0, 1024), inline: false });
         }
         if (features !== "None") {
-            fields.push({ name: "Features", value: features.slice(0, 1024), inline: false });
+            fields.push({ name: "✨ Features", value: features.slice(0, 1024), inline: false });
         }
 
         const embed = buildCoolEmbed({
             guildId: g.id,
             type: "info",
-            title: `${g.name}`,
+            title: `🏠 ${g.name}`,
             fields,
             showAuthor: true,
             showFooter: false,

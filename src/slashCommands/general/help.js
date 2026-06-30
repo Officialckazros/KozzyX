@@ -54,7 +54,7 @@ export function buildGeneratedHelpPages(client, category = "all") {
     const title = category === "all"
         ? "Command Help"
         : `${helpCategories.find((c) => c.value === category)?.name || "Command"} Help`;
-    const description = "Commands are generated from the live command registry.";
+    const description = "Here's everything I can do. Use `/help <category>` to narrow it down.";
 
     const MAX_FIELDS = 6;
     const CHAR_BUDGET = 5500;
@@ -76,20 +76,28 @@ export function buildGeneratedHelpPages(client, category = "all") {
     if (current.length) groups.push(current);
 
     const total = groups.length || 1;
+    const brandName = client.user?.username || "KozzyX";
+    const brandIcon = client.user?.displayAvatarURL?.();
     const pages = groups.map((fields, index) =>
         new EmbedBuilder()
-            .setTitle(`${title} (${index + 1}/${total})`)
+            .setAuthor({ name: `${brandName} • Help`, iconURL: brandIcon })
+            .setTitle(`📖 ${title}`)
             .setDescription(description)
             .setColor(0x5865f2)
             .addFields(fields)
+            .setFooter({ text: `Page ${index + 1} of ${total} • use the buttons to navigate`, iconURL: brandIcon })
+            .setTimestamp()
     );
 
     if (!pages.length) {
         pages.push(
             new EmbedBuilder()
-                .setTitle(`${title} (1/1)`)
+                .setAuthor({ name: `${brandName} • Help`, iconURL: brandIcon })
+                .setTitle(`📖 ${title}`)
                 .setDescription("No commands are currently loaded for this category.")
                 .setColor(0x5865f2)
+                .setFooter({ text: `Page 1 of 1`, iconURL: brandIcon })
+                .setTimestamp()
         );
     }
 

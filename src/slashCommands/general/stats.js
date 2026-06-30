@@ -16,10 +16,10 @@ function formatUptime(ms) {
 }
 
 function pingHealth(ms) {
-    if (ms < 100) return "Excellent";
-    if (ms < 200) return "Good";
-    if (ms < 400) return "Fair";
-    return "High";
+    if (ms < 100) return "🟢 Excellent";
+    if (ms < 200) return "🟢 Good";
+    if (ms < 400) return "🟡 Fair";
+    return "🔴 High";
 }
 
 export default {
@@ -43,30 +43,30 @@ export default {
             guildId: interaction.guildId,
             type: "info",
             client,
-            title: `${client.user.username} Statistics`,
+            title: `📊 ${client.user.username} Statistics`,
             fields: [
                 {
-                    name: "Reach",
+                    name: "🌐 Reach",
                     value: `Servers: **${client.guilds.cache.size}**\nMembers: **${totalMembers.toLocaleString()}**\nChannels: **${totalChannels.toLocaleString()}**`,
                     inline: true,
                 },
                 {
-                    name: "Commands",
+                    name: "⌨️ Commands",
                     value: `Slash: **${slashCount}**\nPrefix: **${prefixCount}**\nTotal: **${slashCount + prefixCount}**`,
                     inline: true,
                 },
                 {
-                    name: "Health",
+                    name: "💓 Health",
                     value: `Ping: **${ping}ms** ${pingHealth(ping)}\nUptime: **${formatUptime(client.uptime)}**`,
                     inline: false,
                 },
                 {
-                    name: "Memory",
+                    name: "🧠 Memory",
                     value: `Heap: **${heapMB} MB**\nRSS: **${rssMB} MB**`,
                     inline: true,
                 },
                 {
-                    name: "Runtime",
+                    name: "⚙️ Runtime",
                     value: `Node: **${process.version}**\ndiscord.js: **v${djsVersion}**\nPlatform: \`${process.platform}\``,
                     inline: true,
                 },
