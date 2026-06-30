@@ -1,7 +1,7 @@
 import { EmbedBuilder } from "discord.js";
 import { getGuildSettings } from "./database.js";
 
-export function buildCoolEmbed({ guildId, type = "info", client, title = null, description = null, footerUser = null, fields = null, showAuthor = false, showFooter = false, footerText = null }) {
+export function buildCoolEmbed({ guildId, type = "info", client, title = null, description = null, footerUser = null, fields = null, showAuthor = false, showFooter = false, footerText = null, thumbnail = null }) {
     const settings = guildId ? getGuildSettings(guildId) : null;
     const color = settings?.embedColors?.[type] ?? 0x5865f2;
 
@@ -19,24 +19,27 @@ export function buildCoolEmbed({ guildId, type = "info", client, title = null, d
     if (title) embed.setTitle(title);
     if (description) embed.setDescription(description);
     if (Array.isArray(fields) && fields.length) embed.addFields(fields);
+    if (thumbnail) embed.setThumbnail(thumbnail);
 
+    // Every embed gets a consistent, branded footer so nothing ever looks unfinished.
+    const brandIcon = client?.user ? client.user.displayAvatarURL() : undefined;
     if (footerUser) {
         embed.setFooter({
             text: `Requested by ${footerUser.tag}`,
             iconURL: footerUser.displayAvatarURL({ dynamic: true }),
         });
     } else if (footerText) {
-        embed.setFooter({ text: footerText });
-    } else if (showFooter && footerUser) {
-        embed.setFooter({ text: `Requested by ${footerUser.tag}` });
+        embed.setFooter({ text: footerText, iconURL: brandIcon });
+    } else if (client?.user) {
+        embed.setFooter({ text: client.user.username, iconURL: brandIcon });
     }
 
     return embed;
 }
 
-export function asEmbedPayload({ guildId, type, client, title, description, footerUser, fields, ephemeral = false, components = undefined, allowedMentions = undefined }) {
+export function asEmbedPayload({ guildId, type, client, title, description, footerUser, fields, ephemeral = false, components = undefined, allowedMentions = undefined, thumbnail = undefined }) {
     return {
-        embeds: [buildCoolEmbed({ guildId, type, client, title, description, footerUser, fields, showAuthor: true })],
+        embeds: [buildCoolEmbed({ guildId, type, client, title, description, footerUser, fields, thumbnail, showAuthor: true })],
         ephemeral,
         components,
         allowedMentions,

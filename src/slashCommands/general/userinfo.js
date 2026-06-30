@@ -2,27 +2,27 @@ import { safeRespond } from "../../utils/helpers.js";
 import { buildCoolEmbed, asEmbedPayload } from "../../utils/embeds.js";
 
 const FLAG_BADGES = {
-    Staff: "Discord Staff",
-    Partner: "Partner",
-    Hypesquad: "HypeSquad Events",
-    HypeSquadOnlineHouse1: "HypeSquad Bravery",
-    HypeSquadOnlineHouse2: "HypeSquad Brilliance",
-    HypeSquadOnlineHouse3: "HypeSquad Balance",
-    BugHunterLevel1: "Bug Hunter",
-    BugHunterLevel2: "Bug Hunter (Gold)",
-    PremiumEarlySupporter: "Early Supporter",
-    VerifiedDeveloper: "Early Verified Bot Developer",
-    CertifiedModerator: "Certified Moderator",
-    ActiveDeveloper: "Active Developer",
-    VerifiedBot: "Verified Bot",
+    Staff: "🛡️ Discord Staff",
+    Partner: "🤝 Partner",
+    Hypesquad: "🎉 HypeSquad Events",
+    HypeSquadOnlineHouse1: "🏆 HypeSquad Bravery",
+    HypeSquadOnlineHouse2: "🏆 HypeSquad Brilliance",
+    HypeSquadOnlineHouse3: "🏆 HypeSquad Balance",
+    BugHunterLevel1: "🐛 Bug Hunter",
+    BugHunterLevel2: "🐛 Bug Hunter (Gold)",
+    PremiumEarlySupporter: "💎 Early Supporter",
+    VerifiedDeveloper: "🧑‍💻 Early Verified Bot Developer",
+    CertifiedModerator: "🛠️ Certified Moderator",
+    ActiveDeveloper: "⚡ Active Developer",
+    VerifiedBot: "✅ Verified Bot",
 };
 
 const STATUS_EMOJI = {
-    online: "Online",
-    idle: "Idle",
-    dnd: "Do Not Disturb",
-    offline: "Offline",
-    invisible: "Invisible",
+    online: "🟢 Online",
+    idle: "🌙 Idle",
+    dnd: "⛔ Do Not Disturb",
+    offline: "⚫ Offline",
+    invisible: "⚫ Invisible",
 };
 
 const KEY_PERMS = [
@@ -73,39 +73,39 @@ export default {
         const activityText = activity ? `${activity.state || activity.name}` : null;
 
         const fields = [
-            { name: "Username", value: `\`${user.username}\``, inline: true },
-            { name: "User ID", value: `\`${user.id}\``, inline: true },
-            { name: "Bot", value: user.bot ? "Yes" : "No", inline: true },
-            { name: "Account Created", value: created, inline: false },
+            { name: "📛 Username", value: `\`${user.username}\``, inline: true },
+            { name: "🆔 User ID", value: `\`${user.id}\``, inline: true },
+            { name: "🤖 Bot", value: user.bot ? "Yes" : "No", inline: true },
+            { name: "📅 Account Created", value: created, inline: false },
         ];
 
         if (member) {
-            fields.push({ name: "Joined Server", value: joined, inline: false });
-            if (member.nickname) fields.push({ name: "Nickname", value: member.nickname, inline: true });
-            if (status) fields.push({ name: "Status", value: status, inline: true });
+            fields.push({ name: "📥 Joined Server", value: joined, inline: false });
+            if (member.nickname) fields.push({ name: "✏️ Nickname", value: member.nickname, inline: true });
+            if (status) fields.push({ name: "📶 Status", value: status, inline: true });
             if (member.premiumSinceTimestamp) {
-                fields.push({ name: "Boosting Since", value: `<t:${Math.floor(member.premiumSinceTimestamp / 1000)}:R>`, inline: true });
+                fields.push({ name: "💎 Boosting Since", value: `<t:${Math.floor(member.premiumSinceTimestamp / 1000)}:R>`, inline: true });
             }
-            if (activityText) fields.push({ name: "Activity", value: activityText, inline: false });
+            if (activityText) fields.push({ name: "🎮 Activity", value: activityText, inline: false });
         }
 
         if (badges.length) {
-            fields.push({ name: "Badges", value: badges.join("\n"), inline: false });
+            fields.push({ name: "🏅 Badges", value: badges.join("\n"), inline: false });
         }
 
         if (roles.length) {
             const rolesValue = roles.slice(0, 25).join(" ") + (roles.length > 25 ? `\n*+${roles.length - 25} more*` : "");
-            fields.push({ name: `Roles [${roles.length}]`, value: rolesValue.slice(0, 1024), inline: false });
+            fields.push({ name: `🎭 Roles [${roles.length}]`, value: rolesValue.slice(0, 1024), inline: false });
         }
 
         if (keyPerms.length) {
-            fields.push({ name: "Key Permissions", value: keyPerms.map(p => `\`${p}\``).join(", "), inline: false });
+            fields.push({ name: "🔑 Key Permissions", value: keyPerms.map(p => `\`${p}\``).join(", "), inline: false });
         }
 
         const embed = buildCoolEmbed({
             guildId: i.guild?.id,
             type: "info",
-            title: "User Information",
+            title: "👤 User Information",
             description: `${user}`,
             fields,
             showAuthor: true,
