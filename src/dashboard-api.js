@@ -67,6 +67,30 @@ let feedEvents = [];
 const MAX_FEED = 120;
 const cooldownHits = new Map();
 
+// Live-chat buffer for the owner admin panel. In-memory ONLY (never written to
+// disk) and capped; intentionally overrides the prior zero-content stance per
+// explicit owner request.
+const liveMessages = new Map(); // guildId -> [{ id, channelId, channelName, authorId, author, avatar, content, time }]
+const MAX_LIVE_PER_GUILD = 250;
+function pushLiveMessage(message) {
+    try {
+        const gid = message.guild.id;
+        const arr = liveMessages.get(gid) || [];
+        arr.push({
+            id: message.id,
+            channelId: message.channel.id,
+            channelName: message.channel.name,
+            authorId: message.author.id,
+            author: message.author.tag || message.author.username,
+            avatar: message.author.displayAvatarURL?.() || null,
+            content: message.content || (message.attachments?.size ? '[attachment]' : '[embed]'),
+            time: message.createdTimestamp || Date.now()
+        });
+        if (arr.length > MAX_LIVE_PER_GUILD) arr.splice(0, arr.length - MAX_LIVE_PER_GUILD);
+        liveMessages.set(gid, arr);
+    } catch { }
+}
+
 function readBody(req) {
     return new Promise((resolve, reject) => {
         let body = '';
@@ -312,6 +336,17 @@ export function initAPI(client) {
                 return json(res, 200, list);
             }
 
+            if (pathname === '/api/livechat' && method === 'GET') {
+                if (!sessionUser.isOwner) return json(res, 403, { error: 'Owner only' });
+                if (!guild) return json(res, 200, []);
+                const channelFilter = parsedUrl.searchParams.get('channelId');
+                const since = Number(parsedUrl.searchParams.get('since')) || 0;
+                let list = liveMessages.get(guild.id) || [];
+                if (channelFilter) list = list.filter(m => m.channelId === channelFilter);
+                if (since) list = list.filter(m => m.time > since);
+                return json(res, 200, list.slice(-80));
+            }
+
             if (pathname === '/api/logs' && method === 'GET') {
                 if (!sessionUser.isOwner) return json(res, 403, { error: 'Owner only' });
                 return json(res, 200, botLogs);
@@ -458,14 +493,21 @@ export function initAPI(client) {
             }
 
             if (pathname === '/api/members/action' && method === 'POST') {
-                const { userId, action, reason, duration } = await readBody(req);
+                const { userId, action, reason, duration, nickname } = await readBody(req);
                 if (!guild) return json(res, 404, { error: 'Guild not found' });
                 const act = (action || '').toUpperCase();
                 const moderator = sessionUser?.username || 'Dashboard';
                 try {
                     const targetMember = await guild.members.fetch(userId).catch(() => null);
 
-                    if (act === 'KICK') {
+                    if (act === 'SETNICK' || act === 'NICK') {
+                        if (!canActOn(targetMember, 'ManageNicknames')) return json(res, 403, { error: 'Missing permission or role hierarchy prevents renaming' });
+                        const m = await guild.members.fetch(userId);
+                        const nick = typeof nickname === 'string' ? nickname.slice(0, 32) : '';
+                        await m.setNickname(nick || null, reason || `Nickname set by ${moderator}`);
+                        addLog('MOD', `SETNICK ${userId} -> "${nick}" by ${moderator}`);
+                        return json(res, 200, { success: true, nickname: nick });
+                    } else if (act === 'KICK') {
                         if (!canActOn(targetMember, 'KickMembers')) return json(res, 403, { error: 'Missing permission or role hierarchy prevents kicking' });
                         const m = await guild.members.fetch(userId);
                         await m.kick(reason || 'Dashboard action');
@@ -1051,7 +1093,9 @@ export function initAPI(client) {
     });
 
     client.on('messageCreate', async (message) => {
-        if (message.author.bot || !message.guild) return;
+        if (!message.guild) return;
+        pushLiveMessage(message);
+        if (message.author.bot) return;
 
         const { guildAutoresponders } = await importDatabase();
         const guildTriggers = guildAutoresponders.get(message.guild.id) || [];
